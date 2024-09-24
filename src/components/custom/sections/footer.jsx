@@ -1,12 +1,19 @@
+'use client'
+
 import React from 'react'
 import Link from 'next/link'
 import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { motion } from 'framer-motion'
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-100 text-gray-600 py-12 px-4">
+    <motion.footer
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.85 }}
+      className="bg-gray-100 text-gray-600 py-12 px-4">
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Logo and Company Info */}
         <div className="flex flex-col items-start">
@@ -99,7 +106,7 @@ const Footer = () => {
           </div>
         </div>
       </div>
-    </footer>
+    </motion.footer>
   )
 }
 
