@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -13,6 +15,7 @@ interface StyleCardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const StyleCard = React.forwardRef<HTMLDivElement, StyleCardProps>(
   ({ className, imageSrc, name, creator, onViewDetails, ...props }, ref) => {
+
     return (
       <motion.div
         initial = {{ opacity: 0 }}

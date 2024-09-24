@@ -15,8 +15,8 @@ const Header = () => {
     }
   
     const menuItems = [
-      { name: 'Styles', href: '/' },
-      { name: 'Products', href: '/' },
+      { name: 'Styles', href: '/browse/styles' },
+      { name: 'Products', href: '/browse/furnitures' },
       { name: 'About', href: '/' },
       { name: 'Contact', href: '/' },
     ]
@@ -26,7 +26,7 @@ const Header = () => {
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className='flex justify-between items-center px-6 md:px-10 py-6 bg-white shadow-sm'
+        className='flex justify-between items-center px-10 py-6 bg-white shadow-sm'
       >
         <div className='flex justify-between items-center gap-8'>
           <motion.h1 
