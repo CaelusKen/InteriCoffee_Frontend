@@ -1,7 +1,8 @@
+import { StyleDetailsBody } from '@/components/custom/sections/body/styles/details'
 import React from 'react'
 
 export default function StyleDetails({ params }: { params: { styleId: string } })  {
   return (
-    <div>Style {params.styleId} Details</div>
+    <StyleDetailsBody id={params.styleId}/>
   )
 }
