@@ -7,6 +7,7 @@ import User from '../../avatar/user-avatar'
 import StyleCard from '../../cards/style-card'
 import { ArrowRightCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
+import EndingCard from '../../cards/ending-card'
 
 const styleData = [
   { imageSrc: "https://placehold.co/400", name: "Modern Minimalist", creator: "Jane Doe" },
@@ -34,16 +35,16 @@ const Home = () => {
         initial={{ opacity: 0, y: -50}}
         animate={{ opacity: 1, y: 0}}
         transition={{ duration: 0.75, delay: 0.5 }}
-        className='flex flex-col gap-4 text-center my-4'
+        className='flex flex-col gap-4 text-center mt-20 mb-56'
       >
-        <div className='flex flex-col sm:flex-row justify-center items-center gap-4'>
+        <div className='flex flex-col sm:flex-row justify-center items-center gap-4 cursor-default'>
           <h3 className='text-sm sm:text-base'>Style of the Day</h3>
           <Input
             type="date"
             value={currentDate}
             disabled
             onChange={(e) => setCurrentDate(e.target.value)}
-            className="px-2 sm:px-4 py-1 sm:py-2 border border-black rounded-md text-black bg-white cursor-default w-fit text-xs sm:text-sm"
+            className="px-2 sm:px-4 py-1 sm:py-2 border border-black rounded-md text-black bg-white w-fit text-xs sm:text-sm"
             style={{ WebkitTextFillColor: 'black', opacity: 1 }}
           />
           <h3 className='text-sm sm:text-base'>Rating: 5.00 out of 5.00</h3>
@@ -91,7 +92,7 @@ const Home = () => {
             />
           ))}
         </div>
-        <div className='flex justify-center mt-6'>
+        <div className='flex justify-center mt-6 mb-40'>
           <Button variant={'outline'} className='hover:bg-primary-500 hover:text-white text-sm sm:text-base'>
             <span className='flex items-center gap-2'>
               <p>Click to browse all latest styles</p>
@@ -104,7 +105,7 @@ const Home = () => {
         initial={{ opacity: 0, y: -50}}
         animate={{ opacity: 1, y: 0}}
         transition={{ duration: 0.75, delay: 0.75 }} 
-        className='text-lg sm:text-xl text-left py-2 mt-8'
+        className='text-lg sm:text-xl text-left py-2 mt-40'
       >
         Recent
       </motion.h3>
@@ -139,6 +140,29 @@ const Home = () => {
               <ArrowRightCircle size={16} />
             </span>
           </Button>
+        </div>
+      </motion.section>
+      <motion.section
+        initial={{ opacity: 0, y: -50}}
+        animate={{ opacity: 1, y: 0}}
+        transition={{ duration: 0.75, delay: 0.75 }}
+        className='mt-56 mb-4'
+      >
+        <div className="grid md:grid-cols-2 gap-8 py-8">
+          <EndingCard
+            title="Share your style"
+            heading="Be our merchant, and show us your true colors"
+            description="Get your styles to every users around the globe"
+            buttonText="Register now"
+            backgroundImage="/placeholder.svg?height=400&width=600"
+          />
+          <EndingCard
+            title="Be a member"
+            heading="Get access to special pro features"
+            description="Unlock exclusive benefits and tools for professionals."
+            buttonText="Be Pro"
+            backgroundImage="/placeholder.svg?height=400&width=600"
+          />
         </div>
       </motion.section>
     </motion.section>

@@ -27,7 +27,7 @@ const Footer = () => {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.85 }}
-      className="bg-gray-100 text-gray-600 py-12 px-4"
+      className="bg-gray-100 text-gray-600 py-12 px-10 dark:bg-gray-900 dark:text-white"
     >
       <div className="container mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {/* Logo and Company Info */}
@@ -43,7 +43,7 @@ const Footer = () => {
               <Link 
                 key={label}
                 href="#" 
-                className="text-gray-400 hover:text-gray-600 transition-colors duration-300"
+                className="hover:text-neutral-700 dark:hover:text-secondary-400 transition-colors duration-300"
                 aria-label={label}
               >
                 <Icon size={20} />
@@ -60,7 +60,7 @@ const Footer = () => {
               <li key={item}>
                 <Link 
                   href="#" 
-                  className="hover:text-gray-900 transition-colors duration-300"
+                  className="hover:text-neutral-700 dark:hover:text-secondary-400 transition-colors duration-300"
                 >
                   {item}
                 </Link>
@@ -83,7 +83,7 @@ const Footer = () => {
                 {href ? (
                   <a 
                     href={href} 
-                    className="hover:text-primary transition-colors duration-300"
+                    className="hover:text-neutral-700 dark:hover:text-secondary-400 transition-colors duration-300"
                   >
                     {content}
                   </a>

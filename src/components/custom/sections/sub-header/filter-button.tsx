@@ -52,7 +52,7 @@ const FilterButton: React.FC<FilterButtonProps> = ({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[160px] bg-white justify-between"
+          className="w-[160px] bg-white dark:bg-black dark:text-white justify-between"
         >
           {selectedValues.length > 0
             ? `${typeOfData} (${selectedValues.length})`
@@ -60,7 +60,7 @@ const FilterButton: React.FC<FilterButtonProps> = ({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[160px] p-0 bg-white">
+      <PopoverContent className="w-[160px] p-0 bg-white dark:text-black">
         <Command>
           <CommandInput placeholder={`Search ${typeOfData}`} />
           <CommandList>

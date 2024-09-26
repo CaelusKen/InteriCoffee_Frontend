@@ -5,6 +5,7 @@ import Link from 'next/link'
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
+import { ThemeToggler } from '../buttons/theme-toggler'
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -33,7 +34,7 @@ const Header = () => {
       initial={{ opacity: 0, y: -50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className='sticky top-0 z-50 flex justify-between items-center px-4 sm:px-6 md:px-10 py-4 bg-white shadow-sm'
+      className='sticky top-0 z-50 flex justify-between items-center px-4 sm:px-6 md:px-10 py-4 bg-white dark:bg-black dark:text-white shadow-sm'
     >
       <div className='flex justify-between items-center gap-4 sm:gap-8'>
         <motion.h1 
@@ -51,7 +52,7 @@ const Header = () => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
-                <Link href={item.href} className='hover:text-primary transition-colors duration-200'>
+                <Link href={item.href} className='hover:text-primary-400 transition-colors duration-200'>
                   {item.name}
                 </Link>
               </motion.li>
@@ -61,12 +62,13 @@ const Header = () => {
       </div>
 
       <div className='hidden lg:flex gap-4 items-center'>
-        <Button variant={'link'} className='text-black hover:text-primary transition-colors duration-200'>
+        <Button variant={'link'} className='text-black dark:text-white dark:hover:text-primary-400 hover:text-primary-400 transition-colors duration-200'>
           Login
         </Button>
         <Button variant={'outline'} className='rounded-md hover:bg-primary hover:text-white transition-colors duration-200'>
           Get Started
         </Button>
+        <ThemeToggler/>
       </div>
 
       <div className='lg:hidden'>

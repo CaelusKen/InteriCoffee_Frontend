@@ -55,7 +55,7 @@ const FilterHeader = () => {
       initial={{ opacity: 0, y: -50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.85 }}
-      className='flex flex-col sm:flex-row items-center justify-between px-4 sm:px-10 py-4 bg-neutral-200 space-y-4 sm:space-y-0'
+      className='flex flex-col sm:flex-row items-center justify-between px-4 sm:px-10 py-4 bg-neutral-200 dark:bg-neutral-800 space-y-4 sm:space-y-0'
     >
       <ul className='flex flex-wrap items-center gap-4'>
         <li>
@@ -85,14 +85,14 @@ const FilterHeader = () => {
       </ul>
       <ul className='flex items-center gap-4'>
         <li>
-          <Button variant={'outline'} className='bg-white w-10 h-10'>
+          <Button variant={'outline'} className='bg-white dark:bg-black w-10 h-10'>
             {totalFiltersApplied}
           </Button>
         </li>
         <li>
           <Button 
             variant={'outline'} 
-            className='bg-white hover:bg-primary-500 hover:text-white'
+            className='bg-white dark:bg-black hover:bg-primary-500 dark:hover:hover:bg-primary-500 hover:text-white'
             onClick={resetFilters}
           >
             <span className='flex items-center gap-3'>
