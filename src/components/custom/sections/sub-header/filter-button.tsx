@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,8 +19,10 @@ import {
 } from "@/components/ui/popover";
 
 interface FilterButtonProps {
-    typeOfData: string;
-    dataList: FilterData[];
+  typeOfData: string;
+  dataList: FilterData[];
+  selectedValues: string[];
+  onSelectionChange: (type: string, values: string[]) => void;
 }
 
 type FilterData = {
@@ -30,11 +31,19 @@ type FilterData = {
 }
 
 const FilterButton: React.FC<FilterButtonProps> = ({
-    typeOfData,
-    dataList,
+  typeOfData,
+  dataList,
+  selectedValues,
+  onSelectionChange,
 }) => {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
+
+  const handleSelect = (currentValue: string) => {
+    const newSelectedValues = selectedValues.includes(currentValue)
+      ? selectedValues.filter(value => value !== currentValue)
+      : [...selectedValues, currentValue];
+    onSelectionChange(typeOfData, newSelectedValues);
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -43,17 +52,17 @@ const FilterButton: React.FC<FilterButtonProps> = ({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[160px] bg-white justify-between"
+          className="w-[160px] bg-white dark:bg-black dark:text-white justify-between"
         >
-          {value
-            ? dataList.find((data) => data.value === value)?.label
+          {selectedValues.length > 0
+            ? `${typeOfData} (${selectedValues.length})`
             : typeOfData}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[160px] p-0 bg-white">
+      <PopoverContent className="w-[160px] p-0 bg-white dark:text-black">
         <Command>
-          <CommandInput placeholder={`Search ` + typeOfData} />
+          <CommandInput placeholder={`Search ${typeOfData}`} />
           <CommandList>
             <CommandEmpty>No value found.</CommandEmpty>
             <CommandGroup>
@@ -61,18 +70,23 @@ const FilterButton: React.FC<FilterButtonProps> = ({
                 <CommandItem
                   key={data.value}
                   value={data.value}
-                  onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue);
-                    setOpen(false);
-                  }}
+                  onSelect={() => handleSelect(data.value)}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === data.value ? "opacity-100" : "opacity-0"
+                      selectedValues.includes(data.value) ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {data.label}
+                  <span
+                    className={cn(
+                      "flex-1",
+                      typeOfData === "Color" && "px-2 py-1 rounded",
+                      typeOfData === "Color" && `bg-${data.value.toLowerCase()}-500`
+                    )}
+                  >
+                    {data.label}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>

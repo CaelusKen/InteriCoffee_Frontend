@@ -10,9 +10,6 @@ const styleData = [
   { imageSrc: "https://placehold.co/400", name: "Modern Minimalist", creator: "Jane Doe" },
   { imageSrc: "https://placehold.co/400", name: "Bohemian Chic", creator: "John Smith" },
   { imageSrc: "https://placehold.co/400", name: "Industrial Loft", creator: "Emma Wilson" },
-  { imageSrc: "https://placehold.co/400", name: "Scandinavian Simplicity", creator: "Alex Johnson" },
-  { imageSrc: "https://placehold.co/400", name: "Bohemian Chic", creator: "John Smith" },
-  { imageSrc: "https://placehold.co/400", name: "Industrial Loft", creator: "Emma Wilson" },
 ]
 
 const BrowseStyle = () => {
@@ -24,9 +21,13 @@ const BrowseStyle = () => {
           initial = {{ opacity: 0, y: -50}}
           animate = {{ opacity: 100, y: 0}}
           transition={{ duration: 0.75, delay: 0.75 }}
-          className='py-8'
+          className='py-8 px-10'
           >
-          <div className='grid grid-cols-4 md:grid-cols-3 w-full justify-items-center'>
+            <span className='flex items-center justify-between py-2'>
+              <h3 className='text-md font-semibold'>Showing 18 results</h3>
+              <h3 className='text-md font-semibold'>Page 1 out of 3 pages</h3>
+            </span>
+          <div className='grid grid-cols-3 gap-4 justify-items-center'>
             {styleData.map((style, index) => (
               <StyleCard 
                 key={index}
@@ -37,66 +38,6 @@ const BrowseStyle = () => {
               />
             ))}
           </div>
-          {/* <div className='flex justify-center'>
-            <Button variant={'outline'} className='hover:bg-primary-500 hover:text-white'>
-              <span className='flex items-center gap-2'>
-                <p>Click to browse all latest styles</p>
-                <ArrowRightCircle size={20}/>
-              </span>
-            </Button>
-          </div> */}
-      </motion.section>
-      <motion.section
-          initial = {{ opacity: 0, y: -50}}
-          animate = {{ opacity: 100, y: 0}}
-          transition={{ duration: 0.75, delay: 0.75 }}
-          className='py-8'
-          >
-          <div className='grid grid-cols-3 gap-8 w-full justify-items-center'>
-            {styleData.map((style, index) => (
-              <StyleCard 
-                key={index}
-                imageSrc={style.imageSrc}
-                name={style.name}
-                creator={style.creator}
-                onViewDetails={() => router.push('/browse/styles/' + style.name)}
-              />
-            ))}
-          </div>
-          {/* <div className='flex justify-center'>
-            <Button variant={'outline'} className='hover:bg-primary-500 hover:text-white'>
-              <span className='flex items-center gap-2'>
-                <p>Click to browse all latest styles</p>
-                <ArrowRightCircle size={20}/>
-              </span>
-            </Button>
-          </div> */}
-      </motion.section>
-      <motion.section
-          initial = {{ opacity: 0, y: -50}}
-          animate = {{ opacity: 100, y: 0}}
-          transition={{ duration: 0.75, delay: 0.75 }}
-          className='py-8'
-          >
-          <div className='grid grid-cols-3 gap-8 w-full justify-items-center'>
-            {styleData.map((style, index) => (
-              <StyleCard 
-                key={index}
-                imageSrc={style.imageSrc}
-                name={style.name}
-                creator={style.creator}
-                onViewDetails={() => router.push('/browse/styles/' + style.name)}
-              />
-            ))}
-          </div>
-          {/* <div className='flex justify-center'>
-            <Button variant={'outline'} className='hover:bg-primary-500 hover:text-white'>
-              <span className='flex items-center gap-2'>
-                <p>Click to browse all latest styles</p>
-                <ArrowRightCircle size={20}/>
-              </span>
-            </Button>
-          </div> */}
       </motion.section>
     </main>
   )
