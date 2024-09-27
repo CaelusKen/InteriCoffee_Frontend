@@ -42,7 +42,7 @@ const StyleCard = React.forwardRef<HTMLDivElement, StyleCardProps>(
               <Button
                 variant="secondary"
                 onClick={onViewDetails}
-                className="text-white bg-transparent hover:bg-white hover:text-black border border-white transition-colors duration-300"
+                className="text-white bg-transparent hover:bg-secondary hover:border-secondary hover:text-black border border-white transition-colors duration-300"
               >
                 View Details
               </Button>
