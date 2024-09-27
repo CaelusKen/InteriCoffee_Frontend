@@ -19,7 +19,7 @@ export default function EndingCard({ title, heading, description, buttonText, ba
         <h3 className="text-sm font-medium mb-2 text-gray-600 dark:text-gray-400">{title}</h3>
         <h2 className="text-4xl font-bold mb-4">{heading}</h2>
         <p className="text-xl mb-6">{description}</p>
-        <Button variant="outline" className="bg-transparent border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-gray-900">
+        <Button variant="outline" className="bg-transparent border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white dark:border-white dark:text-white dark:hover:bg-primary dark:hover:border-primary dark:hover:text-white">
           {buttonText}
         </Button>
       </div>

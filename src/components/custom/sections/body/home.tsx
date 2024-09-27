@@ -35,7 +35,7 @@ const Home = () => {
         initial={{ opacity: 0, y: -50}}
         animate={{ opacity: 1, y: 0}}
         transition={{ duration: 0.75, delay: 0.5 }}
-        className='flex flex-col gap-4 text-center mt-20 mb-56'
+        className='flex flex-col gap-4 text-center mt-10 mb-56'
       >
         <div className='flex flex-col sm:flex-row justify-center items-center gap-4 cursor-default'>
           <h3 className='text-sm sm:text-base'>Style of the Day</h3>

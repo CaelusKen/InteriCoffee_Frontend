@@ -7,16 +7,51 @@ import FilterHeader from "../../sub-header/filter-header";
 import User from "@/components/custom/avatar/user-avatar";
 import { motion } from "framer-motion";
 import FurnitureCard from "@/components/custom/cards/furniture-card";
+import ThumbnailStyleImage from "@/components/custom/images/thumbnail-style-image";
+import FurnitureGrid from "./furniture-lists/furniture-lists";
 
 interface StyleDetails {
   id: string;
 }
 
+const furnitureItems = [
+  {
+    name: "Modern Chair",
+    price: 120.00,
+    modelSrc: "https://placehold.co/400",
+    categories: ["Chairs", "Modern"]
+  },
+  {
+    name: "Vintage Table",
+    price: 340.00,
+    modelSrc: "https://placehold.co/400",
+    categories: ["Tables", "Vintage"]
+  },
+  {
+    name: "Elegant Sofa",
+    price: 550.00,
+    modelSrc: "https://placehold.co/400",
+    categories: ["Sofas", "Elegant"]
+  },
+  {
+    name: "Glass Coffee Table",
+    price: 250.00,
+    modelSrc: "https://placehold.co/400",
+    categories: ["Tables", "Modern"]
+  },
+  {
+    name: "Classic Wardrobe",
+    price: 650.00,
+    modelSrc: "https://placehold.co/400",
+    categories: ["Wardrobes", "Classic"]
+  },
+  // Add more items as needed
+]
+
 export const StyleDetailsBody: React.FC<StyleDetails> = ({ id }) => {
   return (
     <main>
       <Header />
-      <FilterHeader />
       <motion.section
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -38,11 +73,7 @@ export const StyleDetailsBody: React.FC<StyleDetails> = ({ id }) => {
             <User />
           </div>
         </div>
-        <img
-          src="https://placehold.co/900x300"
-          className="w-full h-auto px-10"
-          alt="Style of the Day"
-        />
+        <ThumbnailStyleImage />
       </motion.section>
       <motion.section
         initial={{ opacity: 0, y: -50 }}
@@ -59,7 +90,7 @@ export const StyleDetailsBody: React.FC<StyleDetails> = ({ id }) => {
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.75, delay: 0.6 }}
-        className="text-lg sm:text-xl text-left px-10 py-2"
+        className="text-lg sm:text-xl text-left px-10 py-2 mt-56"
       >
         Elements
       </motion.h3>
@@ -78,12 +109,7 @@ export const StyleDetailsBody: React.FC<StyleDetails> = ({ id }) => {
         className="text-lg sm:text-xl text-left px-10 py-2">
         Checkout the styles and its included elements here
       </motion.h3>
-      <FurnitureCard 
-        name="Elegant Armchair"
-        thumbnailUrl="https://placehold.co/300x300"
-        modelUrl="/models/sofa.glb"
-        merchant="Comfort Designs Inc."
-      />
+      <FurnitureGrid items={furnitureItems} />
       <Footer />
     </main>
   );
