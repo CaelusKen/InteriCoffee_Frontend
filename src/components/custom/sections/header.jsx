@@ -6,9 +6,11 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import { ThemeToggler } from '../buttons/theme-toggler'
+import { useRouter } from 'next/navigation'
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false)
+  const router = useRouter();
 
   // Close menu when screen size changes to prevent menu from staying open on larger screens
   useEffect(() => {
@@ -91,7 +93,7 @@ const Header = () => {
       </AnimatePresence>
 
       <motion.nav 
-        className='fixed top-0 right-0 bottom-0 w-64 bg-white shadow-lg p-6 z-50 lg:hidden'
+        className='fixed top-0 right-0 bottom-0 w-64 bg-white dark:bg-black shadow-lg p-6 z-50 lg:hidden'
         animate={isOpen ? "open" : "closed"}
         variants={menuVariants}
         initial="closed"
@@ -121,12 +123,21 @@ const Header = () => {
             </motion.li>
           ))}
           <li className='mt-4'>
-            <Button variant={'link'} className='w-full justify-start text-black hover:text-primary transition-colors duration-200'>
-              Login
-            </Button>
+            <Link href={'/login'}>
+              <Button 
+                variant={'link'} 
+                className='w-full justify-start text-black dark:text-white hover:text-primary transition-colors duration-200'
+              >
+                Login
+              </Button>
+            </Link>
           </li>
           <li>
-            <Button variant={'outline'} className='w-full mt-2 rounded-md hover:bg-primary hover:text-white transition-colors duration-200'>
+            <Button 
+              variant={'outline'} 
+              className='w-full mt-2 rounded-md hover:bg-primary hover:text-white transition-colors duration-200'
+              onClick={() => router.push('/signup')}
+            >
               Get Started
             </Button>
           </li>
