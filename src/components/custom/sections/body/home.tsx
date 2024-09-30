@@ -8,6 +8,8 @@ import StyleCard from '../../cards/style-card'
 import { ArrowRightCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
 import EndingCard from '../../cards/ending-card'
+import RatingCard from '../../cards/rating-cards'
+import StyleSubHeader from '../sub-header/style-sub-header'
 
 const styleData = [
   { imageSrc: "https://placehold.co/400", name: "Modern Minimalist", creator: "Jane Doe" },
@@ -31,6 +33,7 @@ const Home = () => {
       transition={{ duration: 0.75, delay: 0.25 }}
       className='px-4 sm:px-6 md:px-10 py-4'
     >
+      <StyleSubHeader/>
       <motion.section
         initial={{ opacity: 0, y: -50}}
         animate={{ opacity: 1, y: 0}}
@@ -47,13 +50,14 @@ const Home = () => {
             className="px-2 sm:px-4 py-1 sm:py-2 border border-black rounded-md text-black bg-white w-fit text-xs sm:text-sm"
             style={{ WebkitTextFillColor: 'black', opacity: 1 }}
           />
-          <h3 className='text-sm sm:text-base'>Rating: 5.00 out of 5.00</h3>
         </div>
         <h1 className='uppercase text-4xl sm:text-6xl md:text-8xl font-bold'>Modernication</h1>
-        <h3 className='text-sm sm:text-base'>Created By:</h3>
         <div className='flex items-center justify-center gap-4'>
-          <User />
-          <User />
+          <h3 className='text-sm sm:text-base'>Created By:</h3>
+          <div className='flex items-center justify-center gap-4'>
+            <User />
+            <User />
+          </div>
         </div>
         <img src='https://placehold.co/1600x400' className='w-full h-auto' alt='Style of the Day'/>
       </motion.section>
