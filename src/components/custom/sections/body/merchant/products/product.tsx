@@ -1,12 +1,21 @@
+'use client'
+
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FilePen, Info, Plus, Trash } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { motion } from 'framer-motion'
 
 export default function ProductHome()  {
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ x: -50, opacity: 0}}
+      animate={{ x: 0, opacity: 100}}
+      transition={{ duration: 0.75, delay: 0.25}}
+      className="space-y-6"
+    >
+      <h1 className="text-3xl font-bold mb-6">Product List</h1>
       <div className="flex justify-between items-center">
         <Input className="max-w-sm" placeholder="Search products..." />
         <Button className='bg-green-500 hover:bg-green-600'>
@@ -60,6 +69,6 @@ export default function ProductHome()  {
           </tbody>
         </table>
       </div>
-    </div>
+    </motion.div>
   )
 }
