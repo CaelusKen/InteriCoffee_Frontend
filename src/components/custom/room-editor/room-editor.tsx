@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const furnitureModels = {
   sofa: '/assets/3D/sofa.glb',
-  chair: '/assets/3d/chair.glb',
+  chair: '/assets/3D/chair.glb',
   table: '/assets/3D/table.glb',
 }
 
