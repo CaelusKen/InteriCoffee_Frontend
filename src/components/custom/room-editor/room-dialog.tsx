@@ -25,7 +25,7 @@ export default function RoomDialog({ open, onOpenChange, onSave }: RoomDialogPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='bg-white'>
+      <DialogContent className='bg-white dark:text-black'>
         <DialogHeader>
           <DialogTitle>Room Dimensions</DialogTitle>
           <DialogDescription>Enter the dimensions of your room in meters.</DialogDescription>
@@ -63,7 +63,7 @@ export default function RoomDialog({ open, onOpenChange, onSave }: RoomDialogPro
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={handleSave}>Save changes</Button>
+          <Button onClick={handleSave} className='dark:text-white'>Save changes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
