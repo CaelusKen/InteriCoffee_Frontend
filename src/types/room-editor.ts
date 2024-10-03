@@ -1,3 +1,5 @@
+import * as THREE from 'three'
+
 export interface Furniture {
     id: number;
     name: string;
@@ -7,6 +9,10 @@ export interface Furniture {
     scale: [number, number, number];
     visible: boolean;
 }
+
+export interface FurnitureWithRef extends Furniture {
+    ref: THREE.Group | null;
+  }
 
 export interface Room {
     width: number;
