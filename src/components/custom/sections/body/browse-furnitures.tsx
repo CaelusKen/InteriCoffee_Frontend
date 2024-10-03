@@ -95,6 +95,7 @@ const products = [
 
 const categories = ["All", "Chairs", "Tables", "Sofas", "Workspaces"]
 
+// @ts-expect-error: The type is any
 const FilterComponent = ({ filters, setFilters }) => {
   return (
     <div className="space-y-4">
@@ -164,6 +165,7 @@ const FilterComponent = ({ filters, setFilters }) => {
   )
 }
 
+// @ts-expect-error: The type is any
 const PaginationComponent = ({ currentPage, totalPages, onPageChange }) => {
   return (
     <div className="flex justify-center items-center space-x-2 mt-8">
