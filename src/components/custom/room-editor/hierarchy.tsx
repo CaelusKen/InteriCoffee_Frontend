@@ -1,7 +1,7 @@
 import React from 'react'
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
-import { ChevronRight, Box as BoxIcon, Eye, EyeOff } from 'lucide-react'
+import { ChevronRight, Box as BoxIcon, Eye, EyeOff, Trash2 } from 'lucide-react'
 import { Furniture } from '@/types/room-editor'
 
 interface HierarchyProps {
@@ -9,9 +9,10 @@ interface HierarchyProps {
   selectedItem: number | null;
   onSelectItem: (id: number) => void;
   onToggleVisibility: (id: number) => void;
+  onDeleteItem: (id: number) => void;
 }
 
-export default function Hierarchy({ furniture, selectedItem, onSelectItem, onToggleVisibility }: HierarchyProps) {
+export default function Hierarchy({ furniture, selectedItem, onSelectItem, onToggleVisibility, onDeleteItem }: HierarchyProps) {
   return (
     <ScrollArea className="h-[400px]">
       <div className="p-2">
@@ -35,6 +36,17 @@ export default function Hierarchy({ furniture, selectedItem, onSelectItem, onTog
               }}
             >
               {item.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-1"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDeleteItem(item.id)
+              }}
+            >
+              <Trash2 className="w-4 h-4" />
             </Button>
           </div>
         ))}

@@ -2,23 +2,35 @@ import React from 'react'
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
 import { Furniture, TransformUpdate } from '@/types/room-editor'
+import { Trash2 } from 'lucide-react'
 
 interface InspectorProps {
   selectedItem: number | null;
   furniture: Furniture[];
   onUpdateTransform: (update: TransformUpdate) => void;
+  onDeleteItem: (id: number) => void;
 }
 
-export default function Inspector({ selectedItem, furniture, onUpdateTransform }: InspectorProps) {
+export default function Inspector({ selectedItem, furniture, onUpdateTransform, onDeleteItem }: InspectorProps) {
   const item = furniture.find(i => i.id === selectedItem)
-
   if (!item) return <div className="p-4">No item selected</div>
 
   return (
     <ScrollArea className="h-[400px]">
       <div className="p-4">
-        <h3 className="font-bold mb-4">{item.name}</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-bold">{item.name}</h3>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => onDeleteItem(item.id)}
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Delete
+          </Button>
+        </div>
         <div className="space-y-4">
           {['position', 'rotation', 'scale'].map((prop) => (
             <div key={prop}>
