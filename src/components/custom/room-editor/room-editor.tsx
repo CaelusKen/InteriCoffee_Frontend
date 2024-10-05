@@ -6,7 +6,7 @@ import { Furniture, Room, TransformUpdate } from '@/types/room-editor'
 import { useUndoRedo } from '@/hooks/use-undo-redo'
 import Toolbar from './toolbar'
 import Hierarchy from './hierarchy'
-import SceneView from './scene-view'
+import SceneContent from './scene-view'
 import Inspector from './inspector'
 import RoomDialog from './room-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -29,7 +29,6 @@ export default function RoomEditor() {
   const [furniture, updateFurniture, undo, redo] = useUndoRedo<Furniture[]>([])
   const [selectedItem, setSelectedItem] = useState<number | null>(null)
   const [transformMode, setTransformMode] = useState<'translate' | 'rotate' | 'scale'>('translate')
-  const [isDarkMode, setIsDarkMode] = useState(false)
   const [room, setRoom] = useState<Room>({ width: 5, length: 5, height: 3 })
   const [isRoomDialogOpen, setIsRoomDialogOpen] = useState(true)
   const [isClearDialogOpen, setIsClearDialogOpen] = useState(false)
@@ -85,18 +84,6 @@ export default function RoomEditor() {
     }
   }
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode)
-    document.documentElement.classList.toggle('dark')
-  }
-
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }, [isDarkMode])
 
   return (
     <div className="w-full h-screen flex flex-col bg-background text-foreground">
@@ -124,14 +111,14 @@ export default function RoomEditor() {
         <div className="flex-1">
           <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
             <Suspense fallback={null}>
-              <SceneView
-                room={room}
-                furniture={furniture.filter(item => item.visible)}
-                selectedItem={selectedItem}
-                onSelectItem={setSelectedItem}
-                onUpdateTransform={updateTransform}
-                transformMode={transformMode}
-              />
+            <SceneContent
+              room={room}
+              furniture={furniture.filter(item => item.visible)}
+              selectedItem={selectedItem}
+              onSelectItem={setSelectedItem}
+              onUpdateTransform={updateTransform}
+              transformMode={transformMode}
+            />
             </Suspense>
           </Canvas>
         </div>
@@ -194,4 +181,5 @@ export default function RoomEditor() {
       </AlertDialog>
     </div>
   )
+
 }

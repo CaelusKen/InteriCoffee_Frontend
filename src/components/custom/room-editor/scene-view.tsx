@@ -1,17 +1,14 @@
-'use client'
-
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
+import { useThree } from '@react-three/fiber'
 import { OrbitControls, Grid, Environment, Sky, Stats } from '@react-three/drei'
 import { Furniture, Room, TransformUpdate } from '@/types/room-editor'
-import { useThree } from '@react-three/fiber'
-import { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
+import * as THREE from 'three'
 
 import FurnitureItem from './furniture-item'
 import RoomComponent from './room'
-import * as THREE from 'three'
-
 import CustomTransformControls from './transform-controls'
-interface SceneViewProps {
+
+interface SceneContentProps {
   room: Room
   furniture: Furniture[]
   selectedItem: number | null
@@ -20,32 +17,27 @@ interface SceneViewProps {
   transformMode: 'translate' | 'rotate' | 'scale'
 }
 
-export default function SceneView({
+export default function SceneContent({
   room,
   furniture,
   selectedItem,
   onSelectItem,
   onUpdateTransform,
   transformMode,
-}: SceneViewProps) {
-  const [selectedObject, setSelectedObject] = useState<THREE.Object3D | null>(null)
-  const orbitControlsRef = useRef<OrbitControlsImpl>(null)
+}: SceneContentProps) {
   const { scene } = useThree()
+  const [selectedObject, setSelectedObject] = useState<THREE.Object3D | null>(null)
 
   useEffect(() => {
     if (selectedItem !== null) {
       const object = scene.getObjectByName(`furniture-${selectedItem}`)
-      if (object) {
-        setSelectedObject(object)
-      } else {
-        setSelectedObject(null)
-      }
+      setSelectedObject(object || null)
     } else {
       setSelectedObject(null)
     }
   }, [selectedItem, scene])
 
-  const handleTransformChange = () => {
+  const handleObjectChange = useCallback(() => {
     if (selectedObject && selectedItem !== null) {
       onUpdateTransform({
         id: selectedItem,
@@ -63,7 +55,7 @@ export default function SceneView({
         value: selectedObject.scale.toArray() as [number, number, number],
       })
     }
-  }
+  }, [selectedObject, selectedItem, onUpdateTransform])
 
   return (
     <>
@@ -80,10 +72,10 @@ export default function SceneView({
         <CustomTransformControls
           object={selectedObject}
           mode={transformMode}
-          onObjectChange={handleTransformChange}
+          onObjectChange={handleObjectChange}
         />
       )}
-      <OrbitControls ref={orbitControlsRef} makeDefault />
+      <OrbitControls makeDefault />
       <Grid infiniteGrid />
       <Environment preset="apartment" />
       <Sky />
