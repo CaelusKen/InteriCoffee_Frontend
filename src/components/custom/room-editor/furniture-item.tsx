@@ -7,11 +7,12 @@ import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
 
 interface FurnitureItemProps extends Furniture {
-  onSelect: () => void;
+  onSelect: (event: THREE.Event) => void;
   isSelected: boolean;
+  onUpdateTransform: (update: { id: number; type: 'position' | 'rotation' | 'scale'; value: [number, number, number] }) => void;
 }
 
-export default function FurnitureItem({ id, model, position, rotation, scale, onSelect, isSelected, name }: FurnitureItemProps) {
+export default function FurnitureItem({ id, model, position, rotation, scale, onSelect, isSelected, name, onUpdateTransform }: FurnitureItemProps) {
   const { scene } = useGLTF(model)
   const groupRef = useRef<THREE.Group>(null)
 
@@ -25,15 +26,19 @@ export default function FurnitureItem({ id, model, position, rotation, scale, on
 
   useFrame(() => {
     if (groupRef.current && isSelected) {
-      // Update position, rotation, and scale in real-time
-      const newPosition = groupRef.current.position.toArray()
-      const newRotation = groupRef.current.rotation.toArray().slice(0, 3)
-      const newScale = groupRef.current.scale.toArray()
+      const newPosition = groupRef.current.position.toArray() as [number, number, number]
+      const newRotation = groupRef.current.rotation.toArray().slice(0, 3) as [number, number, number]
+      const newScale = groupRef.current.scale.toArray() as [number, number, number]
 
-      // You would need to implement these update functions in your parent component
-      // onUpdatePosition(id, newPosition as [number, number, number])
-      // onUpdateRotation(id, newRotation as [number, number, number])
-      // onUpdateScale(id, newScale as [number, number, number])
+      if (!arraysEqual(newPosition, position)) {
+        onUpdateTransform({ id, type: 'position', value: newPosition })
+      }
+      if (!arraysEqual(newRotation, rotation)) {
+        onUpdateTransform({ id, type: 'rotation', value: newRotation })
+      }
+      if (!arraysEqual(newScale, scale)) {
+        onUpdateTransform({ id, type: 'scale', value: newScale })
+      }
     }
   })
 
@@ -41,10 +46,7 @@ export default function FurnitureItem({ id, model, position, rotation, scale, on
     <group 
       ref={groupRef}
       name={`furniture-${id}`}
-      onClick={(e) => {
-        e.stopPropagation()
-        onSelect()
-      }}
+      onClick={onSelect}
     >
       <primitive object={scene.clone()} />
       {isSelected && (
@@ -62,4 +64,8 @@ export default function FurnitureItem({ id, model, position, rotation, scale, on
       )}
     </group>
   )
+}
+
+function arraysEqual(a: number[], b: number[]) {
+  return a.length === b.length && a.every((value, index) => Math.abs(value - b[index]) < 0.0001);
 }

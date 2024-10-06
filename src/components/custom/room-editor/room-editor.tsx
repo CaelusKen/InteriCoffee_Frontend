@@ -54,6 +54,10 @@ export default function RoomEditor() {
     updateFurniture(furniture.map(item => item.id === id ? { ...item, visible: !item.visible } : item))
   }
 
+  const handleSelectItem = (id: number | null) => {
+    setSelectedItem(id)
+  }
+
   const deleteItem = (id: number) => {
     updateFurniture(furniture.filter(item => item.id !== id))
     if (selectedItem === id) {
@@ -111,14 +115,14 @@ export default function RoomEditor() {
         <div className="flex-1">
           <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
             <Suspense fallback={null}>
-            <SceneContent
-              room={room}
-              furniture={furniture.filter(item => item.visible)}
-              selectedItem={selectedItem}
-              onSelectItem={setSelectedItem}
-              onUpdateTransform={updateTransform}
-              transformMode={transformMode}
-            />
+              <SceneContent
+                room={room}
+                furniture={furniture.filter(item => item.visible)}
+                selectedItem={selectedItem}
+                onSelectItem={handleSelectItem}
+                onUpdateTransform={updateTransform}
+                transformMode={transformMode}
+              />
             </Suspense>
           </Canvas>
         </div>
