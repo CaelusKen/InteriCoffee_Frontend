@@ -12,7 +12,7 @@ interface SceneContentProps {
   room: Room
   furniture: Furniture[]
   selectedItem: number | null
-  onSelectItem: (id: number) => void
+  onSelectItem: (id: number | null) => void
   onUpdateTransform: (update: TransformUpdate) => void
   transformMode: 'translate' | 'rotate' | 'scale'
 }
@@ -25,7 +25,7 @@ export default function SceneContent({
   onUpdateTransform,
   transformMode,
 }: SceneContentProps) {
-  const { scene } = useThree()
+  const { scene, gl } = useThree()
   const [selectedObject, setSelectedObject] = useState<THREE.Object3D | null>(null)
 
   useEffect(() => {
@@ -57,6 +57,19 @@ export default function SceneContent({
     }
   }, [selectedObject, selectedItem, onUpdateTransform])
 
+  const handleSceneClick = useCallback((event: THREE.Event) => {
+    if (event.target === gl.domElement) {
+      onSelectItem(null)
+    }
+  }, [gl, onSelectItem])
+
+  useEffect(() => {
+    gl.domElement.addEventListener('click', handleSceneClick)
+    return () => {
+      gl.domElement.removeEventListener('click', handleSceneClick)
+    }
+  }, [gl, handleSceneClick])
+
   return (
     <>
       <RoomComponent {...room} />
@@ -64,8 +77,13 @@ export default function SceneContent({
         <FurnitureItem
           key={item.id}
           {...item}
-          onSelect={() => onSelectItem(item.id)}
+          onSelect={(event) => {
+            // @ts-expect-error: StopPropagation()
+            event.stopPropagation()
+            onSelectItem(item.id)
+          }}
           isSelected={selectedItem === item.id}
+          onUpdateTransform={onUpdateTransform}
         />
       ))}
       {selectedObject && (
