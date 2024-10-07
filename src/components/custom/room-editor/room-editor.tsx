@@ -16,14 +16,7 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-
-const furnitureModels = {
-  sofa: '/assets/3D/sofa.glb',
-  chair: '/assets/3D/chair.glb',
-  table: '/assets/3D/table.glb',
-}
-
-type FurnitureType = keyof typeof furnitureModels;
+import { useRouter } from 'next/navigation'
 
 export default function RoomEditor() {
   const [furniture, updateFurniture, undo, redo] = useUndoRedo<Furniture[]>([])
@@ -32,12 +25,13 @@ export default function RoomEditor() {
   const [room, setRoom] = useState<Room>({ width: 5, length: 5, height: 3 })
   const [isRoomDialogOpen, setIsRoomDialogOpen] = useState(true)
   const [isClearDialogOpen, setIsClearDialogOpen] = useState(false)
+  const router = useRouter()
 
-  const addFurniture = (type: FurnitureType) => {
+  const addFurniture = (model: string) => {
     const newItem: Furniture = {
       id: Date.now(),
-      name: `${type.charAt(0).toUpperCase() + type.slice(1)} ${furniture.length + 1}`,
-      model: furnitureModels[type],
+      name: `Furniture ${furniture.length + 1}`,
+      model: model,
       position: [0, 0, 0],
       rotation: [0, 0, 0],
       scale: [1, 1, 1],
@@ -71,9 +65,16 @@ export default function RoomEditor() {
     setIsClearDialogOpen(false)
   }
 
-  const saveState = () => {
-    localStorage.setItem('editorState', JSON.stringify({ furniture, room }))
-    alert('State saved!')
+  const saveCustomerDesign = () => {
+    const designState = { furniture, room }
+    localStorage.setItem('customerDesign', JSON.stringify(designState))
+    alert('Design saved for customer!')
+  }
+
+  const saveMerchantTemplate = () => {
+    const templateState = { furniture, room }
+    localStorage.setItem('merchantTemplate', JSON.stringify(templateState))
+    router.push('/merchant/test/save')
   }
 
   const loadState = () => {
@@ -97,7 +98,8 @@ export default function RoomEditor() {
         setTransformMode={setTransformMode}
         onUndo={undo}
         onRedo={redo}
-        onSave={saveState}
+        onSaveCustomer={saveCustomerDesign}
+        onSaveMerchant={saveMerchantTemplate}
         onLoad={loadState}
         onOpenRoomDialog={() => setIsRoomDialogOpen(true)}
         onClearAll={() => setIsClearDialogOpen(true)}
