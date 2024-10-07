@@ -8,6 +8,7 @@ export interface Furniture {
     rotation: [number, number, number];
     scale: [number, number, number];
     visible: boolean;
+    characteristics?: string[];
 }
 
 export interface FurnitureWithRef extends Furniture {
@@ -24,4 +25,14 @@ export interface TransformUpdate {
     id: number;
     type: 'position' | 'rotation' | 'scale';
     value: [number, number, number];
+}
+
+export type MainCategory = string;
+export type SubCategory = string;
+
+export interface TemplateData {
+    room: Room;
+    furniture: Furniture[];
+    mainCategories: MainCategory[];
+    subCategories: SubCategory[];
 }
