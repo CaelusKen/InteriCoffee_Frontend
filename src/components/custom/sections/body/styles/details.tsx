@@ -3,15 +3,12 @@
 import React from "react";
 import Header from "../../header";
 import Footer from "../../footer";
-import FilterHeader from "../../sub-header/filter-header";
 import User from "@/components/custom/avatar/user-avatar";
 import { motion } from "framer-motion";
-import FurnitureCard from "@/components/custom/cards/furniture-card";
 import ThumbnailStyleImage from "@/components/custom/images/thumbnail-style-image";
 import FurnitureGrid from "./furniture-lists/furniture-lists";
 import { ColorDeck } from "./color-deck";
 import SimilarStylesSection from "./similar-styles/similar-styles";
-import RatingCard from "@/components/custom/cards/rating-cards";
 import StyleSubHeader from "../../sub-header/style-sub-header";
 import StyleImagePreview from "@/components/custom/cards/style-card-preview";
 interface StyleDetails {

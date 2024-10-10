@@ -9,6 +9,8 @@ export interface Furniture {
     scale: [number, number, number];
     visible: boolean;
     characteristics?: string[];
+    scaleFactor?: number;
+    furnitureType?: string;
 }
 
 export interface FurnitureWithRef extends Furniture {

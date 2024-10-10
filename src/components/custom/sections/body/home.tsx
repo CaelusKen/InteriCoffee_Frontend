@@ -10,11 +10,67 @@ import { motion } from 'framer-motion'
 import EndingCard from '../../cards/ending-card'
 import RatingCard from '../../cards/rating-cards'
 import StyleSubHeader from '../sub-header/style-sub-header'
+import FurnitureProductCard from '../../cards/furniture-card-v2'
 
 const styleData = [
   { imageSrc: "https://placehold.co/400", name: "Modern Minimalist", creator: "Jane Doe" },
   { imageSrc: "https://placehold.co/400", name: "Bohemian Chic", creator: "John Smith" },
   { imageSrc: "https://placehold.co/400", name: "Industrial Loft", creator: "Emma Wilson" },
+]
+
+const products = [
+  {
+    id: '1',
+    name: "Modern Chair",
+    merchant: "FurniCraft",
+    images: [
+      { src: "https://placehold.co/300", alt: "Modern Chair" },
+      { src: "https://placehold.co/300", alt: "Modern Chair" },
+      { src: "https://placehold.co/300", alt: "Modern Chair" }
+    ],
+    modelUrl: "/assets/3D/modern-chair.glb",
+    price: 199.99,
+    category: "Chairs",
+  },
+  {
+    id: '2',
+    name: "Classic Coffee Table",
+    merchant: "WoodWorks",
+    images: [
+      { src: "https://placehold.co/400", alt: "Classic Coffee Table" },
+      { src: "https://placehold.co/400", alt: "Classic Coffee Table" },
+      { src: "https://placehold.co/400", alt: "Classic Coffee Table" }
+    ],
+    modelUrl: "/assets/3D/classic-coffee-table.glb",
+    price: 299.99,
+    category: "Tables",
+  },
+  {
+    id: '3',
+    name: "Cozy Sofa",
+    merchant: "ComfortZone",
+    images: [
+      { src: "https://placehold.co/500", alt: "Cozy Sofa" },
+      { src: "https://placehold.co/500", alt: "Cozy Sofa" },
+      { src: "https://placehold.co/500", alt: "Cozy Sofa" }
+    ],
+    modelUrl: "/assets/3D/sofa.glb",
+    price: 599.99,
+    category: "Sofas",
+  },
+  {
+    id: '4',
+    name: "Dining Table",
+    merchant: "DineDesign",
+    images: [
+      { src: "https://placehold.co/600", alt: "Dining Table" },
+      { src: "https://placehold.co/600", alt: "Dining Table" },
+      { src: "https://placehold.co/600", alt: "Dining Table" }
+    ],
+    modelUrl: "/assets/3D/table.glb",
+    price: 399.99,
+    category: "Tables",
+  },
 ]
 
 const Home = () => {
@@ -77,7 +133,11 @@ const Home = () => {
       >
         Styles Collection
       </motion.h1>
-      <motion.h3 className='text-lg sm:text-xl text-center py-2'>
+      <motion.h3 
+        initial={{ opacity: 0, y: -50}}
+        animate={{ opacity: 1, y: 0}}
+        transition={{ duration: 0.75, delay: 0.6 }}
+        className='text-lg sm:text-xl text-center py-2'>
         Check out all of the latest styles here
       </motion.h3>
       <motion.section
@@ -105,6 +165,50 @@ const Home = () => {
           </Button>
         </div>
       </motion.section>
+      <motion.h3
+        initial={{ opacity: 0, y: -50}}
+        animate={{ opacity: 1, y: 0}}
+        transition={{ duration: 0.75, delay: 0.75 }} 
+        className='text-lg sm:text-xl text-left py-2 mt-40'
+      >
+        Highlight
+      </motion.h3>
+      <motion.h1
+        initial={{ opacity: 0, y: -50}}
+        animate={{ opacity: 1, y: 0}}
+        transition={{ duration: 0.75, delay: 0.75 }} 
+        className='text-3xl sm:text-5xl md:text-7xl uppercase font-bold text-left py-2'
+      >
+        Furniture Products
+      </motion.h1>
+      <motion.h3 
+        initial={{ opacity: 0, y: -50}}
+        animate={{ opacity: 1, y: 0}}
+        transition={{ duration: 0.75, delay: 0.6 }}
+        className='text-lg sm:text-xl py-2'>
+        Check out all of the latest furniture items here
+      </motion.h3>
+      <section className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 w-full justify-items-center'>
+          {products.map((product, index) => (
+            <FurnitureProductCard 
+              key={index}
+              id={product.id}
+              images={product.images}
+              merchant={product.merchant}
+              modelUrl={product.modelUrl}
+              name={product.name}
+              price={product.price}
+            />
+          ))}
+      </section>
+      <div className='flex justify-center items-center mt-10'>
+        <Button variant={'outline'} className='hover:bg-primary-500 hover:text-white text-sm sm:text-base'>
+          <span className='flex items-center gap-2'>
+            <p>Click to browse all products</p>
+            <ArrowRightCircle size={16} />
+          </span>
+        </Button>
+      </div>
       <motion.h3
         initial={{ opacity: 0, y: -50}}
         animate={{ opacity: 1, y: 0}}
