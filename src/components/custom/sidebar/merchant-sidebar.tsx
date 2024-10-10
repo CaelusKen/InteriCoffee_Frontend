@@ -26,7 +26,7 @@ export default function MerchantSidebar() {
     { name: "Styles", icon: Palette, href: "/merchant/styles" },
     { name: "Messages", icon: MessageSquare, href: "/merchant/messages" },
     { name: "Sales Campaigns", icon: TrendingUp, href: "/merchant/campaigns" },
-    { name: "Switch To Customer", icon: ArrowLeftRight, href: "/browse/furnitures"}
+    { name: "Switch To Customer", icon: ArrowLeftRight, href: "/furnitures"}
   ]
 
   return (

@@ -7,10 +7,8 @@ import FilterHeader from '@/components/custom/sections/sub-header/filter-header'
 export default function StylesIndex() {
   return (
     <main>
-      <Header/>
       <FilterHeader />
       <BrowseStyle />
-      <Footer/>
     </main>
   )
 }

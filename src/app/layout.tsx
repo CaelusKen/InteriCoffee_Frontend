@@ -4,6 +4,7 @@ import "./globals.css";
 import { ReactNode } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProvider } from '@/components/providers/session-provider';
+import { CartProvider } from "@/components/custom/cart/cart-context";
 
 const outfit = Outfit({subsets: ['latin']});
 
@@ -57,9 +58,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SessionProvider>
-            {children}
-          </SessionProvider>
+          <CartProvider>
+            <SessionProvider>
+              {children}
+            </SessionProvider>
+          </CartProvider>
         </ThemeProvider>
       </body>
     </html>
