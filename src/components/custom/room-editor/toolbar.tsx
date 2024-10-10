@@ -25,7 +25,7 @@ type FurnitureItem = {
 }
 
 interface ToolbarProps {
-  onAddFurniture: (model: string) => void
+  onAddFurniture: (model: string, furnitureType: string) => void
   transformMode: 'translate' | 'rotate' | 'scale';
   setTransformMode: (mode: 'translate' | 'rotate' | 'scale') => void;
   onUndo: () => void;
@@ -95,7 +95,7 @@ export default function Toolbar({
                           <Button
                             key={item.name}
                             onClick={() => {
-                              onAddFurniture(item.model)
+                              onAddFurniture(item.model, item.category)
                               setIsDrawerOpen(false)
                             }}
                             className="w-full justify-start"

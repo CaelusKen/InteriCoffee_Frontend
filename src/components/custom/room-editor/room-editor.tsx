@@ -1,31 +1,56 @@
-"use client"
+"use client";
 
-import React, { useState, Suspense, useEffect } from 'react'
-import { Canvas } from '@react-three/fiber'
-import { Furniture, Room, TransformUpdate } from '@/types/room-editor'
-import { useUndoRedo } from '@/hooks/use-undo-redo'
-import Toolbar from './toolbar'
-import Hierarchy from './hierarchy'
-import SceneContent from './scene-view'
-import Inspector from './inspector'
-import RoomDialog from './room-dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Label } from "@/components/ui/label"
-import { Slider } from "@/components/ui/slider"
-import { Switch } from "@/components/ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { useRouter } from 'next/navigation'
+import React, { useState, Suspense, useEffect } from "react";
+import { Canvas } from "@react-three/fiber";
+import { Furniture, Room, TransformUpdate } from "@/types/room-editor";
+import { useUndoRedo } from "@/hooks/use-undo-redo";
+import Toolbar from "./toolbar";
+import Hierarchy from "./hierarchy";
+import SceneContent from "./scene-view";
+import Inspector from "./inspector";
+import RoomDialog from "./room-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useRouter } from "next/navigation";
+
+const ROOM_SCALE_FACTOR = 10;
 
 export default function RoomEditor() {
-  const [furniture, updateFurniture, undo, redo] = useUndoRedo<Furniture[]>([])
-  const [selectedItem, setSelectedItem] = useState<number | null>(null)
-  const [transformMode, setTransformMode] = useState<'translate' | 'rotate' | 'scale'>('translate')
-  const [room, setRoom] = useState<Room>({ width: 5, length: 5, height: 3 })
-  const [isRoomDialogOpen, setIsRoomDialogOpen] = useState(true)
-  const [isClearDialogOpen, setIsClearDialogOpen] = useState(false)
-  const router = useRouter()
+  const [furniture, updateFurniture, undo, redo] = useUndoRedo<Furniture[]>([]);
+  const [selectedItem, setSelectedItem] = useState<number | null>(null);
+  const [transformMode, setTransformMode] = useState<
+    "translate" | "rotate" | "scale"
+  >("translate");
+  const [room, setRoom] = useState<Room>({ width: 8, length: 10, height: 3 });
+  const [isRoomDialogOpen, setIsRoomDialogOpen] = useState(true);
+  const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
+  const router = useRouter();
+
+  const calculateRoomScaleFactor = (room: Room) => {
+    const maxDimension = Math.max(room.width, room.length, room.height);
+    console.log(ROOM_SCALE_FACTOR / maxDimension);
+    return ROOM_SCALE_FACTOR / maxDimension;
+  };
 
   const addFurniture = (model: string) => {
     const newItem: Furniture = {
@@ -41,54 +66,75 @@ export default function RoomEditor() {
   }
 
   const updateTransform = ({ id, type, value }: TransformUpdate) => {
-    updateFurniture(furniture.map(item => item.id === id ? { ...item, [type]: value } : item))
-  }
+    updateFurniture(
+      furniture.map((item) =>
+        item.id === id ? { ...item, [type]: value } : item
+      )
+    );
+  };
 
   const toggleVisibility = (id: number) => {
-    updateFurniture(furniture.map(item => item.id === id ? { ...item, visible: !item.visible } : item))
-  }
+    updateFurniture(
+      furniture.map((item) =>
+        item.id === id ? { ...item, visible: !item.visible } : item
+      )
+    );
+  };
 
   const handleSelectItem = (id: number | null) => {
-    setSelectedItem(id)
-  }
+    setSelectedItem(id);
+  };
 
   const deleteItem = (id: number) => {
-    updateFurniture(furniture.filter(item => item.id !== id))
+    updateFurniture(furniture.filter((item) => item.id !== id));
     if (selectedItem === id) {
-      setSelectedItem(null)
+      setSelectedItem(null);
     }
-  }
+  };
 
   const clearAllFurniture = () => {
-    updateFurniture([])
-    setSelectedItem(null)
-    setIsClearDialogOpen(false)
-  }
+    updateFurniture([]);
+    setSelectedItem(null);
+    setIsClearDialogOpen(false);
+  };
 
   const saveCustomerDesign = () => {
-    const designState = { furniture, room }
-    localStorage.setItem('customerDesign', JSON.stringify(designState))
-    alert('Design saved for customer!')
-  }
+    const designState = { furniture, room };
+    localStorage.setItem("customerDesign", JSON.stringify(designState));
+    alert("Design saved for customer!");
+  };
 
   const saveMerchantTemplate = () => {
-    const templateState = { furniture, room }
-    localStorage.setItem('merchantTemplate', JSON.stringify(templateState))
-    router.push('/merchant/test/save')
-  }
+    const templateState = { furniture, room };
+    localStorage.setItem("merchantTemplate", JSON.stringify(templateState));
+    router.push("/merchant/test/save");
+  };
 
   const loadState = () => {
-    const savedState = localStorage.getItem('editorState')
+    const savedState = localStorage.getItem("editorState");
     if (savedState) {
-      const { furniture: savedFurniture, room: savedRoom } = JSON.parse(savedState)
-      updateFurniture(savedFurniture)
-      setRoom(savedRoom)
-      alert('State loaded!')
+      const { furniture: savedFurniture, room: savedRoom } =
+        JSON.parse(savedState);
+      updateFurniture(savedFurniture);
+      setRoom(savedRoom);
+      alert("State loaded!");
     } else {
-      alert('No saved state found!')
+      alert("No saved state found!");
     }
-  }
+  };
 
+  const handleRoomChange = (newRoom: Room) => {
+    setRoom(newRoom);
+    const newRoomScaleFactor = calculateRoomScaleFactor(newRoom);
+    updateFurniture(
+      furniture.map((item) => ({
+        ...item,
+        scale: item.scale.map(
+          (s) => s * (newRoomScaleFactor / calculateRoomScaleFactor(room))
+        ) as [number, number, number],
+      }))
+    );
+  };
 
   return (
     <div className="w-full h-screen flex flex-col bg-background text-foreground">
@@ -119,7 +165,7 @@ export default function RoomEditor() {
             <Suspense fallback={null}>
               <SceneContent
                 room={room}
-                furniture={furniture.filter(item => item.visible)}
+                furniture={furniture.filter((item) => item.visible)}
                 selectedItem={selectedItem}
                 onSelectItem={handleSelectItem}
                 onUpdateTransform={updateTransform}
@@ -131,8 +177,12 @@ export default function RoomEditor() {
         <div className="w-64 bg-background border-l">
           <Tabs defaultValue="inspector">
             <TabsList className="w-full">
-              <TabsTrigger value="inspector" className="flex-1">Inspector</TabsTrigger>
-              <TabsTrigger value="settings" className="flex-1">Settings</TabsTrigger>
+              <TabsTrigger value="inspector" className="flex-1">
+                Inspector
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="flex-1">
+                Settings
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="inspector">
               <Inspector
@@ -170,22 +220,29 @@ export default function RoomEditor() {
           </Tabs>
         </div>
       </div>
-      <RoomDialog open={isRoomDialogOpen} onOpenChange={setIsRoomDialogOpen} onSave={setRoom} />
+      <RoomDialog
+        open={isRoomDialogOpen}
+        onOpenChange={setIsRoomDialogOpen}
+        onSave={handleRoomChange}
+        initialRoom={room}
+      />
       <AlertDialog open={isClearDialogOpen} onOpenChange={setIsClearDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Clear All Furniture</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove all furniture from the scene? This action cannot be undone.
+              Are you sure you want to remove all furniture from the scene? This
+              action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={clearAllFurniture}>Clear All</AlertDialogAction>
+            <AlertDialogAction onClick={clearAllFurniture}>
+              Clear All
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
-
+  );
 }

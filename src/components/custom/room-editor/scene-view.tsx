@@ -78,12 +78,13 @@ export default function SceneContent({
           key={item.id}
           {...item}
           onSelect={(event) => {
-            // @ts-expect-error: StopPropagation()
+            // @ts-expect-error: stopPropagation()
             event.stopPropagation()
             onSelectItem(item.id)
           }}
           isSelected={selectedItem === item.id}
           onUpdateTransform={onUpdateTransform}
+          roomDimensions={room}
         />
       ))}
       {selectedObject && (
