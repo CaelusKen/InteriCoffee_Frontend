@@ -20,6 +20,8 @@ import { Bookmark, ShoppingCart, Eye } from "lucide-react";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
+import { useCart } from "../cart/cart-context";
+
 interface ProductImage {
   src: string;
   alt: string;
@@ -37,6 +39,7 @@ interface ProductProps {
 function Model({ url }: { url: string }) {
   const { scene } = useGLTF(url);
   const { camera, size } = useThree();
+  
 
   useEffect(() => {
     const box = new THREE.Box3().setFromObject(scene);
@@ -75,6 +78,7 @@ export default function FurnitureProductCard({
 }: ProductProps) {
   const [showModel, setShowModel] = useState(false);
   const sliderRef = useRef<Slider>(null);
+  const { addItem } = useCart()
 
   const sliderSettings = {
     dots: false,
@@ -100,8 +104,7 @@ export default function FurnitureProductCard({
   };
 
   const handleAddToCart = () => {
-    // Implement add to cart functionality
-    console.log("Added to cart:", id);
+    addItem({ id, name, price, quantity: 1 })
   };
 
   const handleViewDetails = () => {

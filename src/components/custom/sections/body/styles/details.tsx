@@ -52,7 +52,6 @@ const furnitureItems = [
 export const StyleDetailsBody: React.FC<StyleDetails> = ({ id }) => {
   return (
     <main>
-      <Header />
       <motion.section
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -211,7 +210,6 @@ export const StyleDetailsBody: React.FC<StyleDetails> = ({ id }) => {
       </motion.h3>
       <SimilarStylesSection/>
       <SimilarStylesSection/>
-      <Footer />
     </main>
   );
 };

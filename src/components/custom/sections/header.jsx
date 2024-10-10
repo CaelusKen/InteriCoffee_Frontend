@@ -4,13 +4,17 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, ShoppingCart } from 'lucide-react'
 import { ThemeToggler } from '../buttons/theme-toggler'
 import { useRouter } from 'next/navigation'
+import { useCart } from '../cart/cart-context'
+import { CartDrawer } from '../cart/cart-drawer'
+import { Badge } from '@/components/ui/badge'
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false)
-  const router = useRouter();
+  const router = useRouter()
+  const { itemCount } = useCart()
 
   // Close menu when screen size changes to prevent menu from staying open on larger screens
   useEffect(() => {
@@ -25,8 +29,8 @@ const Header = () => {
   }
 
   const menuItems = [
-    { name: 'Styles', href: '/browse/styles' },
-    { name: 'Products', href: '/browse/furnitures' },
+    { name: 'Styles', href: '/styles' },
+    { name: 'Products', href: '/furnitures' },
     { name: 'About', href: '/' },
     { name: 'Contact', href: '/' },
   ]
@@ -70,10 +74,32 @@ const Header = () => {
         <Button variant={'outline'} className='rounded-md hover:bg-primary hover:text-white transition-colors duration-200'>
           Get Started
         </Button>
+        <CartDrawer>
+          <Button variant='ghost' size='icon' className="relative">
+            <ShoppingCart className="h-5 w-5" />
+            {itemCount > 0 && (
+              <Badge variant="destructive" className="absolute -top-2 -right-2 px-2 py-1 text-xs">
+                {itemCount}
+              </Badge>
+            )}
+            <span className="sr-only">Open cart</span>
+          </Button>
+        </CartDrawer>
         <ThemeToggler/>
       </div>
 
-      <div className='lg:hidden'>
+      <div className='lg:hidden flex items-center gap-4'>
+        <CartDrawer>
+          <Button variant='ghost' size='icon' className="relative">
+            <ShoppingCart className="h-5 w-5" />
+            {itemCount > 0 && (
+              <Badge variant="destructive" className="absolute -top-2 -right-2 px-2 py-1 text-xs">
+                {itemCount}
+              </Badge>
+            )}
+            <span className="sr-only">Open cart</span>
+          </Button>
+        </CartDrawer>
         <Button variant='ghost' size='icon' onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X /> : <Menu />}
         </Button>
