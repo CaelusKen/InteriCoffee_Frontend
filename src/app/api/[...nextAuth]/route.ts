@@ -1,50 +1,45 @@
-import { api } from '@/service/api';
-import NextAuth from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
+import NextAuth, { NextAuthOptions } from "next-auth"
+import GoogleProvider from "next-auth/providers/google"
+import FacebookProvider from "next-auth/providers/facebook"
+import CredentialsProvider from "next-auth/providers/credentials"
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    }),
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID as string,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string,
+    }),
     CredentialsProvider({
-      name: 'Credentials',
+      name: "Credentials",
       credentials: {
-        username: { label: "Username", type: "text" },
+        email: { label: "Email", type: "text", placeholder: "jsmith@example.com" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) return null;
-        
-        // Call your C# API to validate credentials
-        const user = await api.post('/auth/login', {
-          username: credentials.username,
-          password: credentials.password,
-        });
-
-        if (user) {
-          return { id: user.id, name: user.name, email: user.email };
-        } else {
-          return null;
+        if (!credentials?.email || !credentials?.password) {
+          return null
         }
+        // Add your own logic here to validate credentials
+        // This is just a placeholder example
+        if (credentials.email === "user@example.com" && credentials.password === "password") {
+          return { id: "1", name: "J Smith", email: "jsmith@example.com" }
+        }
+        return null
       }
     })
   ],
   pages: {
     signIn: '/login',
+    // Remove the 'signUp' property as it's not a valid option
+    // signUp: '/signup', 
+    error: '/auth/error', // Error code passed in query string as ?error=
+    verifyRequest: '/auth/verify-request', // (used for check email message)
+    newUser: '/auth/new-user' // New users will be directed here on first sign in (leave the property out if not of interest)
   },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        // @ts-expect-error: id-error
-        session.user.id = token.id;
-      }
-      return session;
-    },
-  },
-});
+}
 
-export { handler as GET, handler as POST };
+export default NextAuth(authOptions)
