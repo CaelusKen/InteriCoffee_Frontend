@@ -1,13 +1,33 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-
 import { Chrome, Facebook } from 'lucide-react'
+import { signIn } from 'next-auth/react'
+import { useState, FormEvent } from 'react'
 
 export default function RegisterPage() {
+  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [repeatPassword, setRepeatPassword] = useState('')
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    // Add your signup logic here
+    // You might want to create a new user in your database
+    // and then sign them in using NextAuth
+    // For example:
+    // const result = await createUser({ username, email, password })
+    // if (result.success) {
+    //   await signIn('credentials', { email, password })
+    // }
+  }
+
   return (
     <div className="flex min-h-screen">
       {/* Left Column */}
@@ -30,23 +50,55 @@ export default function RegisterPage() {
       <div className="flex-1 flex flex-col justify-center px-8 py-12 bg-white dark:bg-gray-900">
         <div className="w-full max-w-md mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Register with your e-mail</h2>
-          <form className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="username" className="text-xs text-gray-500 dark:text-gray-400 uppercase">Username (*)</Label>
-              <Input id="username" type="text" className="mt-1" placeholder="Username" required />
+              <Input 
+                id="username" 
+                type="text" 
+                className="mt-1" 
+                placeholder="Username" 
+                required 
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
             </div>
             <div>
               <Label htmlFor="email" className="text-xs text-gray-500 dark:text-gray-400 uppercase">Email (*)</Label>
-              <Input id="email" type="email" className="mt-1" placeholder="E-mail" required />
+              <Input 
+                id="email" 
+                type="email" 
+                className="mt-1" 
+                placeholder="E-mail" 
+                required 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
             <div className="flex space-x-4">
               <div className="flex-1">
                 <Label htmlFor="password" className="text-xs text-gray-500 dark:text-gray-400 uppercase">Password (*)</Label>
-                <Input id="password" type="password" className="mt-1" placeholder="Password" required />
+                <Input 
+                  id="password" 
+                  type="password" 
+                  className="mt-1" 
+                  placeholder="Password" 
+                  required 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
               </div>
               <div className="flex-1">
                 <Label htmlFor="repeat-password" className="text-xs text-gray-500 dark:text-gray-400 uppercase">Repeat Password (*)</Label>
-                <Input id="repeat-password" type="password" className="mt-1" placeholder="Repeat Password" required />
+                <Input 
+                  id="repeat-password" 
+                  type="password" 
+                  className="mt-1" 
+                  placeholder="Repeat Password" 
+                  required 
+                  value={repeatPassword}
+                  onChange={(e) => setRepeatPassword(e.target.value)}
+                />
               </div>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -70,11 +122,11 @@ export default function RegisterPage() {
           <div className="mt-6">
             <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">Or register with</p>
             <div className="flex justify-between items-center gap-4">
-              <Button variant="outline" className="flex items-center justify-center w-full hover:bg-secondary-700 space-x-2">
+              <Button onClick={() => signIn('google')} variant="outline" className="flex items-center justify-center w-full hover:bg-secondary-700 space-x-2">
                 <Chrome size={24} />
                 <span>Google</span>
               </Button>
-              <Button variant="outline" className="flex items-center justify-center w-full hover:bg-secondary-700 space-x-2">
+              <Button onClick={() => signIn('facebook')} variant="outline" className="flex items-center justify-center w-full hover:bg-secondary-700 space-x-2">
                 <Facebook size={24} />
                 <span>Facebook</span>
               </Button>

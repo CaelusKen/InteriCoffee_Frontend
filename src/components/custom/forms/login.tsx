@@ -1,13 +1,33 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-
-import { Chrome, Facebook,  } from 'lucide-react'
+import { Chrome, Facebook } from 'lucide-react'
+import { signIn } from 'next-auth/react'
+import { useState, FormEvent } from 'react'
 
 export default function LoginPage() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const result = await signIn('credentials', {
+      redirect: false,
+      email,
+      password,
+    })
+    if (result?.error) {
+      // Handle error (e.g., show error message)
+    } else {
+      // Redirect to dashboard or home page
+    }
+  }
+
   return (
     <div className="flex min-h-screen">
       {/* Left Column */}
@@ -30,14 +50,30 @@ export default function LoginPage() {
       <div className="flex-1 flex flex-col justify-center px-8 py-12 bg-white dark:bg-gray-900">
         <div className="w-full max-w-md mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Log in to your account</h2>
-          <form className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="email" className="text-xs text-gray-500 dark:text-gray-400 uppercase">Email</Label>
-              <Input id="email" type="email" className="mt-1" placeholder="m@example.com" required />
+              <Input 
+                id="email" 
+                type="email" 
+                className="mt-1" 
+                placeholder="m@example.com" 
+                required 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
             <div>
               <Label htmlFor="password" className="text-xs text-gray-500 dark:text-gray-400 uppercase">Password</Label>
-              <Input id="password" type="password" className="mt-1" placeholder="••••••••" required />
+              <Input 
+                id="password" 
+                type="password" 
+                className="mt-1" 
+                placeholder="••••••••" 
+                required 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
@@ -57,11 +93,11 @@ export default function LoginPage() {
           <div className="mt-6">
             <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">Or log in with</p>
             <div className="flex justify-between gap-4">
-              <Button variant="outline" className="flex items-center justify-center space-x-2 w-full hover:bg-secondary-700">
+              <Button onClick={() => signIn('google')} variant="outline" className="flex items-center justify-center space-x-2 w-full hover:bg-secondary-700">
                 <Chrome size={24}/>
                 <span>Google</span>
               </Button>
-              <Button variant="outline" className="flex items-center justify-center space-x-2 w-full hover:bg-secondary-700">
+              <Button onClick={() => signIn('facebook')} variant="outline" className="flex items-center justify-center space-x-2 w-full hover:bg-secondary-700">
                 <Facebook size={24}/>
                 <span>Facebook</span>
               </Button>

@@ -111,7 +111,7 @@ export default function RoomEditor() {
   };
 
   const loadState = () => {
-    const savedState = localStorage.getItem("editorState");
+    const savedState = localStorage.getItem("merchantTemplate");
     if (savedState) {
       const { furniture: savedFurniture, room: savedRoom } =
         JSON.parse(savedState);
