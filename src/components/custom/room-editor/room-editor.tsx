@@ -2,7 +2,7 @@
 
 import React, { useState, Suspense, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Furniture, Room, TransformUpdate } from "@/types/room-editor";
+import { Furniture, Room, TemplateData, TransformUpdate } from "@/types/room-editor";
 import { useUndoRedo } from "@/hooks/use-undo-redo";
 import Toolbar from "./toolbar";
 import Hierarchy from "./hierarchy";
@@ -106,20 +106,32 @@ export default function RoomEditor() {
 
   const saveMerchantTemplate = () => {
     const templateState = { furniture, room };
-    localStorage.setItem("merchantTemplate", JSON.stringify(templateState));
-    router.push("/merchant/test/save");
+    localStorage.setItem("savingTemplate", JSON.stringify(templateState));
+    router.push('/merchant/test/save');
   };
 
-  const loadState = () => {
-    const savedState = localStorage.getItem("merchantTemplate");
-    if (savedState) {
-      const { furniture: savedFurniture, room: savedRoom } =
-        JSON.parse(savedState);
-      updateFurniture(savedFurniture);
-      setRoom(savedRoom);
-      alert("State loaded!");
+  const loadState = (templateData?: TemplateData) => {
+    if (templateData) {
+      // Load the template passed from the Toolbar
+      updateFurniture(templateData.furniture);
+      setRoom(templateData.room);
+      alert("Template loaded successfully!");
     } else {
-      alert("No saved state found!");
+      // Fallback to loading from localStorage if no template is passed
+      const savedTemplates = localStorage.getItem("merchantTemplates");
+      if (savedTemplates) {
+        const templates = JSON.parse(savedTemplates) as TemplateData[];
+        if (templates.length > 0) {
+          const latestTemplate = templates[templates.length - 1];
+          updateFurniture(latestTemplate.furniture);
+          setRoom(latestTemplate.room);
+          alert("Latest template loaded successfully!");
+        } else {
+          alert("No templates found in localStorage!");
+        }
+      } else {
+        alert("No saved templates found!");
+      }
     }
   };
 
