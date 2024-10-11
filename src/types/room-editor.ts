@@ -34,8 +34,10 @@ export type MainCategory = string;
 export type SubCategory = string;
 
 export interface TemplateData {
+    templateName: string;
     room: Room;
     furniture: Furniture[];
     mainCategories: MainCategory[];
     subCategories: SubCategory[];
+    description?: string;
 }

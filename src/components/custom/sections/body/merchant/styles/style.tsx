@@ -16,12 +16,10 @@ import { PlusCircle, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { TemplateData } from "@/types/room-editor";
 
-interface Style {
+interface Style extends TemplateData{
   id: string;
-  name: string;
-  description: string;
-  items: number;
   views: number;
+  items: number;
 }
 
 export default function StyleHome() {
@@ -37,20 +35,18 @@ export default function StyleHome() {
     setStyles(
       savedTemplates.map((template, index) => ({
         id: (index + 1).toString(),
-        name: `Template ${index + 1}`,
-        description: `Custom template with ${template.furniture.length} items`,
+        templateName: template.templateName || `Template ${index} + 1`,
+        description: template.description || `Custom template with ${template.furniture.length} items`,
         items: template.furniture.length,
         views: 0,
-        template: template,
+        room: template.room,
+        mainCategories: template.mainCategories,
+        furniture: template.furniture,
+        subCategories: template.subCategories
       }))
     );
   }, []);
 
-  const filteredStyles = styles.filter(
-    (style) =>
-      style.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      style.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="container mx-auto py-6">
@@ -96,16 +92,16 @@ export default function StyleHome() {
         </TabsList>
         <TabsContent value="all" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredStyles.map((style) => (
+            {styles.map((style) => (
               <Card key={style.id} className="rounded-sm">
                 <CardHeader>
-                  <CardTitle>{style.name}</CardTitle>
+                  <CardTitle>{style.templateName}</CardTitle>
                   <CardDescription>{style.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <img
                     src={"https://placehold.co/400"}
-                    alt={style.name}
+                    alt={style.templateName}
                     className="w-full h-48 object-cover rounded-md mb-4"
                   />
                   <div className="flex justify-between text-sm text-muted-foreground">
@@ -127,16 +123,16 @@ export default function StyleHome() {
         </TabsContent>
         <TabsContent value="popular" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredStyles.map((style) => (
+            {styles.map((style) => (
               <Card key={style.id} className="rounded-sm">
                 <CardHeader>
-                  <CardTitle>{style.name}</CardTitle>
+                  <CardTitle>{style.templateName}</CardTitle>
                   <CardDescription>{style.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <img
                     src={"https://placehold.co/400"}
-                    alt={style.name}
+                    alt={style.templateName}
                     className="w-full h-48 object-cover rounded-md mb-4"
                   />
                   <div className="flex justify-between text-sm text-muted-foreground">
@@ -158,16 +154,16 @@ export default function StyleHome() {
         </TabsContent>
         <TabsContent value="recent" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredStyles.map((style) => (
+            {styles.map((style) => (
               <Card key={style.id} className="rounded-sm">
                 <CardHeader>
-                  <CardTitle>{style.name}</CardTitle>
+                  <CardTitle>{style.templateName}</CardTitle>
                   <CardDescription>{style.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <img
                     src={"https://placehold.co/400"}
-                    alt={style.name}
+                    alt={style.templateName}
                     className="w-full h-48 object-cover rounded-md mb-4"
                   />
                   <div className="flex justify-between text-sm text-muted-foreground">
