@@ -30,7 +30,7 @@ export default function SaveTemplatePage() {
   const router = useRouter()
 
   useEffect(() => {
-    const savedTemplate = localStorage.getItem('merchantTemplate')
+    const savedTemplate = localStorage.getItem('savingTemplate')
     if (savedTemplate) {
       const parsedTemplate = JSON.parse(savedTemplate) as TemplateData
       setTemplateData(parsedTemplate)
@@ -63,6 +63,9 @@ export default function SaveTemplatePage() {
     console.log('Saving template:', fullTemplate)
     localStorage.setItem('savedMerchantTemplate', JSON.stringify(fullTemplate))
     alert('Template saved successfully!')
+    const existingTemplates = JSON.parse(localStorage.getItem('merchantTemplates') || '[]');
+    existingTemplates.push(fullTemplate);
+    localStorage.setItem('merchantTemplates', JSON.stringify(existingTemplates));
     router.push('/merchant/styles')
   }
 

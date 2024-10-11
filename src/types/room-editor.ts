@@ -11,6 +11,7 @@ export interface Furniture {
     characteristics?: string[];
     scaleFactor?: number;
     furnitureType?: string;
+    description?: string;
 }
 
 export interface FurnitureWithRef extends Furniture {
