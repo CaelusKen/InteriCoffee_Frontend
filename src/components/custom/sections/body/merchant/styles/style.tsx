@@ -35,7 +35,7 @@ export default function StyleHome() {
     setStyles(
       savedTemplates.map((template, index) => ({
         id: (index + 1).toString(),
-        templateName: template.templateName || `Template ${index} + 1`,
+        templateName: template.templateName || `Template ${index + 1}`,
         description: template.description || `Custom template with ${template.furniture.length} items`,
         items: template.furniture.length,
         views: 0,
