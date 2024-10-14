@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { ChevronLeft, Edit2, Trash2, Maximize2 } from 'lucide-react'
 import SceneContent from '@/components/custom/room-editor/scene-view'
 import { TemplateData, Furniture, Room, TransformUpdate } from '@/types/room-editor'
+import FurnitureProductCard from '@/components/custom/cards/furniture-card-v2'
 
 export default function StyleDetails() {
   const [template, setTemplate] = useState<TemplateData | null>(null)
@@ -123,18 +124,30 @@ export default function StyleDetails() {
         <h2 className="text-2xl font-semibold mb-4">Furniture in this Style</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {template.furniture.map((item) => (
-            <Card key={item.id}>
-              <CardHeader>
-                <CardTitle>{item.name}</CardTitle>
-                <CardDescription>{`Position: ${item.position.join(', ')}`}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <img src="/placeholder.svg" alt={item.name} className="w-full h-48 object-cover rounded-md" />
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full">View Details</Button>
-              </CardFooter>
-            </Card>
+            <FurnitureProductCard
+              key={item.id}
+              id={item.name}
+              images={
+                [
+                  {
+                    src: 'https://placeholder.co/400',
+                    alt: 'produt image'
+                  },
+                  {
+                    src: 'https://placeholder.co/400',
+                    alt: 'produt image'
+                  },
+                  {
+                    src: 'https://placeholder.co/400',
+                    alt: 'produt image'
+                  },
+                ]
+              }
+              merchant={'Merchant A'}
+              modelUrl={item.model}
+              name={item.name}
+              price={500}
+            />
           ))}
         </div>
       </div>

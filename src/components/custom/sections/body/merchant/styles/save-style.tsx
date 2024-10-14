@@ -60,7 +60,6 @@ export default function SaveTemplatePage() {
       subCategories,
     }
 
-    console.log('Saving template:', fullTemplate)
     localStorage.setItem('savedMerchantTemplate', JSON.stringify(fullTemplate))
     alert('Template saved successfully!')
     const existingTemplates = JSON.parse(localStorage.getItem('merchantTemplates') || '[]');
