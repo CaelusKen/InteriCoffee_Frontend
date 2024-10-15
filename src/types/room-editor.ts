@@ -16,12 +16,21 @@ export interface Furniture {
 
 export interface FurnitureWithRef extends Furniture {
     ref: THREE.Group | null;
-  }
+}
 
 export interface Room {
+    id: number;
+    name: string;
     width: number;
     length: number;
     height: number;
+    furniture: Furniture[];
+}
+
+export interface Floor {
+    id: number;
+    name: string;
+    rooms: Room[];
 }
 
 export interface TransformUpdate {
@@ -35,8 +44,7 @@ export type SubCategory = string;
 
 export interface TemplateData {
     templateName: string;
-    room: Room;
-    furniture: Furniture[];
+    floors: Floor[];
     mainCategories: MainCategory[];
     subCategories: SubCategory[];
     description?: string;
