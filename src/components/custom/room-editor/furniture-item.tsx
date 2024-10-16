@@ -11,7 +11,7 @@ interface FurnitureItemProps extends Furniture {
   roomDimensions: { width: number; length: number; height: number };
 }
 
-const ROOM_SCALE_FACTOR = 0.1; // Adjust this value to change the overall scale of furniture relative to the room
+const ROOM_SCALE_FACTOR = 0.1;
 
 export default function FurnitureItem({ 
   id, 
@@ -44,9 +44,13 @@ export default function FurnitureItem({
       
       const scaleFactor = (maxRoomDimension * ROOM_SCALE_FACTOR) / maxModelDimension
       
-      groupRef.current.scale.set(scaleFactor, scaleFactor, scaleFactor)
+      groupRef.current.scale.set(...scale)
       groupRef.current.position.set(...position)
-      groupRef.current.rotation.set(...rotation)
+      groupRef.current.rotation.set(
+        Number(rotation[0] || 0) * (Math.PI / 180),
+        Number(rotation[1] || 0) * (Math.PI / 180),
+        Number(rotation[2] || 0) * (Math.PI / 180)
+      )
 
       onUpdateTransform({
         id,
@@ -56,12 +60,12 @@ export default function FurnitureItem({
 
       console.log(`Furniture ${id} (${name}) scale: ${scaleFactor}`)
     }
-  }, [modelDimensions, roomDimensions, position, rotation, id, name, onUpdateTransform])
+  }, [modelDimensions, roomDimensions, position, rotation, scale, id, name, onUpdateTransform])
 
   useFrame(() => {
     if (groupRef.current && isSelected) {
       const newPosition = groupRef.current.position.toArray() as [number, number, number]
-      const newRotation = groupRef.current.rotation.toArray().slice(0, 3) as [number, number, number]
+      const newRotation = groupRef.current.rotation.toArray().slice(0, 3).map(r => Number(r || 0) * (180 / Math.PI)) as [number, number, number]
       const newScale = groupRef.current.scale.toArray() as [number, number, number]
 
       if (!arraysEqual(newPosition, position)) {

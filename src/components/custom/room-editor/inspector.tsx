@@ -1,35 +1,67 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Furniture, TransformUpdate } from '@/types/room-editor'
-import { Trash2 } from 'lucide-react'
+import { Trash2, Edit2 } from 'lucide-react'
 
 interface InspectorProps {
   selectedItem: number | null;
   furniture: Furniture[];
   onUpdateTransform: (update: TransformUpdate) => void;
   onDeleteItem: (id: number) => void;
+  onRename: (id: number, newName: string) => void;
 }
 
-export default function Inspector({ selectedItem, furniture, onUpdateTransform, onDeleteItem }: InspectorProps) {
+export default function Inspector({ selectedItem, furniture, onUpdateTransform, onDeleteItem, onRename }: InspectorProps) {
   const item = furniture.find(i => i.id === selectedItem)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editName, setEditName] = useState('')
+
   if (!item) return <div className="p-4">No item selected</div>
+
+  const handleStartEdit = () => {
+    setIsEditing(true)
+    setEditName(item.name)
+  }
+
+  const handleFinishEdit = () => {
+    onRename(item.id, editName)
+    setIsEditing(false)
+  }
 
   return (
     <ScrollArea className="h-[400px]">
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold">{item.name}</h3>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => onDeleteItem(item.id)}
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Delete
-          </Button>
+          {isEditing ? (
+            <Input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              onBlur={handleFinishEdit}
+              onKeyPress={(e) => e.key === 'Enter' && handleFinishEdit()}
+              className="mr-2"
+            />
+          ) : (
+            <h3 className="font-bold">{item.name}</h3>
+          )}
+          <div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={isEditing ? handleFinishEdit : handleStartEdit}
+            >
+              <Edit2 className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="destructive"
+              size="icon"
+              onClick={() => onDeleteItem(item.id)}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
         <div className="space-y-4">
           {['position', 'rotation', 'scale'].map((prop) => (

@@ -16,13 +16,39 @@ export interface Furniture {
 
 export interface FurnitureWithRef extends Furniture {
     ref: THREE.Group | null;
-  }
+}
 
 export interface Room {
+    id: number;
+    name: string;
     width: number;
     length: number;
     height: number;
+    furniture: Furniture[];
 }
+
+export interface Floor {
+    id: number;
+    name: string;
+    rooms: Room[];
+}
+
+export interface CoffeeShopData {
+    floors: Floor[];
+    branding: {
+      name: string;
+      logo: string;
+      colorScheme: string;
+    };
+    menuBoard: {
+      items: MenuItem[];
+    };
+}
+
+export interface MenuItem {
+    name: string;
+    price: number;
+  }
 
 export interface TransformUpdate {
     id: number;
@@ -34,10 +60,11 @@ export type MainCategory = string;
 export type SubCategory = string;
 
 export interface TemplateData {
+    id: string;
     templateName: string;
-    room: Room;
-    furniture: Furniture[];
+    description: string;
     mainCategories: MainCategory[];
     subCategories: SubCategory[];
-    description?: string;
+    floors: Floor[];
+    views: number;
 }

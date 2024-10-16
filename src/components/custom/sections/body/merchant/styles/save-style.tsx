@@ -7,12 +7,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import SceneContent from '@/components/custom/room-editor/scene-view'
 import { Badge } from "@/components/ui/badge"
 import { X, Plus } from 'lucide-react'
-import { Room, Furniture, MainCategory, SubCategory, TemplateData } from '@/types/room-editor'
+import { Room, Furniture, MainCategory, SubCategory, TemplateData, Floor } from '@/types/room-editor'
 
 const MAIN_CATEGORIES: MainCategory[] = [
   "Minimalist", "Vintage", "Modern", "Industrial", "Scandinavian", "Bohemian", "Contemporary", "Traditional"
@@ -26,6 +27,8 @@ export default function SaveTemplatePage() {
   const [mainCategories, setMainCategories] = useState<MainCategory[]>([])
   const [subCategories, setSubCategories] = useState<SubCategory[]>([])
   const [newSubCategory, setNewSubCategory] = useState('')
+  const [selectedFloorIndex, setSelectedFloorIndex] = useState(0)
+  const [selectedRoomIndex, setSelectedRoomIndex] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
@@ -34,7 +37,7 @@ export default function SaveTemplatePage() {
     if (savedTemplate) {
       const parsedTemplate = JSON.parse(savedTemplate) as TemplateData
       setTemplateData(parsedTemplate)
-      generateSubCategories(parsedTemplate.furniture)
+      generateSubCategories(parsedTemplate.floors.flatMap(floor => floor.rooms.flatMap(room => room.furniture)))
     }
   }, [])
 
@@ -56,8 +59,11 @@ export default function SaveTemplatePage() {
 
     const fullTemplate: TemplateData = {
       ...templateData,
+      templateName,
+      description,
       mainCategories,
       subCategories,
+      views: 0,
     }
 
     localStorage.setItem('savedMerchantTemplate', JSON.stringify(fullTemplate))
@@ -102,6 +108,9 @@ export default function SaveTemplatePage() {
       setNewSubCategory('')
     }
   }
+
+  const currentFloor = templateData?.floors[selectedFloorIndex]
+  const currentRoom = currentFloor?.rooms[selectedRoomIndex]
 
   return (
     <div className="container mx-auto p-4 max-w-[1600px]">
@@ -196,9 +205,9 @@ export default function SaveTemplatePage() {
                   </Button>
                   <input
                     type="file"
+                    title='Image'
                     ref={fileInputRef}
                     className="hidden"
-                    placeholder='+'
                     accept="image/*"
                     multiple
                     onChange={handleImageUpload}
@@ -208,12 +217,50 @@ export default function SaveTemplatePage() {
             </div>
             <div className="lg:col-span-2 space-y-4">
               <Label>Style Preview</Label>
+              <div className="flex space-x-4 mb-4">
+                <div className="w-1/2">
+                  <Label htmlFor="floorSelect">Select Floor</Label>
+                  <Select
+                    value={selectedFloorIndex.toString()}
+                    onValueChange={(value) => setSelectedFloorIndex(Number(value))}
+                  >
+                    <SelectTrigger id="floorSelect">
+                      <SelectValue placeholder="Select floor" />
+                    </SelectTrigger>
+                    <SelectContent className='bg-white text-black'>
+                      {templateData?.floors.map((floor, index) => (
+                        <SelectItem key={floor.id} value={index.toString()}>
+                          {floor.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="w-1/2">
+                  <Label htmlFor="roomSelect">Select Room</Label>
+                  <Select
+                    value={selectedRoomIndex.toString()}
+                    onValueChange={(value) => setSelectedRoomIndex(Number(value))}
+                  >
+                    <SelectTrigger id="roomSelect">
+                      <SelectValue placeholder="Select room" />
+                    </SelectTrigger>
+                    <SelectContent className='bg-white text-black'>
+                      {currentFloor?.rooms.map((room, index) => (
+                        <SelectItem key={room.id} value={index.toString()}>
+                          {room.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               <div className="w-full h-[600px] bg-gray-100 rounded-lg overflow-hidden">
-                {templateData && (
+                {currentRoom && (
                   <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
                     <SceneContent
-                      room={templateData.room}
-                      furniture={templateData.furniture}
+                      room={currentRoom}
+                      furniture={currentRoom.furniture}
                       selectedItem={null}
                       onSelectItem={() => {}}
                       onUpdateTransform={() => {}}

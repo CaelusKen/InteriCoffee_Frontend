@@ -47,7 +47,7 @@ export default function SceneContent({
       onUpdateTransform({
         id: selectedItem,
         type: 'rotation',
-        value: selectedObject.rotation.toArray().slice(0, 3) as [number, number, number],
+        value: selectedObject.rotation.toArray().slice(0, 3).map(v => Number(v || 0) * (180 / Math.PI)) as [number, number, number],
       })
       onUpdateTransform({
         id: selectedItem,
@@ -78,9 +78,7 @@ export default function SceneContent({
           key={item.id}
           {...item}
           onSelect={(event) => {
-            // @ts-expect-error: stopPropagation()
-            event.stopPropagation()
-            onSelectItem(item.id)
+            onSelectItem(item.id);
           }}
           isSelected={selectedItem === item.id}
           onUpdateTransform={onUpdateTransform}

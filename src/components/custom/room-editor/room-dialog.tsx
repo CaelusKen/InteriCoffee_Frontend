@@ -23,18 +23,20 @@ const coffeeShopPresets = {
 }
 
 export default function RoomDialog({ open, onOpenChange, onSave, initialRoom }: RoomDialogProps) {
+  const [name, setName] = useState(initialRoom.name)
   const [width, setWidth] = useState(initialRoom.width)
   const [length, setLength] = useState(initialRoom.length)
   const [height, setHeight] = useState(initialRoom.height)
 
   useEffect(() => {
+    setName(initialRoom.name)
     setWidth(initialRoom.width)
     setLength(initialRoom.length)
     setHeight(initialRoom.height)
   }, [initialRoom])
 
   const handleSave = () => {
-    onSave({ width, length, height })
+    onSave({ ...initialRoom, name, width, length, height })
     onOpenChange(false)
   }
 
@@ -53,6 +55,16 @@ export default function RoomDialog({ open, onOpenChange, onSave, initialRoom }: 
           <DialogDescription>Choose a preset or enter custom dimensions for your coffee shop space (in meters).</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">Name</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="col-span-3"
+            
+            />
+          </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="preset" className="text-right">Preset</Label>
             <Select onValueChange={handlePresetChange}>

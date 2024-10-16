@@ -13,6 +13,7 @@ import {
   Home,
   Trash2,
   Plus,
+  Layers,
 } from "lucide-react";
 import { ThemeToggler } from "../buttons/theme-toggler";
 import {
@@ -53,6 +54,8 @@ interface ToolbarProps {
   onLoad: (templateData: TemplateData) => void;
   onOpenRoomDialog: () => void;
   onClearAll: () => void;
+  onAddFloor: () => void;
+  onAddRoom: () => void;
 }
 
 const furnitureItems: FurnitureItem[] = [
@@ -76,6 +79,8 @@ export default function Toolbar({
   onLoad,
   onOpenRoomDialog,
   onClearAll,
+  onAddFloor,
+  onAddRoom,
 }: ToolbarProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoadDrawerOpen, setIsLoadDrawerOpen] = useState(false);
@@ -91,7 +96,7 @@ export default function Toolbar({
       savedTemplates.map((template, index) => ({
         id: index + 1,
         name: `Template ${index + 1}`,
-        items: template.furniture.length,
+        items: template.floors.reduce((acc, floor) => acc + floor.rooms.reduce((acc, room) => acc + room.furniture.length, 0), 0),
       }))
     );
     setIsLoadDrawerOpen(true);
@@ -112,7 +117,7 @@ export default function Toolbar({
 
   return (
     <div className="flex justify-between items-center p-2 dark:bg-gray-800 border-b">
-      <div className="space-x-2 mb-2 sm:mb-0">
+      <div className="space-x-2 mb-2 sm:mb-0 flex items-center gap-2">
         <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
           <DrawerTrigger asChild>
             <Button className="text-white">
@@ -168,6 +173,24 @@ export default function Toolbar({
             </DrawerFooter>
           </DrawerContent>
         </Drawer>
+        <Button
+          onClick={onAddFloor}
+          className="hover:bg-primary-600 hover:text-white"
+        >
+          <span className="flex items-center gap-2">
+            <Layers className="w-4 h-4" />
+            <p>Add Floor</p>
+          </span>
+        </Button>
+        <Button
+          onClick={onAddRoom}
+          className="hover:bg-primary-600 hover:text-white"
+        >
+          <span className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            <p>Add Room</p>
+          </span>
+        </Button>
       </div>
       <div className="space-x-2">
         <Button
