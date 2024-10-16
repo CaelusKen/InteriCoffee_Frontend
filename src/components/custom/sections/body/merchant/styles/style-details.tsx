@@ -42,6 +42,9 @@ export default function StyleDetails() {
     console.log('Update transform:', update)
   }
 
+  const currentRoom = template.floors[0]?.rooms[0]
+  const furniture = currentRoom?.furniture || []
+
   return (
     <div className="min-h-screen bg-background text-foreground p-8">
       <div className="max-w-6xl mx-auto">
@@ -50,7 +53,7 @@ export default function StyleDetails() {
           Back to Styles
         </Button>
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">{`Template ${params.id}`}</h1>
+          <h1 className="text-3xl font-bold">{template.templateName}</h1>
           <div className="space-x-2">
             <Button variant="destructive" className='bg-yellow-300 hover:bg-yellow-400 text-black'>
               <Edit2 className="mr-2 h-4 w-4" />
@@ -71,14 +74,16 @@ export default function StyleDetails() {
               <div className={`relative ${isFullscreen ? 'fixed inset-0 z-50' : 'h-[400px]'}`}>
                 <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
                   <Suspense fallback={null}>
-                    <SceneContent
-                      room={template.room}
-                      furniture={template.furniture}
-                      selectedItem={null}
-                      onSelectItem={() => {}}
-                      onUpdateTransform={handleUpdateTransform}
-                      transformMode="translate"
-                    />
+                    {currentRoom && (
+                      <SceneContent
+                        room={currentRoom}
+                        furniture={furniture}
+                        selectedItem={null}
+                        onSelectItem={() => {}}
+                        onUpdateTransform={handleUpdateTransform}
+                        transformMode="translate"
+                      />
+                    )}
                     <OrbitControls makeDefault />
                     <Grid infiniteGrid />
                     <Environment preset="apartment" />
@@ -101,7 +106,7 @@ export default function StyleDetails() {
               <CardTitle>Style Information</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground mb-4">{`Custom template with ${template.furniture.length} items`}</p>
+              <p className="text-muted-foreground mb-4">{template.description}</p>
               <div className="mb-4">
                 <h3 className="text-lg font-semibold mb-2">Main Categories</h3>
                 <div className="flex flex-wrap gap-2">
@@ -123,7 +128,7 @@ export default function StyleDetails() {
         </div>
         <h2 className="text-2xl font-semibold mb-4">Furniture in this Style</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {template.furniture.map((item) => (
+          {furniture.map((item) => (
             <FurnitureProductCard
               key={item.id}
               id={item.name}
@@ -131,15 +136,15 @@ export default function StyleDetails() {
                 [
                   {
                     src: 'https://placeholder.co/400',
-                    alt: 'produt image'
+                    alt: 'product image'
                   },
                   {
                     src: 'https://placeholder.co/400',
-                    alt: 'produt image'
+                    alt: 'product image'
                   },
                   {
                     src: 'https://placeholder.co/400',
-                    alt: 'produt image'
+                    alt: 'product image'
                   },
                 ]
               }

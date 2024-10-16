@@ -34,19 +34,15 @@ export default function StyleHome() {
     ) as TemplateData[];
     setStyles(
       savedTemplates.map((template, index) => ({
+        ...template,
         id: (index + 1).toString(),
         templateName: template.templateName || `Template ${index + 1}`,
-        description: template.description || `Custom template with ${template.furniture.length} items`,
-        items: template.furniture.length,
+        description: template.description || `Custom template with ${template.floors[0]?.rooms[0]?.furniture.length || 0} items`,
+        items: template.floors[0]?.rooms[0]?.furniture.length || 0,
         views: 0,
-        room: template.room,
-        mainCategories: template.mainCategories,
-        furniture: template.furniture,
-        subCategories: template.subCategories
       }))
     );
   }, []);
-
 
   return (
     <div className="container mx-auto py-6">

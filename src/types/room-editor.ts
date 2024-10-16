@@ -33,6 +33,23 @@ export interface Floor {
     rooms: Room[];
 }
 
+export interface CoffeeShopData {
+    floors: Floor[];
+    branding: {
+      name: string;
+      logo: string;
+      colorScheme: string;
+    };
+    menuBoard: {
+      items: MenuItem[];
+    };
+}
+
+export interface MenuItem {
+    name: string;
+    price: number;
+  }
+
 export interface TransformUpdate {
     id: number;
     type: 'position' | 'rotation' | 'scale';
@@ -43,9 +60,11 @@ export type MainCategory = string;
 export type SubCategory = string;
 
 export interface TemplateData {
+    id: string;
     templateName: string;
-    floors: Floor[];
+    description: string;
     mainCategories: MainCategory[];
     subCategories: SubCategory[];
-    description?: string;
+    floors: Floor[];
+    views: number;
 }
