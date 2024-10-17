@@ -5,7 +5,7 @@ import { ThemeToggler } from '../../buttons/theme-toggler'
 import { motion } from 'framer-motion'
 import { CustomAvatar } from '../../avatar/general-avatar'
 
-const MerchantHeader = () => {
+const ConsultantHeader = () => {
   return (
     <motion.header
       initial={{y: -50, opacity: 0}}
@@ -15,8 +15,8 @@ const MerchantHeader = () => {
       <span>InteriCoffee</span>
       <div className='flex items-center gap-4'>
         <CustomAvatar 
-          name='Merchant'
-          role='Merchant'
+          name='Consultant'
+          role='Consultant'
           imageSrc='https://placeholder.co/200'
         />
         <ThemeToggler />
@@ -25,4 +25,4 @@ const MerchantHeader = () => {
   )
 }
 
-export default MerchantHeader
+export default ConsultantHeader
