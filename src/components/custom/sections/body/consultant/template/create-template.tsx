@@ -1,9 +1,8 @@
+import RoomEditor from '@/components/custom/room-editor/room-editor'
 import React from 'react'
 
-const ConsultantCreateTemplatePage = () => {
-  return (
-    <div>ConsultantCreateTemplatePage</div>
-  )
+const ConsultantCreateTemplate = () => {
+  return <RoomEditor />
 }
 
-export default ConsultantCreateTemplatePage
+export default ConsultantCreateTemplate
