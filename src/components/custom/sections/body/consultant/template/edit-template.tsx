@@ -1,9 +1,9 @@
 import React from 'react'
 
-const ConsultantEditTemplatePage = () => {
+const ConsultantEditTemplate = () => {
   return (
     <div>ConsultantEditTemplatePage</div>
   )
 }
 
-export default ConsultantEditTemplatePage
+export default ConsultantEditTemplate

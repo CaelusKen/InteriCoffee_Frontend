@@ -32,15 +32,19 @@ export default function StyleHome() {
     const savedTemplates = JSON.parse(
       localStorage.getItem("merchantTemplates") || "[]"
     ) as TemplateData[];
+
     setStyles(
-      savedTemplates.map((template, index) => ({
-        ...template,
-        id: (index + 1).toString(),
-        templateName: template.templateName || `Template ${index + 1}`,
-        description: template.description || `Custom template with ${template.floors[0]?.rooms[0]?.furniture.length || 0} items`,
-        items: template.floors[0]?.rooms[0]?.furniture.length || 0,
-        views: 0,
-      }))
+      savedTemplates.map((template, index) => {
+        const furnitureCount = template.floors?.[0]?.rooms?.[0]?.furniture?.length ?? 0;
+        return {
+          ...template,
+          id: (index + 1).toString(),
+          templateName: template.templateName || `Template ${index + 1}`,
+          description: template.description || `Custom template with ${furnitureCount} items`,
+          items: furnitureCount,
+          views: 0,
+        };
+      })
     );
   }, []);
 
@@ -59,10 +63,6 @@ export default function StyleHome() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button className="bg-green-500 text-white hover:bg-green-600">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Create New Style
-        </Button>
       </div>
 
       <Tabs defaultValue="all" className="w-full">

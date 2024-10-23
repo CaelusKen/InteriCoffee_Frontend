@@ -179,7 +179,7 @@ export default function RoomEditor() {
   const saveMerchantTemplate = () => {
     const templateState = { floors };
     localStorage.setItem("savingTemplate", JSON.stringify(templateState));
-    router.push('/merchant/test/save');
+    router.push('/consultant/templates/save');
   };
 
   const loadState = (templateData?: TemplateData) => {

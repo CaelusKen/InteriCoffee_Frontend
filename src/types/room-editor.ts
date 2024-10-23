@@ -67,4 +67,5 @@ export interface TemplateData {
     subCategories: SubCategory[];
     floors: Floor[];
     views: number;
+    thumbnailImageSrc?: string;
 }
