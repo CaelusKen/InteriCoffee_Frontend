@@ -9,10 +9,12 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Chrome, Facebook } from 'lucide-react'
 import { signIn } from 'next-auth/react'
 import { useState, FormEvent } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const router = useRouter();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -23,8 +25,10 @@ export default function LoginPage() {
     })
     if (result?.error) {
       // Handle error (e.g., show error message)
+      console.error(result.error)
     } else {
       // Redirect to dashboard or home page
+      router.push('/')
     }
   }
 
