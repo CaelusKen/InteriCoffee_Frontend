@@ -1,4 +1,4 @@
-import type { NextAuthOptions } from "next-auth";
+import { NextAuthOptions } from "next-auth";
 import FacebookProvider from "next-auth/providers/facebook";
 import  CredentialsProvider  from "next-auth/providers/credentials";
 
@@ -40,11 +40,40 @@ export const options: NextAuthOptions = {
           
                 // If no error and we have user data, return it
                 if (res.ok && user) {
-                  return user
+                    return { ...user, role: user.role || "Customer" }
                 }
                 // Return null if user data could not be retrieved
                 return null
               }
-        })
+        }),
     ],
+    callbacks: {
+        async jwt({token, user, account}) {
+            if(user) {
+                token.role = user.role
+            }
+            if (account?.provider === "facebook") {
+                // Fetch user role from your database based on the Facebook ID
+                // This is just an example, implement according to your backend
+                const role = await fetchRoleFromDatabase(user.id)
+                token.role = role
+            }
+            return token
+        },
+        async session({session, token}) {
+            return {
+                ...session,
+                user: {
+                  ...session.user,
+                  role: token.role ?? 'Customer'
+                }
+            };
+        },
+    }
+}
+
+async function fetchRoleFromDatabase(userId: string): Promise<string> {
+    // Implement your logic to fetch the user's role from your database
+    // This is just a placeholder
+    return "Customer" // Default role
 }

@@ -1,6 +1,8 @@
+import { ApiResponse, PaginatedResponse } from "@/types/api";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-async function fetchAPI(endpoint: string, options: RequestInit = {}) {
+async function fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
   const defaultHeaders = {
     'Content-Type': 'application/json',
   };
@@ -21,8 +23,9 @@ async function fetchAPI(endpoint: string, options: RequestInit = {}) {
 }
 
 export const api = {
-  get: (endpoint: string) => fetchAPI(endpoint),
-  post: (endpoint: string, data: any) => fetchAPI(endpoint, { method: 'POST', body: JSON.stringify(data) }),
-  put: (endpoint: string, data: any) => fetchAPI(endpoint, { method: 'PUT', body: JSON.stringify(data) }),
-  delete: (endpoint: string) => fetchAPI(endpoint, { method: 'DELETE' }),
+  get: <T>(endpoint: string) => fetchAPI<T>(endpoint),
+  post: <T>(endpoint: string, data: any) => fetchAPI<T>(endpoint, { method: 'POST', body: JSON.stringify(data) }),
+  put: <T>(endpoint: string, data: any) => fetchAPI<T>(endpoint, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: <T>(endpoint: string) => fetchAPI<T>(endpoint, { method: 'DELETE' }),
+  getPaginated: <T>(endpoint: string) => fetchAPI<PaginatedResponse<T>>(endpoint),
 };
