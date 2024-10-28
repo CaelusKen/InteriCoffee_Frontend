@@ -10,7 +10,7 @@ import { Chrome, Facebook } from 'lucide-react'
 import { signIn } from 'next-auth/react'
 import { useState, FormEvent } from 'react'
 
-export default function RegisterPage() {
+export default function ForgotPassword() {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
