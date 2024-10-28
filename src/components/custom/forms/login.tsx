@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation'
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -25,7 +26,7 @@ export default function LoginPage() {
     })
     if (result?.error) {
       // Handle error (e.g., show error message)
-      console.error(result.error)
+      setError(result.error)
     } else {
       // Redirect to dashboard or home page
       router.push('/')
@@ -90,6 +91,7 @@ export default function LoginPage() {
                 Forgot your password?
               </Link>
             </div>
+            {error && <p className="text-red-500">{error}</p>}
             <Button type="submit" className="w-full bg-gray-900 dark:bg-gray-100 hover:bg-primary-800 dark:hover:bg-primary-500 dark:hover:text-white text-white dark:text-gray-900">
               Log in
             </Button>

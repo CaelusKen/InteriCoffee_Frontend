@@ -10,11 +10,24 @@ import { useRouter } from 'next/navigation'
 import { useCart } from '../cart/cart-context'
 import { CartDrawer } from '../cart/cart-drawer'
 import { Badge } from '@/components/ui/badge'
+import { useSession, signOut } from 'next-auth/react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { LogOut, User } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
   const { itemCount } = useCart()
+
+  const { data: session } = useSession()
 
   // Close menu when screen size changes to prevent menu from staying open on larger screens
   useEffect(() => {
@@ -68,12 +81,45 @@ const Header = () => {
       </div>
 
       <div className='hidden lg:flex gap-4 items-center'>
-        <Button variant={'link'} className='text-black dark:text-white dark:hover:text-primary-400 hover:text-primary-400 transition-colors duration-200'>
-          Login
-        </Button>
-        <Button variant={'outline'} className='rounded-md hover:bg-primary hover:text-white transition-colors duration-200'>
-          Get Started
-        </Button>
+      {
+            session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={session.user?.image || ''} alt={session.user?.name || ''} />
+                      <AvatarFallback>{session.user?.name?.[0] || 'U'}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 bg-white text-black" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{session.user?.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{session.user?.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className='hover:bg-slate-100'>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className='hover:bg-slate-100' onClick={() => signOut()}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Button onClick={() => router.push('/login')} variant={'link'} className='text-black dark:text-white dark:hover:text-primary-400 hover:text-primary-400 transition-colors duration-200'>
+                  Login
+                </Button>
+                <Button onClick={() => router.push('/signup')} variant={'outline'} className='rounded-md hover:bg-primary hover:text-white transition-colors duration-200'>
+                  Get Started
+                </Button>
+              </>
+            ) }
         <CartDrawer>
           <Button variant='ghost' size='icon' className="relative">
             <ShoppingCart className="h-5 w-5" />
@@ -148,25 +194,59 @@ const Header = () => {
               </Link>
             </motion.li>
           ))}
-          <li className='mt-4'>
-            <Link href={'/login'}>
-              <Button 
-                variant={'link'} 
-                className='w-full justify-start text-black dark:text-white hover:text-primary transition-colors duration-200'
-              >
-                Login
-              </Button>
-            </Link>
-          </li>
-          <li>
-            <Button 
-              variant={'outline'} 
-              className='w-full mt-2 rounded-md hover:bg-primary hover:text-white transition-colors duration-200'
-              onClick={() => router.push('/signup')}
-            >
-              Get Started
-            </Button>
-          </li>
+          {
+            session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={session.user?.image || ''} alt={session.user?.name || ''} />
+                      <AvatarFallback>{session.user?.name?.[0] || 'U'}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{session.user?.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{session.user?.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <li className='mt-4'>
+                    <Button 
+                      variant={'outline'} 
+                      className='w-full justify-start text-black dark:text-white hover:text-primary transition-colors duration-200'
+                      onClick={() => router.push('/login')}
+                    >
+                      Login
+                    </Button>
+                </li>
+                <li>
+                  <Button 
+                    variant={'default'} 
+                    className='w-full mt-2 rounded-md hover:bg-primary hover:text-white transition-colors duration-200'
+                    onClick={() => router.push('/signup')}
+                  >
+                    Get Started
+                  </Button>
+                </li>
+              </>
+            )
+          }
+          
         </ul>
       </motion.nav>
     </motion.header>
