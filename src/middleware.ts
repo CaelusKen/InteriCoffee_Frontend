@@ -1,13 +1,13 @@
 import { withAuth } from "next-auth/middleware"
 import { NextResponse } from "next/server"
 
-const ROLES = ["Manager", "Merchant", "Consultant", "Customer"]
+const ROLES = ["MANAGER", "MERCHANT", "CONSULTANT", "CUSTOMER"]
 
 export default withAuth(
     function middleware(req) {
         const token = req.nextauth.token
         const path = req.nextUrl.pathname
-        const role = path.split("/")[1] // Extracts role from the URL
+        const role = path.split("/")[1].toUpperCase() // Extracts role from the URL
 
         if (token?.role !== role) {
             // Redirect to home or access denied page if role doesn't match
@@ -26,6 +26,6 @@ export const config = {
         "/manager/:path*",
         "/merchant/:path*",
         "/consultant/:path*",
-        "/customer/:path*"
+        "/customer/:path*",
     ]
 }
