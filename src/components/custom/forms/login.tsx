@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Chrome, Facebook } from 'lucide-react'
-import { signIn } from 'next-auth/react'
-import { useState, FormEvent } from 'react'
+import { signIn, useSession } from 'next-auth/react'
+import { useState, FormEvent, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
@@ -16,6 +16,32 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const router = useRouter();
+  const { data: session, status } = useSession()
+
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user?.role) {
+      redirectBasedOnRole(session.user.role)
+    }
+  }, [session, status])
+
+  const redirectBasedOnRole = (role: string) => {
+    switch (role.toUpperCase()) {
+      case 'MANAGER':
+        router.push('/manager')
+        break
+      case 'MERCHANT':
+        router.push('/merchant')
+        break
+      case 'CONSULTANT':
+        router.push('/consultant')
+        break
+      case 'CUSTOMER':
+        router.push('/customer')
+        break
+      default:
+        router.push('/')
+    }
+  }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -25,12 +51,13 @@ export default function LoginPage() {
       password,
     })
     if (result?.error) {
-      // Handle error (e.g., show error message)
       setError(result.error)
-    } else {
-      // Redirect to dashboard or home page
-      router.push('/')
     }
+    // The redirection will be handled by the useEffect hook
+  }
+
+  const handleSocialLogin = (provider: string) => {
+    signIn(provider, { callbackUrl: '/login' })
   }
 
   return (
@@ -99,11 +126,11 @@ export default function LoginPage() {
           <div className="mt-6">
             <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">Or log in with</p>
             <div className="flex justify-between gap-4">
-              <Button onClick={() => signIn('google')} variant="outline" className="flex items-center justify-center space-x-2 w-full hover:bg-secondary-700">
+              <Button onClick={() => handleSocialLogin('google')} variant="outline" className="flex items-center justify-center space-x-2 w-full hover:bg-secondary-700">
                 <Chrome size={24}/>
                 <span>Google</span>
               </Button>
-              <Button onClick={() => signIn('facebook')} variant="outline" className="flex items-center justify-center space-x-2 w-full hover:bg-secondary-700">
+              <Button onClick={() => handleSocialLogin('facebook')} variant="outline" className="flex items-center justify-center space-x-2 w-full hover:bg-secondary-700">
                 <Facebook size={24}/>
                 <span>Facebook</span>
               </Button>
