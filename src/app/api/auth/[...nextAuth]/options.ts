@@ -71,7 +71,7 @@ export const options: NextAuthOptions = {
                 // Fetch user role from your database based on the Facebook ID
                 // This is just an example, implement according to your backend
                 const role = await fetchRoleFromDatabase(user.id)
-                token.role = role
+                token.role = role 
             }
             return token
         },
