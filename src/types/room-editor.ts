@@ -12,6 +12,7 @@ export interface Furniture {
     scaleFactor?: number;
     furnitureType?: string;
     description?: string;
+    category: "seating" | "tables" | "lightings" | "doors" | "stairs" | "others";
 }
 
 export interface FurnitureWithRef extends Furniture {

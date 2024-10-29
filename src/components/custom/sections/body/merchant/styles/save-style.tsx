@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react'
@@ -256,7 +257,7 @@ export default function SaveTemplatePage() {
                 </div>
               </div>
               <div className="w-full h-[600px] bg-gray-100 rounded-lg overflow-hidden">
-                {currentRoom && (
+                {/* {currentRoom && (
                   <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
                     <SceneContent
                       room={currentRoom}
@@ -268,7 +269,7 @@ export default function SaveTemplatePage() {
                     />
                     <OrbitControls />
                   </Canvas>
-                )}
+                )} */}
               </div>
             </div>
           </div>

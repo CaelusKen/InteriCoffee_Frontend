@@ -1,3 +1,5 @@
+"use client"
+
 import BrowseFurnitures from '@/components/custom/sections/body/browse-furnitures'
 import React from 'react'
 

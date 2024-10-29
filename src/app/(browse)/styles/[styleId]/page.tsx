@@ -1,8 +1,10 @@
 import { StyleDetailsBody } from '@/components/custom/sections/body/styles/details'
 import React from 'react'
 
-export default function StyleDetails({ params }: { params: { styleId: string } })  {
+export default async function StyleDetails({ params }: { params: Promise<{ styleId: string }> })  {
+  const resolvedParams = await params;
+
   return (
-    <StyleDetailsBody id={params.styleId}/>
+    <StyleDetailsBody id={resolvedParams.styleId}/>
   )
 }

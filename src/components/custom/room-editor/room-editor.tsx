@@ -62,7 +62,7 @@ export default function RoomEditor() {
     return ROOM_SCALE_FACTOR / maxDimension;
   };
 
-  const addFurniture = (model: string) => {
+  const addFurniture = (model: string, category: Furniture['category']) => {
     const newItem: Furniture = {
       id: Date.now(),
       name: `Furniture ${getCurrentFurniture().length + 1}`,
@@ -71,6 +71,7 @@ export default function RoomEditor() {
       rotation: [0, 0, 0],
       scale: [1, 1, 1],
       visible: true,
+      category: category,
     };
     updateFloors(floors.map(floor => 
       floor.id === selectedFloor
