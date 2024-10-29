@@ -28,12 +28,11 @@ import {
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TemplateData } from "@/types/room-editor";
+import { Furniture, TemplateData } from "@/types/room-editor";
 
-type FurnitureCategory = "seating" | "tables" | "storage" | "other";
 type FurnitureItem = {
   name: string;
-  category: FurnitureCategory;
+  category: Furniture['category'];
   model: string;
 };
 
@@ -44,7 +43,7 @@ interface Template {
 }
 
 interface ToolbarProps {
-  onAddFurniture: (model: string, furnitureType: string) => void;
+  onAddFurniture: (model: string, category: Furniture['category']) => void;
   transformMode: "translate" | "rotate" | "scale";
   setTransformMode: (mode: "translate" | "rotate" | "scale") => void;
   onUndo: () => void;
@@ -66,6 +65,11 @@ const furnitureItems: FurnitureItem[] = [
   { name: "Coffee Table", category: "tables", model: "/assets/3D/coffee-table.glb" },
   { name: "Classic Coffee Table", category: "tables", model: "/assets/3D/classic-coffee-table.glb" },
   { name: "Workbench", category: "tables", model: "/assets/3D/workbench.glb" },
+  { name: "Staircase", category: "stairs", model: "/assets/3D/staircase.glb"},
+  { name: "Ceiling Lamp", category: "lightings", model: "/assets/3D/ceiling-lamp-2.glb"},
+  { name: "Circle Ceiling Lamp", category: "lightings", model: "/assets/3D/ceiling-circle-lamp.glb"},
+  { name: "Aluminum Door", category: "doors", model: "/assets/3D/aluminum-door.glb"},
+  { name: "Wood Door", category: "doors", model: "/assets/3D/wood-door.glb"}
 ];
 
 export default function Toolbar({
@@ -86,7 +90,7 @@ export default function Toolbar({
   const [isLoadDrawerOpen, setIsLoadDrawerOpen] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
 
-  const categories: FurnitureCategory[] = ["seating", "tables", "storage", "other"];
+  const categories: Furniture['category'][] = ["seating", "tables", "lightings", "doors", "stairs", "others"];
 
   const handleLoadClick = () => {
     const savedTemplates = JSON.parse(
@@ -120,7 +124,7 @@ export default function Toolbar({
       <div className="space-x-2 mb-2 sm:mb-0 flex items-center gap-2">
         <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
           <DrawerTrigger asChild>
-            <Button className="text-white">
+            <Button>
               <Plus className="mr-2 h-4 w-4" /> Add Furniture
             </Button>
           </DrawerTrigger>
@@ -132,7 +136,7 @@ export default function Toolbar({
               </DrawerDescription>
             </DrawerHeader>
             <Tabs defaultValue="seating" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className={`grid w-full grid-cols-6`}>
                 {categories.map((category) => (
                   <TabsTrigger
                     key={category}
@@ -145,7 +149,7 @@ export default function Toolbar({
               </TabsList>
               {categories.map((category) => (
                 <TabsContent key={category} value={category}>
-                  <ScrollArea className="h-[300px] w-full rounded-md border p-4">
+                  <ScrollArea className="h-[300px] w-full rounded-sm border p-4">
                     <div className="grid grid-cols-2 gap-4">
                       {furnitureItems
                         .filter((item) => item.category === category)
@@ -156,7 +160,7 @@ export default function Toolbar({
                               onAddFurniture(item.model, item.category);
                               setIsDrawerOpen(false);
                             }}
-                            className="w-full justify-start"
+                            className="w-full justify-start hover:bg-secondary-400"
                           >
                             {item.name}
                           </Button>

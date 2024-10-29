@@ -1,3 +1,5 @@
+"use client"
+
 import React from "react";
 import Header from '@/components/custom/sections/header';
 import Footer from "@/components/custom/sections/footer";

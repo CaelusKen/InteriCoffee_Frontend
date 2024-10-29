@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState, Suspense } from "react";
@@ -92,36 +93,6 @@ const TemplateCard = ({ template, onView, onEdit }: TemplateCardProps) => {
             ))}
           </div>
           <img src={template.thumbnailImageSrc} alt={template.templateName + ' - ' + template.description} className="w-full h-[260px] object-cover py-2"/>
-        </div>
-        <div
-          className={`relative ${
-            isFullscreen ? "fixed inset-0 z-50" : "w-[640px] h-[360px]"
-          }`}
-        >
-          <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
-            <Suspense fallback={null}>
-              <SceneContent
-                room={template.floors[0].rooms[0]}
-                furniture={template.floors[0].rooms[0].furniture}
-                selectedItem={null}
-                onSelectItem={() => {}}
-                onUpdateTransform={handleUpdateTransform}
-                transformMode="translate"
-              />
-              <OrbitControls makeDefault />
-              <Grid infiniteGrid />
-              <Environment preset="apartment" />
-            </Suspense>
-          </Canvas>
-          <Button
-            variant="outline"
-            size="icon"
-            className="absolute top-2 right-2"
-            onClick={toggleFullscreen}
-          >
-            <Maximize2 className="h-4 w-4" />
-            <span className="sr-only">Toggle fullscreen</span>
-          </Button>
         </div>
       </CardContent>
       <CardFooter className="flex justify-end gap-4">

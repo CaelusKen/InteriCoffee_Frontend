@@ -71,7 +71,7 @@ export default function ConsultantTemplateDetailsPage() {
               <CardTitle>Style Preview</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={`relative ${isFullscreen ? 'fixed inset-0 z-50' : 'h-[400px]'}`}>
+              {/* <div className={`relative ${isFullscreen ? 'fixed inset-0 z-50' : 'h-[400px]'}`}>
                 <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
                   <Suspense fallback={null}>
                     {currentRoom && (
@@ -98,7 +98,7 @@ export default function ConsultantTemplateDetailsPage() {
                   <Maximize2 className="h-4 w-4" />
                   <span className="sr-only">Toggle fullscreen</span>
                 </Button>
-              </div>
+              </div> */}
             </CardContent>
           </Card>
           <Card>

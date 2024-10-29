@@ -12,6 +12,7 @@ interface FurnitureItemProps extends Furniture {
 }
 
 const ROOM_SCALE_FACTOR = 0.1;
+const DEFAULT_DIMENSION = 1;
 
 export default function FurnitureItem({ 
   id, 
@@ -23,11 +24,12 @@ export default function FurnitureItem({
   isSelected, 
   name, 
   onUpdateTransform,
-  roomDimensions
+  roomDimensions,
+  category
 }: FurnitureItemProps) {
   const { scene } = useGLTF(model)
   const groupRef = useRef<THREE.Group>(null)
-  const [modelDimensions, setModelDimensions] = useState<THREE.Vector3 | null>(null)
+  const [modelDimensions, setModelDimensions] = useState<THREE.Vector3>(new THREE.Vector3(DEFAULT_DIMENSION, DEFAULT_DIMENSION, DEFAULT_DIMENSION))
 
   useEffect(() => {
     if (groupRef.current) {
@@ -57,8 +59,6 @@ export default function FurnitureItem({
         type: 'scale',
         value: [scaleFactor, scaleFactor, scaleFactor]
       })
-
-      console.log(`Furniture ${id} (${name}) scale: ${scaleFactor}`)
     }
   }, [modelDimensions, roomDimensions, position, rotation, scale, id, name, onUpdateTransform])
 
@@ -67,6 +67,24 @@ export default function FurnitureItem({
       const newPosition = groupRef.current.position.toArray() as [number, number, number]
       const newRotation = groupRef.current.rotation.toArray().slice(0, 3).map(r => Number(r || 0) * (180 / Math.PI)) as [number, number, number]
       const newScale = groupRef.current.scale.toArray() as [number, number, number]
+
+      // Apply constraints based on category
+      if (category === 'lightings') {
+        newPosition[1] = roomDimensions.height - modelDimensions.y / 4.2 // Stick to ceiling
+        newPosition[0] = Math.max(-roomDimensions.width / 2, Math.min(roomDimensions.width / 2, newPosition[0])) // Constrain X
+        newPosition[2] = Math.max(-roomDimensions.length / 2, Math.min(roomDimensions.length / 2, newPosition[2])) // Constrain Z
+      } else if (category === 'doors') {
+        // Snap to nearest wall
+        const snapThreshold = 1 // Adjust as needed
+        if (Math.abs(newPosition[0]) > Math.abs(newPosition[2])) {
+          newPosition[0] = Math.sign(newPosition[0]) * (roomDimensions.width / 2 - modelDimensions.x / 2)
+          newPosition[2] = Math.max(-roomDimensions.length / 2, Math.min(roomDimensions.length / 2, newPosition[2]))
+        } else {
+          newPosition[2] = Math.sign(newPosition[2]) * (roomDimensions.length / 2 - modelDimensions.z / 2)
+          newPosition[0] = Math.max(-roomDimensions.width  / 2, Math.min(roomDimensions.width / 2, newPosition[0]))
+        }
+        newPosition[1] = 0 // Place on floor
+      }
 
       if (!arraysEqual(newPosition, position)) {
         onUpdateTransform({ id, type: 'position', value: newPosition })
@@ -89,11 +107,6 @@ export default function FurnitureItem({
       <primitive object={scene.clone()} />
       {isSelected && (
         <>
-          <Html>
-            <div className="bg-background text-foreground p-2 rounded">
-              {name}
-            </div>
-          </Html>
           <mesh>
             <boxGeometry args={[1.05, 1.05, 1.05]} />
             <meshBasicMaterial color="yellow" wireframe />

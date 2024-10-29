@@ -72,7 +72,7 @@ export default function StyleDetails() {
             </CardHeader>
             <CardContent>
               <div className={`relative ${isFullscreen ? 'fixed inset-0 z-50' : 'h-[400px]'}`}>
-                <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
+                {/* <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
                   <Suspense fallback={null}>
                     {currentRoom && (
                       <SceneContent
@@ -88,7 +88,7 @@ export default function StyleDetails() {
                     <Grid infiniteGrid />
                     <Environment preset="apartment" />
                   </Suspense>
-                </Canvas>
+                </Canvas> */}
                 <Button
                   variant="outline"
                   size="icon"

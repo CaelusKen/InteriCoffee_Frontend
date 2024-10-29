@@ -1,10 +1,13 @@
 import FurnitureDetailsSection from '@/components/custom/sections/body/furnitures/details'
 import React from 'react'
 
-export default function FurnitureDetails({ params }: { params: { furnitureId: string } })  {
+
+export default async function FurnitureDetails({ params }: { params: Promise<{ furnitureId: string }> } )  {
+  const resolvedParams = await params;
+
   return (
     <FurnitureDetailsSection 
-        id='6'
+        id={resolvedParams.furnitureId}
         name='Coffee Shop Table'
         images={[
           { src: "https://placehold.co/800", alt: "Coffee Shop Table" },
