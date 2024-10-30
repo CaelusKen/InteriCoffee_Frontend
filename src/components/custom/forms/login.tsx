@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Chrome, Facebook } from 'lucide-react'
+import { ArrowLeft, Chrome, Facebook } from 'lucide-react'
 import { signIn, useSession } from 'next-auth/react'
 import { useState, FormEvent, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -65,6 +65,10 @@ export default function LoginPage() {
       {/* Left Column */}
       <div className="flex-1 bg-gray-100 dark:bg-gray-800 flex flex-col justify-between p-12">
         <div>
+          <Button variant={'link'} onClick={() => router.back()} className='w-fit p-0 my-2'>
+              <ArrowLeft size={24}/>
+              <p>Back</p>
+          </Button>
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8">Welcome back!</h1>
           <div className="flex items-center">
             <span className="text-8xl font-bold mr-4 text-gray-900 dark:text-white">InteriCoffee</span>
@@ -130,10 +134,10 @@ export default function LoginPage() {
                 <Chrome size={24}/>
                 <span>Google</span>
               </Button>
-              <Button onClick={() => handleSocialLogin('facebook')} variant="outline" className="flex items-center justify-center space-x-2 w-full hover:bg-secondary-700">
+              {/* <Button onClick={() => handleSocialLogin('facebook')} variant="outline" className="flex items-center justify-center space-x-2 w-full hover:bg-secondary-700">
                 <Facebook size={24}/>
                 <span>Facebook</span>
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>

@@ -68,10 +68,7 @@ export const options: NextAuthOptions = {
                 token.role = user.role
             }
             if (account?.provider === "facebook" || account?.provider === "google") {
-                // Fetch user role from your database based on the Facebook ID
-                // This is just an example, implement according to your backend
-                const role = await fetchRoleFromDatabase(user.id)
-                token.role = role 
+                token.role = "CUSTOMER"
             }
             return token
         },
@@ -92,10 +89,4 @@ export const options: NextAuthOptions = {
             return baseUrl
         }
     }
-}
-
-async function fetchRoleFromDatabase(userId: string): Promise<string> {
-    // Implement your logic to fetch the user's role from your database
-    // This is just a placeholder
-    return "CUSTOMER" // Default role
 }
