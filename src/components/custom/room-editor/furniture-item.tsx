@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react'
 import { useGLTF, Html } from '@react-three/drei'
 import { Furniture } from '@/types/room-editor'
 import * as THREE from 'three'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, ThreeEvent } from '@react-three/fiber'
 
 interface FurnitureItemProps extends Furniture {
   onSelect: (event: THREE.Event) => void;
@@ -25,7 +25,8 @@ export default function FurnitureItem({
   name, 
   onUpdateTransform,
   roomDimensions,
-  category
+  category,
+  material
 }: FurnitureItemProps) {
   const { scene } = useGLTF(model)
   const groupRef = useRef<THREE.Group>(null)
@@ -36,8 +37,18 @@ export default function FurnitureItem({
       const box = new THREE.Box3().setFromObject(groupRef.current)
       const size = box.getSize(new THREE.Vector3())
       setModelDimensions(size)
+
+      groupRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.material = new THREE.MeshStandardMaterial({
+            color: new THREE.Color(material?.color),
+            metalness: material?.metalness,
+            roughness: material?.roughness,
+          })
+        }
+      })
     }
-  }, [model])
+  }, [model, material])
 
   useEffect(() => {
     if (groupRef.current && modelDimensions) {
@@ -98,11 +109,19 @@ export default function FurnitureItem({
     }
   })
 
+  const handleClick = (event: ThreeEvent<MouseEvent>) => {
+    event.stopPropagation();
+    onSelect(event);
+  }
+
   return (
     <group 
       ref={groupRef}
       name={`furniture-${id}`}
-      onClick={onSelect}
+      onClick={handleClick}
+      position={position}
+      rotation={rotation.map(r => r * (Math.PI / 180)) as [number, number, number]}
+      scale={scale}
     >
       <primitive object={scene.clone()} />
       {isSelected && (

@@ -13,6 +13,13 @@ export interface Furniture {
     furnitureType?: string;
     description?: string;
     category: "seating" | "tables" | "lightings" | "doors" | "stairs" | "others";
+    material?: FurnitureMaterial
+}
+
+export interface FurnitureMaterial {
+    color: string;
+    metalness: number;
+    roughness: number;
 }
 
 export interface FurnitureWithRef extends Furniture {

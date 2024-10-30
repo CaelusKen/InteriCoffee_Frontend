@@ -9,7 +9,7 @@ export default withAuth(
         const path = req.nextUrl.pathname
         const role = path.split("/")[1].toUpperCase() // Extracts role from the URL
 
-        if (token?.role !== role) {
+        if (token?.role?.toUpperCase() !== role) {
             // Redirect to home or access denied page if role doesn't match
             return NextResponse.redirect(new URL("/", req.url))
         }

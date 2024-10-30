@@ -87,6 +87,28 @@ export default function RoomEditor() {
     ));
   };
 
+  const handleUpdateMaterial = (id: number, material: Required<Furniture['material']>) => {
+    updateFloors(floors.map(floor => 
+      floor.id === selectedFloor
+        ? {
+            ...floor,
+            rooms: floor.rooms.map(room =>
+              room.id === selectedRoom
+                ? {
+                    ...room,
+                    furniture: room.furniture.map(item =>
+                      item.id === id
+                        ? { ...item, material }
+                        : item
+                    ),
+                  }
+                : room
+            ),
+          }
+        : floor
+    ));
+  };
+
   const updateTransform = ({ id, type, value }: TransformUpdate) => {
     updateFloors(floors.map(floor => 
       floor.id === selectedFloor
@@ -337,6 +359,7 @@ export default function RoomEditor() {
                 onUpdateTransform={updateTransform}
                 onDeleteItem={deleteItem}
                 onRename={renameItem}
+                onUpdateMaterial={handleUpdateMaterial}
               />
             </TabsContent>
             <TabsContent value="settings">

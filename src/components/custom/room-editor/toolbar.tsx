@@ -29,6 +29,8 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Furniture, TemplateData } from "@/types/room-editor";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 type FurnitureItem = {
   name: string;
@@ -90,7 +92,11 @@ export default function Toolbar({
   const [isLoadDrawerOpen, setIsLoadDrawerOpen] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
 
+  const { data: session } = useSession();
+
   const categories: Furniture['category'][] = ["seating", "tables", "lightings", "doors", "stairs", "others"];
+
+  const router = useRouter();
 
   const handleLoadClick = () => {
     const savedTemplates = JSON.parse(
@@ -124,7 +130,7 @@ export default function Toolbar({
       <div className="space-x-2 mb-2 sm:mb-0 flex items-center gap-2">
         <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
           <DrawerTrigger asChild>
-            <Button>
+            <Button variant="outline" className="flex items-center">
               <Plus className="mr-2 h-4 w-4" /> Add Furniture
             </Button>
           </DrawerTrigger>
@@ -237,18 +243,37 @@ export default function Toolbar({
         >
           <Redo className="w-4 h-4" />
         </Button>
-        <Button
-          onClick={onSaveCustomer}
-          className="hover:bg-primary-600 hover:text-white"
-        >
-          Save Design
-        </Button>
-        <Button
-          onClick={onSaveMerchant}
-          className="hover:bg-primary-600 hover:text-white"
-        >
-          Save as Template
-        </Button>
+        {
+          session?.user.role?.match("CUSTOMER") && (
+            <Button
+              onClick={onSaveCustomer}
+              className="hover:bg-primary-600 hover:text-white"
+            >
+              Save Design
+            </Button>
+          )
+        }
+        {
+          session?.user.role?.match("CONSULTANT") && (
+            <Button
+              onClick={onSaveMerchant}
+              className="hover:bg-primary-600 hover:text-white"
+            >
+              Save as Template
+            </Button>
+          )
+        }
+        {
+          session == null && (
+            <Button
+              onClick={() => router.push('/login')}
+              className="hover:bg-primary-600 hover:text-white"
+            >
+              Login to save
+            </Button>
+          )
+        }
+        
         <Button
           onClick={handleLoadClick}
           size="icon"
