@@ -9,7 +9,7 @@ function decodeAccessToken(token: string): { role: string } | null {
       const decoded = jwt.decode(token) as { [key: string]: any } | null;
       if (decoded) {
         const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-        return { role: role || "CUSTOMER" };
+        return { role: role };
       }
       return null;
     } catch (error) {
@@ -51,13 +51,10 @@ export const options: NextAuthOptions = {
                     headers: { "Content-Type": "application/json" }
                   });
                 const user = await res.json()
-          
-                // If no error and we have user data, return it
                 if (res.ok && user) {
                     const decodedToken = decodeAccessToken(user['access-token']);
-                    return { ...user, role: user.role || "CUSTOMER" }
+                    return { ...user, role: decodedToken?.role || user.role }
                 }
-                // Return null if user data could not be retrieved
                 return null
               }
         }),
@@ -77,7 +74,7 @@ export const options: NextAuthOptions = {
                 ...session,
                 user: {
                   ...session.user,
-                  role: token.role ?? 'CUSTOMER'
+                  role: token.role
                 }
             };
         },

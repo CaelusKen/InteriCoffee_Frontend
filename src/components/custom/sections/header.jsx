@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, ShoppingCart } from 'lucide-react'
+import { Menu, X, ShoppingCart, Layers } from 'lucide-react'
 import { ThemeToggler } from '../buttons/theme-toggler'
 import { useRouter } from 'next/navigation'
 import { useCart } from '../cart/cart-context'
@@ -76,50 +76,57 @@ const Header = () => {
                 </Link>
               </motion.li>
             ))}
+            
           </ul>
         </nav>
       </div>
 
       <div className='hidden lg:flex gap-4 items-center'>
       {
-            session ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={session.user?.image || ''} alt={session.user?.name || ''} />
-                      <AvatarFallback>{session.user?.name?.[0] || 'U'}</AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-white text-black" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{session.user?.name}</p>
-                      <p className="text-xs leading-none text-muted-foreground">{session.user?.email}</p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className='hover:bg-slate-100'>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className='hover:bg-slate-100' onClick={() => signOut()}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <>
-                <Button onClick={() => router.push('/login')} variant={'link'} className='text-black dark:text-white dark:hover:text-primary-400 hover:text-primary-400 transition-colors duration-200'>
-                  Login
+        session ? (
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={session.user?.image || ''} alt={session.user?.name || ''} />
+                    <AvatarFallback>{session.user?.name?.[0] || 'U'}</AvatarFallback>
+                  </Avatar>
                 </Button>
-                <Button onClick={() => router.push('/signup')} variant={'outline'} className='rounded-md hover:bg-primary hover:text-white transition-colors duration-200'>
-                  Get Started
-                </Button>
-              </>
-            ) }
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 bg-white text-black" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{session.user?.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{session.user?.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className='hover:bg-slate-100'>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className='hover:bg-slate-100' onClick={() => signOut()}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant={'ghost'} onClick={() => router.push('/simulation')}>
+              <Layers size={24}/>
+              <p>Simulate</p>
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button onClick={() => router.push('/login')} variant={'link'} className='text-black dark:text-white dark:hover:text-primary-400 hover:text-primary-400 transition-colors duration-200'>
+              Login
+            </Button>
+            <Button onClick={() => router.push('/signup')} variant={'outline'} className='rounded-md hover:bg-primary hover:text-white transition-colors duration-200'>
+              Get Started
+            </Button>
+          </>
+        ) }
         <CartDrawer>
           <Button variant='ghost' size='icon' className="relative">
             <ShoppingCart className="h-5 w-5" />
