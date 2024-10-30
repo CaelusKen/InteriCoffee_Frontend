@@ -79,11 +79,17 @@ export const options: NextAuthOptions = {
             };
         },
         async redirect({ url, baseUrl }) {
-            // Allows relative callback URLs
-            if (url.startsWith("/")) return `${baseUrl}${url}`
-            // Allows callback URLs on the same origin
-            else if (new URL(url).origin === baseUrl) return url
-            return baseUrl
+            const hostname = process.env.VERCEL_URL
+                ? `${process.env.VERCEL_URL}`
+                : process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
+            if (url.startsWith("/")) 
+            {
+                return `${hostname}${url}`
+            }
+            else if (new URL(url).origin === hostname) {
+                return url
+            }
+            return hostname
         }
     }
 }
