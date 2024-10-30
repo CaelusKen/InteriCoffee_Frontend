@@ -79,23 +79,11 @@ export const options: NextAuthOptions = {
             };
         },
         async redirect({ url, baseUrl }) {
-            // Get the hostname dynamically with https:// protocol
-            const hostname = process.env.VERCEL_URL
-              ? `https://${process.env.VERCEL_URL}`
-              : process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
-      
-            // Handle relative and absolute URLs
-            if (url.startsWith("/")) {
-              return `${hostname}${url}`
-            }
-            // Allow only URLs from our domain
-            if (url.startsWith(hostname)) {
-              return url
-            }
-            // Default fallback
-            return hostname
-          },
-
-          
+            // Allows relative callback URLs
+            if (url.startsWith("/")) return `${baseUrl}${url}`
+            // Allows callback URLs on the same origin
+            else if (new URL(url).origin === baseUrl) return url
+            return baseUrl
+        }
     },
 }
