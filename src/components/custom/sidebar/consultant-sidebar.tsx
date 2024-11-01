@@ -34,7 +34,7 @@ export default function ConsultantSidebar() {
       transition={{ duration: 0.5}}
       className="w-64 bg-gray-100 dark:bg-gray-800 shadow-md">
       <div className="p-6 border-b">
-        <h2 className="text-xl font-bold">Merchant</h2>
+        <h2 className="text-xl font-bold">Consultant</h2>
       </div>
       <nav className="p-4">
         <ul className="space-y-6">
