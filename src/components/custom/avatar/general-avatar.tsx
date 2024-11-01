@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import { User, LogOut, Settings, ShoppingBag, Palette, MessageSquare } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -11,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { signOut } from 'next-auth/react'
 
 interface AvatarProps {
   name: string
@@ -64,7 +67,7 @@ export const CustomAvatar: React.FC<AvatarProps> = ({ name, role, imageSrc }) =>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => signOut()}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>
