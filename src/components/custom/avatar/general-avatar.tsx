@@ -13,15 +13,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { signOut } from 'next-auth/react'
+import { useSession ,signOut } from 'next-auth/react'
 
 interface AvatarProps {
   name: string
-  role: 'Consultant' | 'Customer' | 'Merchant' | 'Manager'
+  role: string
   imageSrc: string
 }
 
 export const CustomAvatar: React.FC<AvatarProps> = ({ name, role, imageSrc }) => {
+  const session = useSession();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -35,8 +37,8 @@ export const CustomAvatar: React.FC<AvatarProps> = ({ name, role, imageSrc }) =>
       <DropdownMenuContent className="w-56 bg-white text-black" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{name}</p>
-            <p className="text-xs leading-none text-muted-foreground">{role}</p>
+            <p className="text-sm font-medium leading-none">{session.data?.user.name}</p>
+            <p className="text-xs leading-none text-muted-foreground">{session.data?.user.role}</p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -45,7 +47,7 @@ export const CustomAvatar: React.FC<AvatarProps> = ({ name, role, imageSrc }) =>
             <User className="mr-2 h-4 w-4" />
             <span>Profile</span>
           </DropdownMenuItem>
-          {role === 'Customer' && (
+          {session.data?.user.role?.toLowerCase() === 'CUSTOMER' && (
             <>
               <DropdownMenuItem>
                 <ShoppingBag className="mr-2 h-4 w-4" />
