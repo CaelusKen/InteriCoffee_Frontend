@@ -1,4 +1,3 @@
-import { NextRequest } from "next/server";
 import { createEntityHandlers } from "@/lib/api-handler";
 import { Account } from "@/types/entities";
 

@@ -3,5 +3,6 @@ import { Merchant } from "@/types/entities";
 
 const merchantHandler = createEntityHandlers<Merchant>("merchants");
 
-export const GET = merchantHandler.getAll;
-export const POST = merchantHandler.create;
+export const GET = merchantHandler.getById;
+export const PATCH = merchantHandler.update;
+export const DELETE = merchantHandler.delete;
