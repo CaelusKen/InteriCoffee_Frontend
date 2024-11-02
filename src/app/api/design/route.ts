@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { api } from "@/service/api";
-import { Design } from "@/types/entities";
+import { ApiDesign } from "@/types/entities";
 import { ApiResponse, PaginatedResponse } from "@/types/api";
 
 export async function GET(request: NextRequest) {
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const pageSize = searchParams.get('pageSize') || '10'
 
     try {
-        const response: ApiResponse<PaginatedResponse<Design>> = await api.getPaginated<Design>(`/designs?page=${page}&pageSize=${pageSize}`);
+        const response: ApiResponse<PaginatedResponse<ApiDesign>> = await api.getPaginated<ApiDesign>(`/designs?page=${page}&pageSize=${pageSize}`);
         return NextResponse.json(response)
     }
     catch(error) {
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const designData = await request.json();
-        const response: ApiResponse<Design> = await api.post<Design>('/designs', designData)
+        const response: ApiResponse<ApiDesign> = await api.post<ApiDesign>('/designs', designData)
         return NextResponse.json(response);
     }
     catch(error) {
