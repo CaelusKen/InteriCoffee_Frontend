@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { Account } from "@/types/entities";
 import { ApiResponse, PaginatedResponse } from "@/types/api";
 import { api } from "@/service/api";
+import LoadingPage from "@/components/custom/loading/loading";
 
 // API functions
 const fetchAccounts = async (
@@ -20,7 +20,7 @@ const fetchAccountById = async (id: string): Promise<ApiResponse<Account>> => {
 };
 
 const createAccount = async (
-  account: Omit<Account, "id">
+  account: Omit<Account, "id" | "createdDate" | "updatedDate">
 ): Promise<ApiResponse<Account>> => {
   return api.post<Account>("accounts", account);
 };
@@ -35,7 +35,6 @@ const deleteAccount = async (id: string): Promise<ApiResponse<Account>> => {
   return api.delete<Account>(`accounts/${id}`);
 };
 
-
 export default function AccountManagement() {
   const [page, setPage] = useState(1);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
@@ -48,6 +47,10 @@ export default function AccountManagement() {
     queryKey: ["accounts", page],
     queryFn: () => fetchAccounts(page),
   });
+
+  const accounts = accountsQuery.data?.data?.items ?? [];
+  const totalCount = accountsQuery.data?.data?.totalCount ?? 0;
+  const pageSize = accountsQuery.data?.data?.pageSize ?? 10;
 
   const selectedAccountQuery = useQuery({
     queryKey: ["account", selectedAccountId],
@@ -62,6 +65,10 @@ export default function AccountManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
     },
+    onError: (error) => {
+      console.error("Error creating account:", error);
+      // Handle error (e.g., show error message to user)
+    }
   });
 
   const updateAccountMutation = useMutation({
@@ -90,8 +97,6 @@ export default function AccountManagement() {
       phoneNumber: "0123456789",
       address: "test address",
       status: "ACTIVE",
-      createdDate: new Date(),
-      updatedDate: new Date(),
       avatar: "https://github.com/shadcn.png",
       merchantId: "6721c45bb5843f83df182aa4",
       roleId: "Customer",
@@ -99,11 +104,12 @@ export default function AccountManagement() {
     createAccountMutation.mutate(newAccount);
   };
 
+
   const handleUpdateAccount = () => {
     if (selectedAccountId && selectedAccountQuery.data) {
       const updatedAccount = {
         ...selectedAccountQuery.data.data,
-        name: `${selectedAccountQuery.data.data.username} (Updated)`,
+        username: `${selectedAccountQuery.data.data.username} (Updated)`,
       };
       updateAccountMutation.mutate(updatedAccount);
     }
@@ -115,7 +121,7 @@ export default function AccountManagement() {
     }
   };
 
-  if (accountsQuery.isLoading) return <div>Loading accounts...</div>;
+  if (accountsQuery.isLoading) return <LoadingPage />;
   if (accountsQuery.isError) return <div>Error loading accounts</div>;
 
   return (
@@ -125,19 +131,23 @@ export default function AccountManagement() {
       {/* Account List */}
       <div className="mb-4">
         <h2 className="text-xl font-semibold mb-2">Accounts</h2>
-        <ul className="space-y-2">
-          {accountsQuery.data?.data.items.map((account) => (
-            <li
-              key={account.id}
-              className={`cursor-pointer ${
-                selectedAccountId === account.id ? "font-bold" : ""
-              }`}
-              onClick={() => setSelectedAccountId(account.id)}
-            >
-              {account.username} ({account.email})
-            </li>
-          ))}
-        </ul>
+        {accounts.length === 0 ? (
+          <p>No accounts found.</p>
+        ) : (
+          <ul className="space-y-2">
+            {accounts.map((account) => (
+              <li
+                key={account.id}
+                className={`cursor-pointer ${
+                  selectedAccountId === account.id ? "font-bold" : ""
+                }`}
+                onClick={() => setSelectedAccountId(account.id)}
+              >
+                {account.username} ({account.email})
+              </li>
+            ))}
+          </ul>
+        )}
         <div className="mt-2">
           <button
             onClick={() => setPage((old) => Math.max(old - 1, 1))}
@@ -148,7 +158,7 @@ export default function AccountManagement() {
           </button>
           <button
             onClick={() => setPage((old) => old + 1)}
-            disabled={!accountsQuery.data?.data.items.length}
+            disabled={accounts.length < pageSize}
             className="px-2 py-1 bg-gray-200 rounded"
           >
             Next
