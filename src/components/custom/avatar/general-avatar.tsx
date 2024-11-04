@@ -29,8 +29,8 @@ export const CustomAvatar: React.FC<AvatarProps> = ({ name, role, imageSrc }) =>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={imageSrc} alt={name} />
-            <AvatarFallback>{name.charAt(0)}</AvatarFallback>
+            <AvatarImage src={imageSrc} alt={session.data?.user.name || "user"} />
+            <AvatarFallback>{session.data?.user.name?.charAt(0)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>

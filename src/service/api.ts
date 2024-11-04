@@ -13,7 +13,8 @@ async function fetchAPI<T>(
     'Content-Type': 'application/json',
   };
 
-  const url = new URL(`${API_URL}${endpoint}`);
+  // Ensure we don't have double slashes in the URL
+  const url = new URL(`${API_URL}/${endpoint.replace(/^\//, '')}`);
   if (queryParams) {
     Object.entries(queryParams).forEach(([key, value]) => {
       if (value !== undefined) {
