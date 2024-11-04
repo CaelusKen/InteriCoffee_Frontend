@@ -12,7 +12,7 @@ export interface Account {
     createdDate: Date;
     updatedDate: Date;
     merchantId: string | null;
-    roleId: "Customer" | "Consultant" | "Merchant" | "Manager";
+    roleId: string;
 
 }
 

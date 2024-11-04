@@ -35,7 +35,7 @@ export function createEntityHandlers<T>(entityName: string): EntityHandlers<T> {
       }
 
       try {
-        const response: ApiResponse<PaginatedResponse<T>> = await api.getPaginated<T>(`/${entityName}`, { page, pageSize });
+        const response: ApiResponse<PaginatedResponse<T>> = await api.getPaginated<T>(`${entityName}`, { page, pageSize });
         return NextResponse.json(response);
       } catch (error) {
         console.error(`Error fetching ${entityName}:`, error);
@@ -53,7 +53,7 @@ export function createEntityHandlers<T>(entityName: string): EntityHandlers<T> {
      */
     async getById(request: NextRequest, { params }: { params: { id: string } }) {
       try {
-        const response: ApiResponse<T> = await api.getById<T>(`/${entityName}`, params.id);
+        const response: ApiResponse<T> = await api.getById<T>(`${entityName}`, params.id);
         return NextResponse.json(response);
       } catch (error) {
         console.error(`Error fetching ${entityName}:`, error);
@@ -72,7 +72,7 @@ export function createEntityHandlers<T>(entityName: string): EntityHandlers<T> {
     async create(request: NextRequest) {
       try {
         const data = await request.json();
-        const response: ApiResponse<T> = await api.post<T>(`/${entityName}`, data);
+        const response: ApiResponse<T> = await api.post<T>(`${entityName}`, data);
         return NextResponse.json(response);
       } catch (error) {
         console.error(`Error creating ${entityName}:`, error);
@@ -92,7 +92,7 @@ export function createEntityHandlers<T>(entityName: string): EntityHandlers<T> {
     async update(request: NextRequest, { params }: { params: { id: string } }) {
       try {
         const updates = await request.json();
-        const response: ApiResponse<T> = await api.patch<T>(`/${entityName}/${params.id}`, updates);
+        const response: ApiResponse<T> = await api.patch<T>(`${entityName}/${params.id}`, updates);
         return NextResponse.json(response);
       } catch (error) {
         console.error(`Error updating ${entityName}:`, error);
@@ -110,7 +110,7 @@ export function createEntityHandlers<T>(entityName: string): EntityHandlers<T> {
      */
     async delete(request: NextRequest, { params }: { params: { id: string } }) {
       try {
-        const response: ApiResponse<T> = await api.delete<T>(`/${entityName}/${params.id}`);
+        const response: ApiResponse<T> = await api.delete<T>(`${entityName}/${params.id}`);
         return NextResponse.json(response);
       } catch (error) {
         console.error(`Error deleting ${entityName}:`, error);
