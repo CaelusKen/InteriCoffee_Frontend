@@ -1,7 +1,7 @@
 import { createEntityHandlers } from "@/lib/api-handler";
-import { ApiDesign } from "@/types/entities";
+import { APIDesign } from "@/types/entities";
 
-const designHandler = createEntityHandlers<ApiDesign>("designs");
+const designHandler = createEntityHandlers<APIDesign>("designs");
 
 export const GET = designHandler.getById;
 export const PATCH = designHandler.update;
