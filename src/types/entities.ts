@@ -1,183 +1,240 @@
-import { Floor } from "./room-editor";
-
 //Entities
 export interface Account {
-    id: string;
-    username: string;
-    email: string;
-    phoneNumber: string;
-    address: string;
-    status: string;
-    avatar: string;
-    createdDate: Date;
-    updatedDate: Date;
-    merchantId: string | null;
-    roleId: string;
-
+    id:            string;
+    _id:           string;
+    "user-name":    string;
+    userName?:      string;
+    password:       string;
+    email:          string;
+    "phone-number": string;
+    address:        string;
+    status:         string;
+    avatar:         string;
+    "created-date": Date;
+    "updated-date": Date;
+    "merchant-id":  string;
+    role:           string;
 }
+
 
 export interface ChatSession {
-    id: string;
-    messages: {
-        sender: string;
-        message: string;
-        timeStamp: Date;
-    }[],
-    createdDate: Date;
-    updatedDate: Date;
-    customerId: Account['id'];
-    adviser: Account['id'];
+    id:             string;
+    _id:            string;
+    messages:       Message[];
+    "created-date": Date;
+    "updated-date": Date;
+    "customer-id":  string;
+    "advisor-id":   string;
 }
 
-//Design entity in API (not to be confused with the design type in the Simulator)
-export interface ApiDesign {
-    id: string;
-    name: string;
-    description: string;
-    createdDate: Date;
-    updatedDate: Date;
-    status: string;
-    type: "Template" | "Design";
-    floors: Floor[]
+export interface Message {
+    id:           string;
+    _id:          string;
+    sender:       string;
+    message:      string;
+    "time-stamp": Date;
 }
+
+
+export interface APIDesign {
+    id:             string;
+    _id:            string;
+    name:           string;
+    description:    string;
+    "created-date": Date;
+    "updated-date": Date;
+    status:         string;
+    type:           string;
+    floors:         Floor[];
+    "account-id":   string;
+    "template-id":  string;
+    "style-id":     string;
+}
+
+export interface Floor {
+    id:             string;
+    _id:            string;
+    name:           string;
+    products:       DesignProduct[];
+    "non-products": DesignProduct[];
+}
+
+export interface DesignProduct {
+    id:       string;
+    _id:      string;
+    type?:    string;
+    position: DesignProductValue;
+    scale:    DesignProductValue;
+    rotation: DesignProductValue;
+}
+
+export interface DesignProductValue {
+    x: number;
+    y: number;
+    z: number;
+}
+
 
 export interface Merchant {
-    id: string;
-    name: string;
-    email: string;
-    address: string;
-    phoneNumber: string;
-    logoUrl: string;
-    description: string;
-    status: string;
-    merchantCode: string;
-    policyDocument: string;
-    website?: string; //If the merchant has the website, add this in.
-    orderIncome: {
-        orderId: Order['id'];
-        income: number;
-    }[]
+    id:                string;
+    _id:               string;
+    name:              string;
+    email:             string;
+    address:           string;
+    "phone-number":    string;
+    "logo-url":        string;
+    description:       string;
+    status:            string;
+    "merchant-code":   string;
+    "policy-document": string;
+    website:           string;
+    "order-incomes":   OrderIncome[];
 }
 
+export interface OrderIncome {
+    "order-id": string;
+    income:     number;
+}
+
+
 export interface Order {
-    id: string;
-    orderDate: Date;
-    status: string;
-    vat: number;
-    feeAmount: number;
-    totalAmount: number;
-    shippingAddress: string;
-    orderProducts: {
-        id: string;
-        name: string;
-        description: string;
-        price: number;
-        merchantId: Merchant['id']
-    }[],
-    systemIncome: number;
-    voucherId?: string;
-    accountId: Account['id'];
-    updatedDate: Date;
+    id:                 string;
+    _id:                string;
+    "order-date":       Date;
+    status:             string;
+    vat:                number;
+    "fee-amount":       number;
+    "total-amount":     number;
+    "shipping-address": string;
+    "order-products":   OrderProduct[];
+    "system-income":    number;
+    "voucher-id":       string;
+    "account-id":       string;
+    "updated-date":     Date;
+}
+
+export interface OrderProduct {
+    id:            string;
+    _id:           string;
+    name:          string;
+    description:   string;
+    price:         number;
+    "merchant-id": string;
 }
 
 export interface Product {
-    id: string;
-    categoryId: ProductCategory['id'][];
-    name: string;
-    description: string;
-    images: {
-        thumbnail: string; //url of the thumbnail
-        normalImages: string[]; //a list of url of the normal images
-    }[];
-    sellingPrice: number;//the price of the product after apply the discount
-    discount: number;
-    truePrice: number; //the original price of the product
-    quantity: number;
-    status: string;
-    dimensions: string;
-    materials: string[];
-    modelTextureUrl: string;
-    createdDate: Date;
-    updatedDate: Date;
-    campaignId: SaleCampaign['id'];
-    merchantId: Merchant['id'];
+    id:                  string;
+    _id:                 string;
+    "category-ids":      string[];
+    name:                string;
+    description:         string;
+    images:              Images;
+    "selling-price":     number;
+    discount:            number;
+    "true-price":        number;
+    quantity:            number;
+    status:              string;
+    dimensions:          string;
+    materials:           string[];
+    "model-texture-url": string;
+    "created-date":      Date;
+    "updated-date":      Date;
+    "campaign-id":       string;
+    "merchant-id":       string;
+}
+
+export interface Images {
+    thumbnail:       string;
+    "normal-images": string[];
 }
 
 export interface ProductCategory {
-    id: string;
-    name: string;
+    id:          string;
+    _id:         string;
+    name:        string;
     description: string;
 }
 
 export interface Review {
-    id: string;
-    comment: string;
-    rating: number;
-    productId: Product['id'];
-    accountId: Account['id'];
+    id:           string;
+    _id:          string;
+    comment:      string;
+    rating:       number;
+    "product-id": string;
+    "account-id": string;
 }
 
 export interface SaleCampaign {
-    id: string;
-    name: string;
-    description: string;
-    value: number;
-    startDate: Date;
-    endDate: Date;
-    status: string;
-    merchantId: Merchant['id'];
-    campaignProductIds: Product['id'][];
+    id:                     string;
+    _id:                    string;
+    name:                   string;
+    description:            string;
+    value:                  number;
+    "start-date":           Date;
+    "end-date":             Date;
+    status:                 string;
+    "merchant-id":          string;
+    "campaign-product-ids": string[];
 }
 
 export interface Style {
-    id: string;
-    name: string;
+    id:          string;
+    _id:         string;
+    name:        string;
     description: string;
 }
 
 export interface Template {
-    id: string;
-    name: string;
-    description: string;
-    createdDate: Date;
-    updatedate: Date;
-    status: string;
-    type: "Template" | "Design";
-    floors: Floor[];
-    categories: string[];
-    accountId: Account['id']
-    merchantId: Merchant['id']
-    styleId: Style['id']
+    id:             string;
+    _id:            string;
+    name:           string;
+    description:    string;
+    "created-date": Date;
+    "updated-date": Date;
+    status:         string;
+    type:           string;
+    floors:         Floor[];
+    categories:     string[];
+    "account-id":   string;
+    "merchant-id":  string;
+    "style-id":     string;
 }
 
 export interface Transaction {
-    id: string;
-    paymentMethod: string;
-    transactionDate: Date;
-    totalAmount: number;
-    currency: string;
-    status: string;
-    createdDate: Date;
-    updateDate: Date;
-    accountId: Account['id']
-    orderId: Order['id']
+    id:                 string;
+    _id:                string;
+    "payment-method":   string;
+    "transaction-date": Date;
+    "total-amount":     number;
+    currency:           string;
+    status:             string;
+    "created-date":     Date;
+    "updated-date":     Date;
+    "account-id":       string;
+    "order-id":         string;
 }
 
 export interface Voucher {
-    id: string;
-    code: string;
-    name: string;
-    description: string;
-    discountPercentage: number;
-    status: string;
-    createdDate: Date;
-    updatedDate: Date;
-    startDate: Date;
-    endDate: Date;
-    maxUse: number;
-    minOrderValue: number;
-    userAccoutIds: Account['id'][];
-    type: string;
+    id:                    string;
+    _id:                   string;
+    code:                  string;
+    name:                  string;
+    description:           string;
+    "discount-percentage": number;
+    status:                string;
+    "created-date":        Date;
+    "updated-date":        Date;
+    "start-date":          Date;
+    "end-date":            Date;
+    "max-use":             number;
+    "min-order-value":     number;
+    "used-account-ids":    string[];
+    type:                  string;
 }
+
+
+
+
+
 
 
