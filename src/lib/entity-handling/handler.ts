@@ -12,6 +12,7 @@ interface BackendAccount {
     "updated-date": string;
     "merchant-id": string;
     "role-id": string | null;
+    "password": string;
 }
 
 // ... (define other fields based on backend response)
@@ -42,16 +43,18 @@ export function mapBackendAccountToFrontend(backendAccount: BackendAccount): Acc
 
     return {
         id: backendAccount["_id"],
-        username: backendAccount["user-name"],
+        _id: backendAccount["_id"],
+        "user-name": backendAccount["user-name"],
         email: backendAccount["email"],
-        phoneNumber: backendAccount["phone-number"],
+        "phone-number": backendAccount["phone-number"],
         address: backendAccount["address"],
         status: backendAccount["status"],
         avatar: backendAccount["avatar"],
-        createdDate: new Date(backendAccount["created-date"]),
-        updatedDate: new Date(backendAccount["updated-date"]),
-        merchantId: backendAccount["merchant-id"] || null,
-        roleId: backendAccount["role-id"] || ""
+        "created-date": new Date(backendAccount["created-date"]),
+        "updated-date": new Date(backendAccount["updated-date"]),
+        "merchant-id": backendAccount["merchant-id"],
+        role: backendAccount["role-id"] || "",
+        password: backendAccount["password"],
     };
 }
 
