@@ -1,7 +1,9 @@
 //Entities
 export interface Account {
-    _id:            string;
+    id:            string;
+    _id:           string;
     "user-name":    string;
+    userName?:      string;
     password:       string;
     email:          string;
     "phone-number": string;
@@ -16,6 +18,7 @@ export interface Account {
 
 
 export interface ChatSession {
+    id:             string;
     _id:            string;
     messages:       Message[];
     "created-date": Date;
@@ -25,6 +28,7 @@ export interface ChatSession {
 }
 
 export interface Message {
+    id:           string;
     _id:          string;
     sender:       string;
     message:      string;
@@ -33,6 +37,7 @@ export interface Message {
 
 
 export interface APIDesign {
+    id:             string;
     _id:            string;
     name:           string;
     description:    string;
@@ -47,6 +52,7 @@ export interface APIDesign {
 }
 
 export interface Floor {
+    id:             string;
     _id:            string;
     name:           string;
     products:       DesignProduct[];
@@ -54,6 +60,7 @@ export interface Floor {
 }
 
 export interface DesignProduct {
+    id:       string;
     _id:      string;
     type?:    string;
     position: DesignProductValue;
@@ -69,6 +76,7 @@ export interface DesignProductValue {
 
 
 export interface Merchant {
+    id:                string;
     _id:               string;
     name:              string;
     email:             string;
@@ -90,6 +98,7 @@ export interface OrderIncome {
 
 
 export interface Order {
+    id:                 string;
     _id:                string;
     "order-date":       Date;
     status:             string;
@@ -105,6 +114,7 @@ export interface Order {
 }
 
 export interface OrderProduct {
+    id:            string;
     _id:           string;
     name:          string;
     description:   string;
@@ -113,6 +123,7 @@ export interface OrderProduct {
 }
 
 export interface Product {
+    id:                  string;
     _id:                 string;
     "category-ids":      string[];
     name:                string;
@@ -138,12 +149,14 @@ export interface Images {
 }
 
 export interface ProductCategory {
+    id:          string;
     _id:         string;
     name:        string;
     description: string;
 }
 
 export interface Review {
+    id:           string;
     _id:          string;
     comment:      string;
     rating:       number;
@@ -152,6 +165,7 @@ export interface Review {
 }
 
 export interface SaleCampaign {
+    id:                     string;
     _id:                    string;
     name:                   string;
     description:            string;
@@ -164,12 +178,14 @@ export interface SaleCampaign {
 }
 
 export interface Style {
+    id:          string;
     _id:         string;
     name:        string;
     description: string;
 }
 
 export interface Template {
+    id:             string;
     _id:            string;
     name:           string;
     description:    string;
@@ -185,6 +201,7 @@ export interface Template {
 }
 
 export interface Transaction {
+    id:                 string;
     _id:                string;
     "payment-method":   string;
     "transaction-date": Date;
@@ -198,6 +215,7 @@ export interface Transaction {
 }
 
 export interface Voucher {
+    id:                    string;
     _id:                   string;
     code:                  string;
     name:                  string;
