@@ -112,11 +112,12 @@ export default function AccountManagement() {
 
   const handleUpdateAccount = () => {
     if (selectedAccountId && selectedAccountQuery.data) {
-      const updatedAccount = {
-        ...selectedAccountQuery.data.data,
-        userName: `${selectedAccountQuery.data.data.userName} (Updated)`,
-      }
-      updateAccountMutation.mutate(updatedAccount)
+      const currentAccount = selectedAccountQuery.data.data;
+      const updatedAccount: Account = {
+        ...currentAccount,
+        userName: `${currentAccount.userName} 2`,
+      };
+      updateAccountMutation.mutate(updatedAccount);
     }
   }
 
@@ -210,6 +211,12 @@ export default function AccountManagement() {
         >
           Delete Selected Account
         </button>
+
+        {updateAccountMutation.isError && (
+          <div className="mt-4 text-red-500">
+            Error updating account: {updateAccountMutation.error instanceof Error ? updateAccountMutation.error.message : 'Unknown error'}
+          </div>
+        )}
       </div>
     </div>
   )
