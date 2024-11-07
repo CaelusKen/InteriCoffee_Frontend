@@ -1,8 +1,35 @@
-import { createEntityHandlers } from "@/lib/api-handler";
-import { Account } from "@/types/entities";
+import { NextRequest, NextResponse } from 'next/server';
+import { createEntityHandlers } from '@/lib/api-handler';
+import { mapBackendToFrontend } from "@/lib/entity-handling/handler";
+import { Account } from '@/types/frontend/entities';
+import { BackendAccount } from '@/types/backend/entities';
 
-const accountHandler = createEntityHandlers<Account>("accounts");
+const accountHandlers = createEntityHandlers<BackendAccount>('accounts');
 
-export const GET = accountHandler.getById;
-export const PATCH = accountHandler.update;
-export const DELETE = accountHandler.delete;
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  const response = await accountHandlers.getById(request, { params });
+  const data = await response.json();
+  
+  if (data.data) {
+    const mappedData = mapBackendToFrontend<Account>(data.data, 'account');
+    return NextResponse.json({ ...data, data: mappedData });
+  }
+  
+  return response;
+}
+
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+  const response = await accountHandlers.update(request, { params });
+  const data = await response.json();
+  
+  if (data.data) {
+    const mappedData = mapBackendToFrontend<Account>(data.data, 'account');
+    return NextResponse.json({ ...data, data: mappedData });
+  }
+  
+  return response;
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  return accountHandlers.delete(request, { params });
+}

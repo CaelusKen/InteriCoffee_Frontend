@@ -1,8 +1,35 @@
-import { createEntityHandlers } from "@/lib/api-handler";
-import { SaleCampaign } from "@/types/entities";
+import { NextRequest, NextResponse } from 'next/server';
+import { createEntityHandlers } from '@/lib/api-handler';
+import { mapBackendToFrontend } from "@/lib/entity-handling/handler";
+import { SaleCampaign } from '@/types/frontend/entities';
+import { BackendSaleCampaign } from '@/types/backend/entities';
 
-const saleCampaignHandler = createEntityHandlers<SaleCampaign>("sale-campaigns");
+const entityHandlers = createEntityHandlers<BackendSaleCampaign>('sale-campaigns');
 
-export const GET = saleCampaignHandler.getById;
-export const PATCH = saleCampaignHandler.update;
-export const DELETE = saleCampaignHandler.delete;
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  const response = await entityHandlers.getById(request, { params });
+  const data = await response.json();
+  
+  if (data.data) {
+    const mappedData = mapBackendToFrontend<SaleCampaign>(data.data, 'saleCampaign');
+    return NextResponse.json({ ...data, data: mappedData });
+  }
+  
+  return response;
+}
+
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+  const response = await entityHandlers.update(request, { params });
+  const data = await response.json();
+  
+  if (data.data) {
+    const mappedData = mapBackendToFrontend<SaleCampaign>(data.data, 'saleCampaign');
+    return NextResponse.json({ ...data, data: mappedData });
+  }
+  
+  return response;
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  return entityHandlers.delete(request, { params });
+}

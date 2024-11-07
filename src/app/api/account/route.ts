@@ -1,59 +1,31 @@
-import { createEntityHandlers } from "@/lib/api-handler";
-import { Account } from "@/types/entities";
-import { NextRequest, NextResponse } from "next/server";
-import { api } from "@/service/api";
+import { NextRequest, NextResponse } from 'next/server';
+import { createEntityHandlers } from '@/lib/api-handler';
+import { mapBackendToFrontend, mapBackendListToFrontend } from "@/lib/entity-handling/handler";
+import { Account } from '@/types/frontend/entities';
+import { BackendAccount } from '@/types/backend/entities';
 
-const accountHandler = createEntityHandlers<Account>("accounts");
-
-// export const GET = accountHandler.getAll;
-// export const POST = accountHandler.create;
+const accountHandlers = createEntityHandlers<BackendAccount>('accounts');
 
 export async function GET(request: NextRequest) {
-  return accountHandler.getAll(request);
+  const response = await accountHandlers.getAll(request);
+  const data = await response.json();
+  
+  if (data.data) {
+    const mappedData = mapBackendListToFrontend<Account>(data.data, 'account');
+    return NextResponse.json({ ...data, data: mappedData });
+  }
+  
+  return response;
 }
 
 export async function POST(request: NextRequest) {
-    try {
-      const data = await request.json();
-      
-      // Validate required fields
-      const requiredFields = ['username', 'email', 'phoneNumber', 'status'];
-      for (const field of requiredFields) {
-        if (!data[field]) {
-          return NextResponse.json(
-            { error: `Missing required field: ${field}` },
-            { status: 400 }
-          );
-        }
-      }
+  const response = await accountHandlers.create(request);
+  const data = await response.json();
   
-      // Format the data to match backend expectations
-      const formattedData = {
-        "user-name": data.username,
-        "email": data.email,
-        "phone-number": data.phoneNumber,
-        "address": data.address || "",
-        "status": data.status,
-        "avatar": data.avatar || "",
-        "merchant-id": data.merchantId || "",
-        "role-id": data.roleId || ""
-      };
-  
-      const response = await api.post<Account>("accounts", formattedData);
-  
-      if (response.status !== 200 && response.status !== 201) {
-        throw new Error(`API returned status ${response.status}: ${response.message}`);
-      }
-  
-      return NextResponse.json(response);
-    } catch (error) {
-      console.error("Error in account POST route:", error);
-      return NextResponse.json(
-        { 
-          error: "Failed to create account",
-          details: error instanceof Error ? error.message : "Unknown error"
-        },
-        { status: 500 }
-      );
-    }
+  if (data.data) {
+    const mappedData = mapBackendToFrontend<Account>(data.data, 'account');
+    return NextResponse.json({ ...data, data: mappedData });
   }
+  
+  return response;
+}
