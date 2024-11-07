@@ -19,15 +19,21 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const response = await accountHandlers.update(request, { params });
-  const data = await response.json();
-  
-  if (data.data) {
-    const mappedData = mapBackendToFrontend<Account>(data.data, 'account');
-    return NextResponse.json({ ...data, data: mappedData });
+  try {
+    const response = await accountHandlers.update(request, { params });
+    const data = await response.json();
+    
+    if (data.data) {
+      const mappedData = mapBackendToFrontend<Account>(data.data, 'account');
+      console.log('Mapped PATCH response:', mappedData);
+      return NextResponse.json({ ...data, data: mappedData });
+    }
+    
+    return response;
+  } catch(error) {
+    console.error('Error in PATCH method:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
-  
-  return response;
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {

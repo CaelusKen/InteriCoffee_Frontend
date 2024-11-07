@@ -19,13 +19,26 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const response = await accountHandlers.create(request);
-  const data = await response.json();
-  
-  if (data.data) {
-    const mappedData = mapBackendToFrontend<Account>(data.data, 'account');
-    return NextResponse.json({ ...data, data: mappedData });
+  try {
+    const body = await request.json();
+    console.log('Received POST request for account creation with data:', body);
+    const response = await accountHandlers.create(request);
+    const data = await response.json();
+    
+    if (data.data) {
+      const mappedData = mapBackendToFrontend<Account>(data.data, 'account');
+      console.log('Mapped POST response:', mappedData);
+      return NextResponse.json({ ...data, data: mappedData });
+    }
+    
+    if (data.errors) {
+      console.error('Validation errors:', data.errors);
+      return NextResponse.json({ errors: data.errors }, { status: 400 });
+    }
+    
+    return response;
+  } catch (error) {
+    console.error('Error in POST method:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
-  
-  return response;
 }
