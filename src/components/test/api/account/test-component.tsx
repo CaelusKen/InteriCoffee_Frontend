@@ -6,6 +6,7 @@ import { Account } from "@/types/frontend/entities"
 import { ApiResponse, PaginatedResponse } from "@/types/api"
 import { api } from "@/service/api"
 import LoadingPage from "@/components/custom/loading/loading"
+import { BackendAccount } from "@/types/backend/entities"
 
 // API functions
 const fetchAccounts = async (
@@ -20,7 +21,7 @@ const fetchAccountById = async (id: string): Promise<ApiResponse<Account>> => {
 }
 
 const createAccount = async (
-  account: Omit<Account, "id" | "createdDate" | "updatedDate">
+  account: Omit<BackendAccount, "_id" | "created-date" | "updated-date">
 ): Promise<ApiResponse<Account>> => {
   return api.post<Account>("accounts", account)
 }
@@ -73,12 +74,16 @@ export default function AccountManagement() {
 
   const updateAccountMutation = useMutation({
     mutationFn: updateAccount,
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] })
       queryClient.invalidateQueries({
         queryKey: ["account", selectedAccountId],
       })
+      console.log('Update successful:', data);
     },
+    onError: (error) => {
+      console.error('Update failed:', error);
+    }
   })
 
   const deleteAccountMutation = useMutation({
@@ -92,13 +97,13 @@ export default function AccountManagement() {
   // Event handlers
   const handleCreateAccount = () => {
     const newAccount = {
-      userName: "New Account",
+      "user-name": "New Account",
       email: "new@example.com",
-      phoneNumber: "0123456789",
+      "phone-number": "0123456789",
       address: "test address",
       status: "ACTIVE",
       avatar: "https://github.com/shadcn.png",
-      merchantId: "",
+      "merchant-id": "assbcsefwecvsdfgwef",
       role: "CUSTOMER",
       password: "Test@123"
     }
