@@ -72,10 +72,18 @@ export function createEntityHandlers<T>(entityName: string): EntityHandlers<T> {
     async create(request: NextRequest) {
       try {
         const data = await request.json();
+        console.log(`Creating new ${entityName} with data:`, data);
         const response: ApiResponse<T> = await api.post<T>(`${entityName}`, data);
+        console.log(`Create response for ${entityName}:`, response);
         return NextResponse.json(response);
       } catch (error) {
         console.error(`Error creating ${entityName}:`, error);
+        if (error instanceof Error) {
+          return NextResponse.json(
+            { error: `Failed to create ${entityName}: ${error.message}` },
+            { status: 500 }
+          );
+        }
         return NextResponse.json(
           { error: `Failed to create ${entityName}` },
           { status: 500 }
@@ -92,7 +100,9 @@ export function createEntityHandlers<T>(entityName: string): EntityHandlers<T> {
     async update(request: NextRequest, { params }: { params: { id: string } }) {
       try {
         const updates = await request.json();
+        console.log(`Updating ${entityName} with ID:`, params.id, 'and data:', updates);
         const response: ApiResponse<T> = await api.patch<T>(`${entityName}/${params.id}`, updates);
+        console.log(`Update response for ${entityName}:`, response);
         return NextResponse.json(response);
       } catch (error) {
         console.error(`Error updating ${entityName}:`, error);
