@@ -117,13 +117,10 @@ export const api = {
 
   post: async <T>(endpoint: string, data: any): Promise<ApiResponse<T>> => {
     try {
-      console.log('POST request to:', `${API_URL}/${endpoint}`);
-      console.log('POST request data:', data);
       const response = await fetchAPI<T>(endpoint, {
         method: 'POST',
         body: JSON.stringify(data)
       });
-      console.log('POST response:', response);
       return response;
     } catch (error) {
       console.error('Error in post:', error);
@@ -133,13 +130,10 @@ export const api = {
 
   patch: async <T>(endpoint: string, data: any): Promise<ApiResponse<T>> => {
     try {
-      console.log('PATCH request to:', `${API_URL}/${endpoint}`);
-      console.log('PATCH request data:', data);
       const response = await fetchAPI<T>(endpoint, {
         method: 'PATCH',
         body: JSON.stringify(data)
       });
-      console.log('PATCH response:', response);
       return response;
     } catch (error) {
       console.error('Error in patch:', error);
