@@ -1,9 +1,6 @@
-//Entities
-export interface Account {
-    id:            string;
-    _id:           string;
+export interface BackendAccount {
+    _id:            string;
     "user-name":    string;
-    userName?:      string;
     password:       string;
     email:          string;
     "phone-number": string;
@@ -16,19 +13,16 @@ export interface Account {
     role:           string;
 }
 
-
-export interface ChatSession {
-    id:             string;
+export interface BackendChatSession {
     _id:            string;
-    messages:       Message[];
+    messages:       BackendMessage[];
     "created-date": Date;
     "updated-date": Date;
     "customer-id":  string;
     "advisor-id":   string;
 }
 
-export interface Message {
-    id:           string;
+export interface BackendMessage { 
     _id:          string;
     sender:       string;
     message:      string;
@@ -36,8 +30,7 @@ export interface Message {
 }
 
 
-export interface APIDesign {
-    id:             string;
+export interface BackendDesign {
     _id:            string;
     name:           string;
     description:    string;
@@ -45,38 +38,35 @@ export interface APIDesign {
     "updated-date": Date;
     status:         string;
     type:           string;
-    floors:         Floor[];
+    floors:         BackendFloor[];
     "account-id":   string;
     "template-id":  string;
     "style-id":     string;
 }
 
-export interface Floor {
-    id:             string;
+export interface BackendFloor {
     _id:            string;
     name:           string;
-    products:       DesignProduct[];
-    "non-products": DesignProduct[];
+    products:       BackendDesignProduct[];
+    "non-products": BackendDesignProduct[];
 }
 
-export interface DesignProduct {
-    id:       string;
+export interface BackendDesignProduct {
     _id:      string;
     type?:    string;
-    position: DesignProductValue;
-    scale:    DesignProductValue;
-    rotation: DesignProductValue;
+    position: BackendDesignProductValue;
+    scale:    BackendDesignProductValue;
+    rotation: BackendDesignProductValue;
 }
 
-export interface DesignProductValue {
+export interface BackendDesignProductValue {
     x: number;
     y: number;
     z: number;
 }
 
 
-export interface Merchant {
-    id:                string;
+export interface BackendMerchant {
     _id:               string;
     name:              string;
     email:             string;
@@ -88,17 +78,16 @@ export interface Merchant {
     "merchant-code":   string;
     "policy-document": string;
     website:           string;
-    "order-incomes":   OrderIncome[];
+    "order-incomes":   BackendOrderIncome[];
 }
 
-export interface OrderIncome {
+export interface BackendOrderIncome {
     "order-id": string;
     income:     number;
 }
 
 
-export interface Order {
-    id:                 string;
+export interface BackendOrder {
     _id:                string;
     "order-date":       Date;
     status:             string;
@@ -114,7 +103,6 @@ export interface Order {
 }
 
 export interface OrderProduct {
-    id:            string;
     _id:           string;
     name:          string;
     description:   string;
@@ -122,8 +110,7 @@ export interface OrderProduct {
     "merchant-id": string;
 }
 
-export interface Product {
-    id:                  string;
+export interface BackendProduct {
     _id:                 string;
     "category-ids":      string[];
     name:                string;
@@ -148,15 +135,13 @@ export interface Images {
     "normal-images": string[];
 }
 
-export interface ProductCategory {
-    id:          string;
+export interface BackendProductCategory {
     _id:         string;
     name:        string;
     description: string;
 }
 
-export interface Review {
-    id:           string;
+export interface BackendReview { 
     _id:          string;
     comment:      string;
     rating:       number;
@@ -164,8 +149,7 @@ export interface Review {
     "account-id": string;
 }
 
-export interface SaleCampaign {
-    id:                     string;
+export interface BackendSaleCampaign {
     _id:                    string;
     name:                   string;
     description:            string;
@@ -177,15 +161,13 @@ export interface SaleCampaign {
     "campaign-product-ids": string[];
 }
 
-export interface Style {
-    id:          string;
+export interface BackendStyle {
     _id:         string;
     name:        string;
     description: string;
 }
 
-export interface Template {
-    id:             string;
+export interface BackendTemplate {
     _id:            string;
     name:           string;
     description:    string;
@@ -193,15 +175,14 @@ export interface Template {
     "updated-date": Date;
     status:         string;
     type:           string;
-    floors:         Floor[];
+    floors:         BackendFloor[];
     categories:     string[];
     "account-id":   string;
     "merchant-id":  string;
     "style-id":     string;
 }
 
-export interface Transaction {
-    id:                 string;
+export interface BackendTransaction {
     _id:                string;
     "payment-method":   string;
     "transaction-date": Date;
@@ -214,8 +195,7 @@ export interface Transaction {
     "order-id":         string;
 }
 
-export interface Voucher {
-    id:                    string;
+export interface BackendVoucher {
     _id:                   string;
     code:                  string;
     name:                  string;
@@ -231,10 +211,3 @@ export interface Voucher {
     "used-account-ids":    string[];
     type:                  string;
 }
-
-
-
-
-
-
-

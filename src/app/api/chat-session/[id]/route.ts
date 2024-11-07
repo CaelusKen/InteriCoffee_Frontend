@@ -1,8 +1,35 @@
-import { createEntityHandlers } from "@/lib/api-handler";
-import { ChatSession } from "@/types/entities";
+import { NextRequest, NextResponse } from 'next/server';
+import { createEntityHandlers } from '@/lib/api-handler';
+import { mapBackendToFrontend } from "@/lib/entity-handling/handler";
+import { ChatSession } from '@/types/frontend/entities';
+import { BackendChatSession } from '@/types/backend/entities';
 
-const designHandler = createEntityHandlers<ChatSession>("chat-session");
+const entityHandlers = createEntityHandlers<BackendChatSession>('chat-sessions');
 
-export const GET = designHandler.getById;
-export const PATCH = designHandler.update;
-export const DELETE = designHandler.delete;
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  const response = await entityHandlers.getById(request, { params });
+  const data = await response.json();
+  
+  if (data.data) {
+    const mappedData = mapBackendToFrontend<ChatSession>(data.data, 'chatSession');
+    return NextResponse.json({ ...data, data: mappedData });
+  }
+  
+  return response;
+}
+
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+  const response = await entityHandlers.update(request, { params });
+  const data = await response.json();
+  
+  if (data.data) {
+    const mappedData = mapBackendToFrontend<ChatSession>(data.data, 'chatSession');
+    return NextResponse.json({ ...data, data: mappedData });
+  }
+  
+  return response;
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  return entityHandlers.delete(request, { params });
+}

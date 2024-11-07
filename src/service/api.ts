@@ -1,5 +1,5 @@
 import { ApiResponse, PaginatedResponse } from "@/types/api";
-import { mapBackendListToFrontend } from "@/lib/entity-handling/handler";
+import { mapBackendListToFrontend, mapBackendToFrontend } from "@/lib/entity-handling/handler";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -106,6 +106,8 @@ export const api = {
   getById: async <T>(endpoint: string, id: string | number): Promise<ApiResponse<T>> => {
     try {
       const response = await fetchAPI<T>(`${endpoint}/${id}`, { method: 'GET' });
+      const entityType = endpoint.endsWith('s') ? endpoint.slice(0, -1) : endpoint;
+      response.data = mapBackendToFrontend<T>(response.data, entityType);
       return response;
     } catch (error) {
       console.error('Error in getById:', error);
