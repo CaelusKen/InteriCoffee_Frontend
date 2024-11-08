@@ -3,6 +3,7 @@ import { useGLTF, Html } from '@react-three/drei'
 import { Furniture } from '@/types/room-editor'
 import * as THREE from 'three'
 import { useFrame, ThreeEvent } from '@react-three/fiber'
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 
 interface FurnitureItemProps extends Furniture {
   onSelect: (event: THREE.Event) => void;
