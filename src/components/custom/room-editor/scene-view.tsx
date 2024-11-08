@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { useThree } from '@react-three/fiber'
-import { OrbitControls, Grid, Environment, Sky, Stats } from '@react-three/drei'
+import { useThree, useLoader } from '@react-three/fiber'
+import { OrbitControls, Grid, Environment, Sky, Stats, useTexture } from '@react-three/drei'
 import { Furniture, Room, TransformUpdate } from '@/types/room-editor'
 import * as THREE from 'three'
 
@@ -27,6 +27,14 @@ export default function SceneContent({
 }: SceneContentProps) {
   const { scene, gl } = useThree()
   const [selectedObject, setSelectedObject] = useState<THREE.Object3D | null>(null)
+
+  const woodTexture = useTexture('/textures/wood_floor.jpg')
+  woodTexture.wrapS = woodTexture.wrapT = THREE.RepeatWrapping
+  woodTexture.repeat.set(5, 5)
+
+  const wallTexture = useTexture('/textures/wall_texture.jpg')
+  wallTexture.wrapS = wallTexture.wrapT = THREE.RepeatWrapping
+  wallTexture.repeat.set(2, 2)
 
   useEffect(() => {
     if (selectedItem !== null) {
@@ -72,13 +80,17 @@ export default function SceneContent({
 
   return (
     <>
-      <RoomComponent {...room} />
+      <RoomComponent {...room} wallTexture={wallTexture} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+        <planeGeometry args={[room.width, room.length]} />
+        <meshStandardMaterial map={woodTexture} />
+      </mesh>
       {furniture.map((item) => (
         <FurnitureItem
           key={item.id}
           {...item}
           onSelect={(event) => {
-            onSelectItem(item.id);
+            onSelectItem(item.id)
           }}
           isSelected={selectedItem === item.id}
           onUpdateTransform={onUpdateTransform}
@@ -92,9 +104,12 @@ export default function SceneContent({
           onObjectChange={handleObjectChange}
         />
       )}
+      <ambientLight intensity={0.5} />
+      <pointLight position={[10, 10, 10]} intensity={0.8} />
+      <spotLight position={[0, 10, 0]} angle={0.3} penumbra={1} intensity={1} castShadow />
       <OrbitControls makeDefault />
       <Grid infiniteGrid />
-      <Environment preset="apartment" />
+      <Environment preset="sunset" />
       <Sky />
       <Stats className="!absolute !bottom-2 !right-2 !left-auto !top-auto" />
     </>
