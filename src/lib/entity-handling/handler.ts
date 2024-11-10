@@ -1,6 +1,22 @@
 import * as FrontEndTypes from "@/types/frontend/entities";
 import * as BackEndTypes from "@/types/backend/entities";
 
+const entityTypeMap: { [key: string]: string } = {
+    'accounts': 'account',
+    'chat-sessions': 'chatSession',
+    'designs': 'design',
+    'merchants': 'merchant',
+    'orders': 'order',
+    'products': 'product',
+    'product-categories': 'productCategory',
+    'reviews': 'review',
+    'sale-campaigns': 'saleCampaign',
+    'styles': 'style',
+    'templates': 'template',
+    'transactions': 'transaction',
+    'vouchers': 'voucher',
+};
+
 export function mapBackendAccountToFrontend(backendAccount: BackEndTypes.BackendAccount): FrontEndTypes.Account {
     if (!backendAccount) {
         throw new Error('Account data is undefined');
@@ -325,10 +341,35 @@ export function mapBackendVoucherToFrontend(backendVoucher: BackEndTypes.Backend
     };
 }
 
+function normalizeEntityType(entityType: string): string {
+    // Map of special plural words to their singular form
+    const pluralExceptions: { [key: string]: string } = {
+        categorie: 'category',
+        // Add other exceptions here if needed
+    };
+
+    // Split the string into words
+    const words = entityType.split(/[-\s]+/);
+
+    // Remove trailing 's' or apply exception if present
+    if (words.length > 0) {
+        const lastWord = words[words.length - 1];
+        words[words.length - 1] = pluralExceptions[lastWord] || lastWord.replace(/s$/, '');
+    }
+
+    // Convert to camelCase
+    return words.map((word, index) =>
+        index === 0 ? word.toLowerCase() : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    ).join('');
+}
+
 export function mapBackendToFrontend<T>(backendData: any, entityType: string): T {
     if (!backendData) {
         throw new Error(`${entityType} data is undefined`);
     }
+
+    // Normalize the entity type
+    const normalizedType = normalizeEntityType(entityType);
 
     const mappers: { [key: string]: (data: any) => any } = {
         account: mapBackendAccountToFrontend,
@@ -346,8 +387,11 @@ export function mapBackendToFrontend<T>(backendData: any, entityType: string): T
         voucher: mapBackendVoucherToFrontend,
     };
 
-    const mapper = mappers[entityType];
+    const mapper = mappers[normalizedType];
     if (!mapper) {
+        console.error('Available mappers:', Object.keys(mappers));
+        console.error('Attempted entity type:', entityType);
+        console.error('Normalized type:', normalizedType);
         throw new Error(`No mapper found for entity type: ${entityType}`);
     }
 
@@ -360,32 +404,48 @@ export function mapBackendListToFrontend<T>(backendResponse: any, entityType: st
     pageNumber: number;
     pageSize: number;
 } {
-    // Validate input
     if (!backendResponse) {
         console.error('Backend response:', backendResponse);
         throw new Error('Backend response is undefined');
     }
 
-    // Get the correct array based on entity type
-    const entityArrayKey = `${entityType}s`;
-    const entityArray = backendResponse[entityArrayKey];
+    // Extract the data array based on different possible response structures
+    let entityArray;
+    
+    // Log the response structure for debugging
+    console.log('Response structure:', JSON.stringify(backendResponse, null, 2));
 
-    // Validate entity array
-    if (!entityArray) {
-        console.error('Backend response structure:', backendResponse);
-        throw new Error(`${entityArrayKey} not found in response`);
-    }
-
-    if (!Array.isArray(entityArray)) {
-        console.error(`Expected array for ${entityArrayKey}, got:`, entityArray);
+    if (Array.isArray(backendResponse)) {
+        // If response is directly an array
+        entityArray = backendResponse;
+    } else if (backendResponse.items) {
+        // If response has an items property
+        entityArray = backendResponse.items;
+    } else if (backendResponse.data && Array.isArray(backendResponse.data)) {
+        // If response has a data array
+        entityArray = backendResponse.data;
+    } else if (backendResponse[`${normalizeEntityType(entityType)}s`]) {
+        // If response has a property matching the plural form of the entity
+        entityArray = backendResponse[`${normalizeEntityType(entityType)}s`];
+    } else {
+        // If we can't find an array, log the structure and throw an error
+        console.error('Unable to find data array in response:', backendResponse);
         throw new Error(`Invalid data structure for ${entityType}`);
     }
 
-    // Map the data
+    // Map the data using the normalized entity type
     return {
         items: entityArray.map((item: any) => mapBackendToFrontend<T>(item, entityType)),
-        totalCount: backendResponse["list-size"] || 0,
-        pageNumber: backendResponse["page-no"] || 1,
-        pageSize: backendResponse["page-size"] || 10
+        totalCount: backendResponse["list-size"] || 
+                   backendResponse["total-items"] || 
+                   backendResponse.totalCount || 
+                   entityArray.length,
+        pageNumber: backendResponse["page-no"] || 
+                   backendResponse["current-page-size"] || 
+                   backendResponse.pageNumber || 
+                   1,
+        pageSize: backendResponse["page-size"] || 
+                 backendResponse.pageSize || 
+                 entityArray.length
     };
 }
