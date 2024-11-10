@@ -1,6 +1,6 @@
 import React from 'react'
-import ProductHome from '@/components/custom/sections/body/merchant/products/product'
+import MerchantProductsTable from '@/components/custom/tables/merchant/products-table'
 
 export default function ProductHomePage() {
-    return <ProductHome />
+    return <MerchantProductsTable />
 }

@@ -345,7 +345,6 @@ function normalizeEntityType(entityType: string): string {
     // Map of special plural words to their singular form
     const pluralExceptions: { [key: string]: string } = {
         categorie: 'category',
-        // Add other exceptions here if needed
     };
 
     // Split the string into words
