@@ -11,8 +11,13 @@ export async function GET(request: NextRequest) {
   const data = await response.json();
   
   if (data.data) {
-    const mappedData = mapBackendListToFrontend<Merchant>(data.data, 'merchant');
-    return NextResponse.json({ ...data, data: mappedData });
+    try {
+      const mappedData = mapBackendListToFrontend<Merchant>(data.data, 'merchant');
+      return NextResponse.json({ ...data, data: mappedData });
+    } catch (error) {
+      console.error('Error mapping data:', error);
+      return NextResponse.json({ error: 'Error processing data' }, { status: 500 });
+    }
   }
   
   return response;
