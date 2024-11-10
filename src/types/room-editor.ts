@@ -77,3 +77,13 @@ export interface TemplateData {
     views: number;
     thumbnailImageSrc?: string;
 }
+
+export interface Design {
+    id: string
+    username?: string;
+    role?: string;
+    createdAt: string
+    updatedAt: string
+    floors: Floor[]
+    type: 'Template' | 'Design'
+  }

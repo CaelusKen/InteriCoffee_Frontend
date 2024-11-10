@@ -5,7 +5,6 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Furniture, TransformUpdate } from '@/types/room-editor'
 import { Trash2, Edit2 } from 'lucide-react'
-import { Slider } from '@/components/ui/slider'
 
 interface InspectorProps {
   selectedItem: number | null;
@@ -13,24 +12,9 @@ interface InspectorProps {
   onUpdateTransform: (update: TransformUpdate) => void;
   onDeleteItem: (id: number) => void;
   onRename: (id: number, newName: string) => void;
-  onUpdateMaterial: (id: number, material: Required<Furniture['material']>) => void;
 }
 
-// Default material values
-const defaultMaterial = {
-  color: '#ffffff',
-  metalness: 0,
-  roughness: 1
-}
-
-export default function Inspector({ 
-  selectedItem, 
-  furniture, 
-  onUpdateTransform, 
-  onDeleteItem, 
-  onRename,
-  onUpdateMaterial
-}: InspectorProps) {
+export default function Inspector({ selectedItem, furniture, onUpdateTransform, onDeleteItem, onRename }: InspectorProps) {
   const item = furniture.find(i => i.id === selectedItem)
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState('')
@@ -45,12 +29,6 @@ export default function Inspector({
   const handleFinishEdit = () => {
     onRename(item.id, editName)
     setIsEditing(false)
-  }
-
-  // Ensure material exists with defaults
-  const material = {
-    ...defaultMaterial,
-    ...(item.material || {})
   }
 
   return (
@@ -109,51 +87,6 @@ export default function Inspector({
               </div>
             </div>
           ))}
-          <div>
-            <Label>Material</Label>
-            <div className="space-y-2">
-              <div>
-                <Label>Color</Label>
-                <Input
-                  type="color"
-                  value={material.color}
-                  onChange={(e) => onUpdateMaterial(item.id, { 
-                    ...material,
-                    color: e.target.value 
-                  })}
-                  className="h-10 px-2"
-                />
-              </div>
-              <div>
-                <Label>Metalness</Label>
-                <Slider
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={[material.metalness]}
-                  onValueChange={([value]) => onUpdateMaterial(item.id, {
-                    ...material,
-                    metalness: value
-                  })}
-                  className="mt-2"
-                />
-              </div>
-              <div>
-                <Label>Roughness</Label>
-                <Slider
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={[material.roughness]}
-                  onValueChange={([value]) => onUpdateMaterial(item.id, {
-                    ...material,
-                    roughness: value
-                  })}
-                  className="mt-2"
-                />
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </ScrollArea>

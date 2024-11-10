@@ -1,66 +1,78 @@
-import React from "react"
-import { Button } from "@/components/ui/button"
+"use client";
+
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import {
-  Save,
+  Move,
+  RotateCw,
+  Maximize,
   Undo,
   Redo,
-  FileUp,
-  Share2,
-  Download,
-  Plus,
+  Save,
+  FolderOpen,
   Home,
-  DoorOpen,
-  Sofa,
-  Lamp,
-  Table,
   Trash2,
-  Move,
-  Rotate3D,
-  Scale,
-  ChevronDown,
-} from "lucide-react"
-import { Furniture } from "@/types/room-editor"
-import { useSession } from "next-auth/react"
+  Plus,
+  Layers,
+} from "lucide-react";
+import { ThemeToggler } from "../buttons/theme-toggler";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Furniture, TemplateData } from "@/types/room-editor";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+
+type FurnitureItem = {
+  name: string;
+  category: Furniture['category'];
+  model: string;
+};
+
+interface Template {
+  id: number;
+  name: string;
+  items: number;
+}
 
 interface ToolbarProps {
-  onAddFurniture: (model: string, category: Furniture["category"]) => void
-  transformMode: "translate" | "rotate" | "scale"
-  setTransformMode: (mode: "translate" | "rotate" | "scale") => void
-  onUndo: () => void
-  onRedo: () => void
-  onLoad: () => void
-  onOpenRoomDialog: () => void
-  onClearAll: () => void
-  onAddFloor: () => void
-  onAddRoom: () => void
-  onExport: () => void
-  onShare: () => void
-  onSaveCustomer: () => void
-  onSaveMerchant: () => void
+  onAddFurniture: (model: string, category: Furniture['category']) => void;
+  transformMode: "translate" | "rotate" | "scale";
+  setTransformMode: (mode: "translate" | "rotate" | "scale") => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  onSaveCustomer: () => void;
+  onSaveMerchant: () => void;
+  onLoad: (templateData: TemplateData) => void;
+  onOpenRoomDialog: () => void;
+  onClearAll: () => void;
+  onAddFloor: () => void;
+  onAddRoom: () => void;
 }
+
+const furnitureItems: FurnitureItem[] = [
+  { name: "Sofa", category: "seating", model: "/assets/3D/sofa.glb" },
+  { name: "Chair", category: "seating", model: "/assets/3D/chair.glb" },
+  { name: "Modern Chair", category: "seating", model: "/assets/3D/modern-chair.glb" },
+  { name: "Table", category: "tables", model: "/assets/3D/table.glb" },
+  { name: "Coffee Table", category: "tables", model: "/assets/3D/coffee-table.glb" },
+  { name: "Classic Coffee Table", category: "tables", model: "/assets/3D/classic-coffee-table.glb" },
+  { name: "Workbench", category: "tables", model: "/assets/3D/workbench.glb" },
+  { name: "Staircase", category: "stairs", model: "/assets/3D/staircase.glb"},
+  { name: "Ceiling Lamp", category: "lightings", model: "/assets/3D/ceiling-lamp-2.glb"},
+  { name: "Circle Ceiling Lamp", category: "lightings", model: "/assets/3D/ceiling-circle-lamp.glb"},
+  { name: "Aluminum Door", category: "doors", model: "/assets/3D/aluminum-door.glb"},
+  { name: "Wood Door", category: "doors", model: "/assets/3D/wood-door.glb"}
+];
 
 export default function Toolbar({
   onAddFurniture,
@@ -68,234 +80,242 @@ export default function Toolbar({
   setTransformMode,
   onUndo,
   onRedo,
+  onSaveCustomer,
+  onSaveMerchant,
   onLoad,
   onOpenRoomDialog,
   onClearAll,
   onAddFloor,
   onAddRoom,
-  onExport,
-  onShare,
-  onSaveCustomer,
-  onSaveMerchant,
 }: ToolbarProps) {
-  const { data: session } = useSession()
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isLoadDrawerOpen, setIsLoadDrawerOpen] = useState(false);
+  const [templates, setTemplates] = useState<Template[]>([]);
 
-  const furnitureItems = [
-    { category: "seating", items: [
-      { name: "Chair", model: "/assets/3D/chair.glb" },
-      { name: "Sofa", model: "/assets/3D/sofa.glb" },
-    ]},
-    { category: "tables", items: [
-      { name: "Coffee Table", model: "/assets/3D/table.glb" },
-    ]},
-    { category: "lightings", items: [
-      { name: "Ceiling Lamp", model: "/assets/3D/ceiling-lamp-2.glb" },
-    ]},
-  ]
+  const { data: session } = useSession();
+
+  const router = useRouter();
+
+  const categories: Furniture['category'][] = ["seating", "tables", "lightings", "doors", "stairs", "others"];
+
+  const handleLoadClick = () => {
+    const savedTemplates = JSON.parse(
+      localStorage.getItem("merchantTemplates") || "[]"
+    ) as TemplateData[];
+    setTemplates(
+      savedTemplates.map((template, index) => ({
+        id: index + 1,
+        name: `Template ${index + 1}`,
+        items: template.floors.reduce((acc, floor) => acc + floor.rooms.reduce((acc, room) => acc + room.furniture.length, 0), 0),
+      }))
+    );
+    setIsLoadDrawerOpen(true);
+  };
+
+  const handleLoadTemplate = (templateId: number) => {
+    const savedTemplates = JSON.parse(
+      localStorage.getItem("merchantTemplates") || "[]"
+    ) as TemplateData[];
+    const selectedTemplate = savedTemplates[templateId - 1];
+    if (selectedTemplate) {
+      onLoad(selectedTemplate);
+      setIsLoadDrawerOpen(false);
+    } else {
+      alert("Selected template not found!");
+    }
+  };
 
   return (
-    <TooltipProvider>
-      <div className="bg-background border-b p-2 flex items-center space-x-2">
-        <div className="flex space-x-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="outline" size="icon" onClick={onUndo}>
-                <Undo className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Undo</p>
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="outline" size="icon" onClick={onRedo}>
-                <Redo className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Redo</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
-        <div className="flex space-x-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="outline" size="icon" onClick={onLoad}>
-                <FileUp className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Load Design</p>
-            </TooltipContent>
-          </Tooltip>
-          {session?.user.role?.match("CUSTOMER") && (
-            <>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" onClick={onExport}>
-                    <Download className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Export Design</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" onClick={onSaveCustomer}>
-                    <Save className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Save Design</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" onClick={onShare}>
-                    <Share2 className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Share Design</p>
-                </TooltipContent>
-              </Tooltip>
-            </>
-          )}
-          {session?.user.role?.match("CONSULTANT") && (
-            <>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" onClick={onExport}>
-                    <Download className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Export Design</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" onClick={onSaveMerchant}>
-                    <Save className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Save as Template</p>
-                </TooltipContent>
-              </Tooltip>
-            </>
-          )}
-        </div>
-
-        <div className="flex space-x-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="outline" size="icon" onClick={onOpenRoomDialog}>
-                <Home className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Edit Room</p>
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="outline" size="icon" onClick={onAddFloor}>
-                <Plus className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Add Floor</p>
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="outline" size="icon" onClick={onAddRoom}>
-                <DoorOpen className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Add Room</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
-        <Select
-          value={transformMode}
-          onValueChange={(value) =>
-            setTransformMode(value as "translate" | "rotate" | "scale")
-          }
-        >
-          <SelectTrigger className="w-[130px]">
-            <SelectValue placeholder="Transform" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="translate">
-              <div className="flex items-center">
-                <Move className="mr-2 h-4 w-4" />
-                <span>Move</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="rotate">
-              <div className="flex items-center">
-                <Rotate3D className="mr-2 h-4 w-4" />
-                <span>Rotate</span>
-              </div>
-            </SelectItem>
-            <SelectItem value="scale">
-              <div className="flex items-center">
-                <Scale className="mr-2 h-4 w-4" />
-                <span>Scale</span>
-              </div>
-            </SelectItem>
-          </SelectContent>
-        </Select>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-[130px]">
-              Add Furniture <ChevronDown className="ml-2 h-4 w-4" />
+    <div className="flex justify-between items-center p-2 dark:bg-gray-800 border-b">
+      <div className="space-x-2 mb-2 sm:mb-0 flex items-center gap-2">
+        <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+          <DrawerTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" /> Add Furniture
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
-            {furnitureItems.map((category) => (
-              <React.Fragment key={category.category}>
-                <DropdownMenuLabel>{category.category}</DropdownMenuLabel>
-                {category.items.map((item) => (
-                  <DropdownMenuItem
-                    key={item.model}
-                    onClick={() => onAddFurniture(item.model, category.category as Furniture["category"])}
+          </DrawerTrigger>
+          <DrawerContent className="bg-white text-black">
+            <DrawerHeader>
+              <DrawerTitle>Choose Furniture</DrawerTitle>
+              <DrawerDescription>
+                Select the type of furniture you want to add to your room.
+              </DrawerDescription>
+            </DrawerHeader>
+            <Tabs defaultValue="seating" className="w-full">
+              <TabsList className={`grid w-full grid-cols-6`}>
+                {categories.map((category) => (
+                  <TabsTrigger
+                    key={category}
+                    value={category}
+                    className="capitalize"
                   >
-                    {item.name}
-                  </DropdownMenuItem>
+                    {category}
+                  </TabsTrigger>
                 ))}
-                <DropdownMenuSeparator />
-              </React.Fragment>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="outline" size="icon" onClick={onClearAll}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Clear All</p>
-          </TooltipContent>
-        </Tooltip>
-
-        <div className="flex justify-end w-full">
-          <div className="ml-auto flex items-center space-x-2">
-            <span className="text-sm text-muted-foreground">Auto-saving...</span>
-            <Save className="h-4 w-4 text-muted-foreground animate-pulse" />
-          </div>
-        </div>
+              </TabsList>
+              {categories.map((category) => (
+                <TabsContent key={category} value={category}>
+                  <ScrollArea className="h-[300px] w-full rounded-sm border p-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      {furnitureItems
+                        .filter((item) => item.category === category)
+                        .map((item) => (
+                          <Button
+                            key={item.name}
+                            onClick={() => {
+                              onAddFurniture(item.model, item.category);
+                              setIsDrawerOpen(false);
+                            }}
+                            className="w-full justify-start hover:bg-secondary-400"
+                          >
+                            {item.name}
+                          </Button>
+                        ))}
+                    </div>
+                  </ScrollArea>
+                </TabsContent>
+              ))}
+            </Tabs>
+            <DrawerFooter>
+              <DrawerClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+        <Button
+          onClick={onAddFloor}
+          className="hover:bg-primary-600 hover:text-white"
+        >
+          <span className="flex items-center gap-2">
+            <Layers className="w-4 h-4" />
+            <p>Add Floor</p>
+          </span>
+        </Button>
+        <Button
+          onClick={onAddRoom}
+          className="hover:bg-primary-600 hover:text-white"
+        >
+          <span className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            <p>Add Room</p>
+          </span>
+        </Button>
       </div>
-    </TooltipProvider>
-  )
+      <div className="space-x-2">
+        <Button
+          variant={transformMode === "translate" ? "default" : "outline"}
+          size="icon"
+          onClick={() => setTransformMode("translate")}
+          className="hover:bg-primary-600 hover:text-white"
+        >
+          <Move className="w-4 h-4" />
+        </Button>
+        <Button
+          variant={transformMode === "rotate" ? "default" : "outline"}
+          size="icon"
+          onClick={() => setTransformMode("rotate")}
+          className="hover:bg-primary-600 hover:text-white"
+        >
+          <RotateCw className="w-4 h-4" />
+        </Button>
+        <Button
+          variant={transformMode === "scale" ? "default" : "outline"}
+          size="icon"
+          onClick={() => setTransformMode("scale")}
+          className="hover:bg-primary-600 hover:text-white"
+        >
+          <Maximize className="w-4 h-4" />
+        </Button>
+      </div>
+      <div className="space-x-2 flex items-center">
+        <Button
+          onClick={onUndo}
+          size="icon"
+          className="hover:bg-primary-600 hover:text-white"
+        >
+          <Undo className="w-4 h-4" />
+        </Button>
+        <Button
+          onClick={onRedo}
+          size="icon"
+          className="hover:bg-primary-600 hover:text-white"
+        >
+          <Redo className="w-4 h-4" />
+        </Button>
+        { session?.user.role?.match("CUSTOMER") && (
+          <Button
+            onClick={onSaveCustomer}
+            className="hover:bg-primary-600 hover:text-white"
+          >
+            Save Design
+          </Button>
+        )}
+        {session?.user.role?.match("CONSULTANT") && (
+          <Button
+            onClick={onSaveMerchant}
+            className="hover:bg-primary-600 hover:text-white"
+          >
+            Save as Template
+          </Button>
+        )}
+        { !session  && (
+          <Button
+            onClick={() => router.push("login")}
+            className="hover:bg-primary-600 hover:text-white"
+          >
+            Login to Save
+          </Button>
+        )}
+        <Button
+          onClick={handleLoadClick}
+          size="icon"
+          className="hover:bg-primary-600 hover:text-white"
+        >
+          <FolderOpen className="w-4 h-4" />
+        </Button>
+        <Button
+          onClick={onOpenRoomDialog}
+          size="icon"
+          className="hover:bg-primary-600 hover:text-white"
+        >
+          <Home className="w-4 h-4" />
+        </Button>
+        <Button
+          onClick={onClearAll}
+          size="icon"
+          className="hover:bg-primary-600 hover:text-white"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+        <ThemeToggler />
+        <Drawer open={isLoadDrawerOpen} onOpenChange={setIsLoadDrawerOpen}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Load Template</DrawerTitle>
+              <DrawerDescription>
+                Choose a template to load
+              </DrawerDescription>
+            </DrawerHeader>
+            <ScrollArea className="h-[300px] p-4">
+              {templates.map((template) => (
+                <Button
+                  key={template.id}
+                  onClick={() => handleLoadTemplate(template.id)}
+                  className="w-full justify-start mb-2"
+                >
+                  {template.name} ({template.items} items)
+                </Button>
+              ))}
+            </ScrollArea>
+            <DrawerFooter>
+              <DrawerClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      </div>
+    </div>
+  );
 }
