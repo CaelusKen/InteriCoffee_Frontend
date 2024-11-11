@@ -72,7 +72,7 @@ export default function MerchantProductsTable() {
                                         <TableCell>{product.sellingPrice}</TableCell>
                                         <TableCell>{product.quantity}</TableCell>
                                         <TableCell>{product.dimensions}</TableCell>
-                                        <TableCell>{product.createdDate.toISOString()}</TableCell>
+                                        <TableCell>{product.createdDate.toDateString()}</TableCell>
                                         <TableCell className="flex justify-end items-center">
                                             <Button onClick={() => router.push(`/merchant/products/${product.id}`)}>Details</Button>
                                             <Button>Edit</Button>
