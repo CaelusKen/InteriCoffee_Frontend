@@ -1,6 +1,6 @@
 import React from "react";
-import StyleHome from "@/components/custom/sections/body/merchant/styles/style";
+import MerchantStylesTable from "@/components/custom/tables/merchant/styles-table";
 
 export default function StyleHomePage() {
-    return <StyleHome />
+    return <MerchantStylesTable />
 }

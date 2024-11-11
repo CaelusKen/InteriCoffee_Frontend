@@ -260,7 +260,7 @@ export default function ConsultantSaveTemplatePage() {
                   </Select>
                 </div>
               </div>
-              {/* <div className="w-full h-[600px] bg-gray-100 rounded-lg overflow-hidden">
+              <div className="w-full h-[600px] bg-gray-100 rounded-lg overflow-hidden">
                 {currentRoom && (
                   <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
                     <SceneContent
@@ -274,7 +274,7 @@ export default function ConsultantSaveTemplatePage() {
                     <OrbitControls />
                   </Canvas>
                 )}
-              </div> */}
+              </div>
             </div>
           </div>
         </CardContent>
