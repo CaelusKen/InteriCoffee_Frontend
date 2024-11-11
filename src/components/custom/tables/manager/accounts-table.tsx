@@ -68,7 +68,7 @@ export default function AccountsTable() {
                             {accounts.map((account, index) => (
                                 <TableRow key={index}>
                                     <TableCell className="font-medium">
-                                        <img src={account.avatar} alt={account.userName} className="w-[80px] rounded-full h-full object-cover"/>
+                                        <img src={account.avatar} alt={account.userName} className="w-[40px] rounded-full h-full object-cover"/>
                                     </TableCell>
                                     <TableCell>{account.userName}</TableCell>
                                     <TableCell>{account.email}</TableCell>
