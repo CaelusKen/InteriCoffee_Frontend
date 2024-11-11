@@ -198,7 +198,6 @@ export default function MerchantProductsTable() {
           </TableBody>
         </Table>
       </div>
-
       <div className="flex items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"
@@ -219,4 +218,5 @@ export default function MerchantProductsTable() {
       </div>
     </section>
   )
+
 }
