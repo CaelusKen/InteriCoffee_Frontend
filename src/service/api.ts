@@ -60,6 +60,16 @@ async function fetchAPI<T>(
 }
 
 export const api = {
+  get: async <T>(endpoint: string, queryParams?: QueryParams): Promise<ApiResponse<T>> => {
+    try {
+      const response = await fetchAPI<T>(endpoint, { method: 'GET' }, queryParams);
+      return response;
+    } catch (error) {
+      console.error('Error in get:', error);
+      throw error;
+    }
+  },
+
   getPaginated: async <T>(endpoint: string, queryParams?: QueryParams): Promise<ApiResponse<PaginatedResponse<T>>> => {
     try {
       console.log('getPaginated called with:', { endpoint, queryParams });
@@ -89,7 +99,6 @@ export const api = {
       };
     } catch (error) {
       console.error('Error in getPaginated:', error);
-      // Return a structured error response instead of throwing
       return {
         data: {
           items: [],
