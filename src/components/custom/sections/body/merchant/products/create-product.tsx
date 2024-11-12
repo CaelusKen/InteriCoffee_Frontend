@@ -7,6 +7,8 @@ import { api } from "@/service/api"
 import { Product } from "@/types/frontend/entities"
 import { useToast } from "@/hooks/use-toast"
 import { ProductFormBase, ProductFormData } from './product-form-base'
+import { Button } from '@/components/ui/button'
+import { ArrowLeft } from 'lucide-react'
 
 export default function CreateProduct() {
   const router = useRouter()
@@ -64,6 +66,10 @@ export default function CreateProduct() {
 
   return (
     <section className="max-w-6xl mx-auto">
+      <Button variant={'link'} onClick={() => router.push('/merchant/products')} className='p-0'>
+        <ArrowLeft size={16}/>
+        <h3>Back to List Product</h3>
+      </Button>
       <h1 className="text-2xl font-bold my-2">Product Management - Create New Product</h1>
       <ProductFormBase 
         onSubmit={handleSubmit} 

@@ -28,6 +28,7 @@ type FileUploadProps = SingleFileUploadProps | MultipleFileUploadProps
 type PreviewFile = {
   url: string
   type: 'image' | '3d'
+  file: File | null
 }
 
 function Model({ url }: { url: string }) {
@@ -38,14 +39,16 @@ function Model({ url }: { url: string }) {
 export function FileUpload(props: FileUploadProps) {
   const { label, accept, onChange, multiple, preview } = props
   const [previewFiles, setPreviewFiles] = useState<PreviewFile[]>(
-    preview 
-      ? (Array.isArray(preview) ? preview : [preview]).map(url => ({ url, type: '3d' }))
+    preview
+      ? (Array.isArray(preview)
+          ? preview.map(url => ({ url, type: '3d', file: null }))
+          : [{ url: preview, type: '3d', file: null }]
+        )
       : []
   )
 
   useEffect(() => {
     return () => {
-      // Clean up object URLs when component unmounts
       previewFiles.forEach(file => URL.revokeObjectURL(file.url))
     }
   }, [previewFiles])
@@ -57,7 +60,8 @@ export function FileUpload(props: FileUploadProps) {
     const files = Array.from(fileList)
     const newPreviewFiles: PreviewFile[] = files.map(file => ({
       url: URL.createObjectURL(file),
-      type: file.type.startsWith('image/') ? 'image' : '3d'
+      type: file.type.startsWith('image/') ? 'image' : '3d',
+      file
     }))
 
     if (multiple) {
@@ -69,13 +73,26 @@ export function FileUpload(props: FileUploadProps) {
     }
   }
 
+  const handleRemoveFile = (index: number) => {
+    setPreviewFiles(prevFiles => prevFiles.filter((_, i) => i !== index))
+    if (multiple) {
+      onChange(previewFiles.filter((_, i) => i !== index).map(file => file.file as File))
+    }
+  }
+
   const renderPreview = () => {
     if (previewFiles.length === 0) return null
-    
+
     return (
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className="mt-4 grid grid-cols-3 gap-2 overflow-y-auto max-h-48">
         {previewFiles.map((file, index) => (
-          <div key={index} className="relative w-24 h-24 border rounded-md overflow-hidden">
+          <div key={index} className="relative w-[240px] h-[160px] border rounded-md overflow-hidden">
+            <button
+              onClick={() => handleRemoveFile(index)}
+              className="absolute top-1 right-1 z-10 bg-red-500 text-white text-xs w-6 h-6 rounded-full"
+            >
+              &times;
+            </button>
             {file.type === 'image' ? (
               <Image
                 src={file.url}
@@ -84,10 +101,10 @@ export function FileUpload(props: FileUploadProps) {
                 className="object-cover"
               />
             ) : (
-              <Canvas>
+              <Canvas style={{ background: '#f0f0f0' }}>
                 <Suspense fallback={null}>
-                  <ambientLight />
-                  <pointLight position={[10, 10, 10]} />
+                  <ambientLight intensity={0.4} />
+                  <directionalLight position={[5, 5, 5]} />
                   <Model url={file.url} />
                   <OrbitControls />
                 </Suspense>
@@ -101,7 +118,7 @@ export function FileUpload(props: FileUploadProps) {
 
   return (
     <div className="space-y-2">
-      <div>
+      <div className="w-1/2">
         <Label htmlFor={label}>{label}</Label>
         <Input
           id={label}
@@ -110,6 +127,7 @@ export function FileUpload(props: FileUploadProps) {
           accept={accept}
           onChange={handleFileChange}
           multiple={multiple}
+          className="p-2 text-sm border-gray-300 rounded-md"
         />
       </div>
       {renderPreview()}
