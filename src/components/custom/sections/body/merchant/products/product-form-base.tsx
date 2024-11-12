@@ -127,7 +127,7 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const updatedFormData = { ...formData }
+      const updatedFormData = { ...formData}
 
       if (thumbnailFile) {
         const thumbnailUrl = await uploadFile(thumbnailFile, `products/${formData.name}/thumbnail`)
@@ -178,20 +178,20 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
         </div>
         <div>
           <Label>Product Categories</Label>
-          <div className="space-y-2 mt-2">
+          <div className="flex flex-wrap gap-4 items-center w-full space-y-2 mt-2">
             {productCategoriesQuery.data?.data?.items.map(category => (
               <div key={category.id} className="flex items-center space-x-2">
-                <Checkbox 
-                  id={`category-${category.id}`}
-                  checked={formData.categoryIds.includes(category.id)}
-                  onCheckedChange={() => handleCategoryChange(category.id)}
-                />
-                <label 
-                  htmlFor={`category-${category.id}`}
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  {category.name}
-                </label>
+                  <Checkbox 
+                    id={`category-${category.id}`}
+                    checked={formData.categoryIds.includes(category.id)}
+                    onCheckedChange={() => handleCategoryChange(category.id)}
+                  />
+                  <label 
+                    htmlFor={`category-${category.id}`}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    {category.name}
+                  </label>
               </div>
             ))}
           </div>
