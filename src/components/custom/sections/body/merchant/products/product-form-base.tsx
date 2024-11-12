@@ -144,8 +144,18 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
       }
 
       if (modelTextureFile) {
-        const modelTextureUrl = await uploadFile(modelTextureFile, `products/${formData.name}/model-texture`)
-        updatedFormData.modelTextureUrl = modelTextureUrl
+        const fileExtension = modelTextureFile.name.split('.').pop()?.toLowerCase();
+        if (fileExtension === 'glb' || fileExtension === 'gltf') {
+          const modelTextureUrl = await uploadFile(modelTextureFile, `products/${formData.name}/model-texture`);
+          updatedFormData.modelTextureUrl = modelTextureUrl;
+        } else {
+          toast({
+            title: "Invalid File Type",
+            description: "Please upload a .glb or .gltf file for the 3D model.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
 
       await onSubmit(updatedFormData)
@@ -164,7 +174,7 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="">
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="name">Product Name</Label>
@@ -178,7 +188,7 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
         </div>
         <div>
           <Label>Product Categories</Label>
-          <div className="flex flex-wrap gap-4 items-center w-full space-y-2 mt-2">
+          <div className="flex flex-wrap gap-4 items-center w-full mt-4">
             {productCategoriesQuery.data?.data?.items.map(category => (
               <div key={category.id} className="flex items-center space-x-2">
                   <Checkbox 
@@ -206,27 +216,29 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
             required 
           />
         </div>
-        <div>
-          <Label htmlFor="sellingPrice">Selling Price</Label>
-          <Input 
-            id="sellingPrice" 
-            name="sellingPrice" 
-            type="number" 
-            value={formData.sellingPrice} 
-            onChange={handleChange} 
-            required 
-          />
-        </div>
-        <div>
-          <Label htmlFor="quantity">Quantity</Label>
-          <Input 
-            id="quantity" 
-            name="quantity" 
-            type="number" 
-            value={formData.quantity} 
-            onChange={handleChange} 
-            required 
-          />
+        <div className='flex justify-between gap-4'>
+          <div className='w-full'>
+            <Label htmlFor="sellingPrice">Selling Price</Label>
+            <Input 
+              id="sellingPrice" 
+              name="sellingPrice" 
+              type="number" 
+              value={formData.sellingPrice} 
+              onChange={handleChange} 
+              required 
+            />
+          </div>
+          <div className='w-full '>
+            <Label htmlFor="quantity">Quantity</Label>
+            <Input 
+              id="quantity" 
+              name="quantity" 
+              type="number" 
+              value={formData.quantity} 
+              onChange={handleChange} 
+              required 
+            />
+          </div>
         </div>
         <div>
           <Label htmlFor="dimensions">Dimensions</Label>
@@ -238,7 +250,7 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
             placeholder="e.g., 200cm x 90cm x 85cm"
           />
         </div>
-        <div className="col-span-2">
+        <div className="col-span-2 my-4">
           <Label>Materials</Label>
           <div className="flex flex-wrap gap-4 mt-2">
             {['fabric', 'wood', 'foam', 'metal', 'plastic'].map((material) => (
@@ -257,7 +269,7 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-2 justify-items-stretch">
         <FileUpload
           label="Thumbnail Image"
           accept="image/*"
@@ -271,7 +283,7 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
         />
         <FileUpload
           label="Model Texture"
-          accept=".glb,.gltf"
+          accept=".glb"
           onChange={(file: File) => setModelTextureFile(file)}
         />
       </div>
