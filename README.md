@@ -37,7 +37,7 @@ To get a local copy up and running, follow these steps:
    git clone https://github.com/CaelusKen/InteriCoffee_Frontend.git
    ```
 
-Install dependencies:
+    Install dependencies:
 
 ```bash
     Copy code
