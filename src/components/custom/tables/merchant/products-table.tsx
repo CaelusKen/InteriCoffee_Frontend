@@ -13,7 +13,7 @@ import {
   ColumnFiltersState,
   getFilteredRowModel,
 } from "@tanstack/react-table"
-import { Product } from "@/types/frontend/entities"
+import { Product, ProductCategory } from "@/types/frontend/entities"
 import { ApiResponse, PaginatedResponse } from "@/types/api"
 import { api } from "@/service/api"
 import LoadingPage from "@/components/custom/loading/loading"
@@ -28,7 +28,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
-import { ArrowUpDown, MoreHorizontal } from "lucide-react"
+import { Archive, ArrowUpDown, MoreHorizontal, Package } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,6 +53,13 @@ const fetchProducts = async (
   return api.getPaginated<Product>("products", { page, pageSize })
 }
 
+const fetchCategory = async(
+  page = 1,
+  pageSize = 10
+) : Promise<ApiResponse<PaginatedResponse<ProductCategory>>> => {
+  return api.getPaginated<ProductCategory>('product-categories', { page, pageSize })
+}
+
 const deleteProduct = async (id: string): Promise<ApiResponse<Product>> => {
   return api.delete<Product>(`products/${id}`)
 }
@@ -71,6 +78,11 @@ export default function MerchantProductsTable() {
   const productsQuery = useQuery({
     queryKey: ["products", page],
     queryFn: () => fetchProducts(page),
+  })
+
+  const productCategoriesQuery = useQuery({
+    queryKey: ["product-categories", page],
+    queryFn: () => fetchCategory(page)
   })
 
   const deleteProductMutation = useMutation({
@@ -131,10 +143,32 @@ export default function MerchantProductsTable() {
       accessorKey: "dimensions",
       header: "Dimensions",
     },
+    // {
+    //   accessorKey: "createdDate",
+    //   header: "Created Date",
+    //   cell: ({ row }) => row.original.createdDate.toDateString(),
+    // },
     {
-      accessorKey: "createdDate",
-      header: "Created Date",
-      cell: ({ row }) => row.original.createdDate.toDateString(),
+      accessorKey: "categoryIds",
+      header: "Categories",
+      cell: ({ row }) => {
+        const productCategories = productCategoriesQuery.data?.data.items ?? []
+        const product = row.original
+        
+        const currentProductCategoryNames = product.categoryIds
+          .map(categoryId => productCategories.find(category => category.id === categoryId)?.name)
+          .filter(Boolean)
+
+        return (
+          <div className="flex flex-wrap gap-1">
+            {currentProductCategoryNames.map((categoryName, index) => (
+              <span key={index} className="px-2 py-1 bg-gray-200 text-black rounded-full text-xs">
+                {categoryName}
+              </span>
+            ))}
+          </div>
+        )
+      },
     },
     {
       id: "actions",
@@ -192,11 +226,16 @@ export default function MerchantProductsTable() {
     <section className="space-y-4">
       <h1 className="text-2xl font-bold">Product Management</h1>
 
-      <Button onClick={() => router.push('/merchant/products/create')} className="bg-green-500 hover:bg-green-600">Create product</Button>
+      <div className="flex items-center gap-2">
+        <Button onClick={() => router.push('/merchant/products/create')} className="bg-green-500 hover:bg-green-700 text-white">
+          <Package size={16}/>
+          Create product
+        </Button>
+      </div>
 
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter products..."
+          placeholder="Search products..."
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
