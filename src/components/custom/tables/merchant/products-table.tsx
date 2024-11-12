@@ -192,6 +192,8 @@ export default function MerchantProductsTable() {
     <section className="space-y-4">
       <h1 className="text-2xl font-bold">Product Management</h1>
 
+      <Button onClick={() => router.push('/merchant/products/create')} className="bg-green-500 hover:bg-green-600">Create product</Button>
+
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter products..."
