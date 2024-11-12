@@ -33,6 +33,7 @@ export default function UpdateProduct({ productId }: UpdateProductProps) {
       toast({
         title: "Product Updated",
         description: "Your product has been updated successfully.",
+        variant: "destructive",
       })
       router.push("/merchant/products")
     },
