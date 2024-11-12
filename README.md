@@ -39,11 +39,11 @@ To get a local copy up and running, follow these steps:
 
 Install dependencies:
 
-    ```bash
+```bash
     Copy code
     cd project-name <!-- Replace "project-name" with your project folder name if different -->
     npm install
-    ```
+```
 Start the application:
 
 Copy code
