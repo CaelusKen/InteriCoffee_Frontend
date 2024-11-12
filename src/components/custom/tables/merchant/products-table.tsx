@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   ColumnDef,
   flexRender,
@@ -36,6 +36,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { useToast } from "@/hooks/use-toast"
 
 const fetchProducts = async (
   page = 1,
@@ -44,10 +53,18 @@ const fetchProducts = async (
   return api.getPaginated<Product>("products", { page, pageSize })
 }
 
+const deleteProduct = async (id: string): Promise<ApiResponse<Product>> => {
+  return api.delete<Product>(`products/${id}`)
+}
+
 export default function MerchantProductsTable() {
   const [page, setPage] = useState(1)
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const queryClient = useQueryClient()
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const { toast } = useToast()
 
   const router = useRouter()
 
@@ -55,6 +72,33 @@ export default function MerchantProductsTable() {
     queryKey: ["products", page],
     queryFn: () => fetchProducts(page),
   })
+
+  const deleteProductMutation = useMutation({
+    mutationFn: deleteProduct,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] })
+      setSelectedProductId(null)
+      setIsDeleteDialogOpen(false)
+      toast({
+        title: "Product Deleted",
+        description: "The product has been successfully deleted.",
+      })
+    },
+    onError: (error) => {
+      console.error('Error deleting product:', error)
+      toast({
+        title: "Error",
+        description: "An error occurred while deleting the product. Please try again.",
+        variant: "destructive",
+      })
+    },
+  })
+
+  const handleDeleteProduct = () => {
+    if (selectedProductId) {
+      deleteProductMutation.mutate(selectedProductId)
+    }
+  }
 
   const products = productsQuery.data?.data?.items ?? []
   const totalCount = productsQuery.data?.data?.totalCount ?? 0
@@ -110,10 +154,13 @@ export default function MerchantProductsTable() {
               <DropdownMenuItem onClick={() => router.push(`/merchant/products/${product.id}`)}>
                 View Details
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => console.log("Edit product", product.id)}>
+              <DropdownMenuItem onClick={() => router.push(`/merchant/products/${product.id}/update`)}>
                 Edit
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => console.log("Delete product", product.id)}>
+              <DropdownMenuItem onClick={() => {
+                setSelectedProductId(product.id)
+                setIsDeleteDialogOpen(true)
+              }}>
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -216,7 +263,25 @@ export default function MerchantProductsTable() {
           Next
         </Button>
       </div>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Are you sure you want to delete this product?</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone. This will permanently delete the product from our servers.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteProduct}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   )
-
 }
