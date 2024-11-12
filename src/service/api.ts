@@ -137,8 +137,12 @@ export const api = {
     }
   },
 
-  patch: async <T>(endpoint: string, data: any): Promise<ApiResponse<T>> => {
+  patch: async <T>(endpoint: string, data: any, options?: { onRequestStart?: (config: any) => void }): Promise<ApiResponse<T>> => {
     try {
+      if (options?.onRequestStart) {
+        options.onRequestStart({ data });
+      }
+
       const response = await fetchAPI<T>(endpoint, {
         method: 'PATCH',
         body: JSON.stringify(data)
