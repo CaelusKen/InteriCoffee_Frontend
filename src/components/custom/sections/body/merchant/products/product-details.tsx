@@ -65,22 +65,20 @@ export function ProductDetails({ productId }: ProductDetailsProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <div className="aspect-square relative overflow-hidden rounded-lg mb-4">
-            <Image
+            <img
               src={product.images.thumbnail || "/placeholder.svg"}
               alt={product.name}
-              layout="fill"
-              objectFit="cover"
+              className='h-[480px] object-cover'
             />
           </div>
           <div className="grid grid-cols-4 gap-2">
             {product.images["normalImages"].map((image, index) => (
               <div key={index} className="aspect-square relative overflow-hidden rounded-lg">
-                <Image
+                <img
                   src={image}
                   alt={`${product.name} - Image ${index + 1}`}
-                  layout="fill"
-                  objectFit="cover"
                   datatype='data/avil'
+                  className='object-cover h-[160px] w-[160px]'
                 />
               </div>
             ))}
@@ -99,11 +97,13 @@ export function ProductDetails({ productId }: ProductDetailsProps) {
             <div>
               <Label className="text-sm font-semibold">Category</Label>
               <div className="mt-1 flex flex-wrap gap-2">
-                {product['categoryIds'].map((productCategory, index) => (
+                {product['categoryIds'] != null ? (product['categoryIds'].map((productCategory, index) => (
                   <span key={index} className="px-4 py-1 bg-gray-100 text-black w-fit rounded-full text-sm">
                     {productCategory}
                   </span>
-                ))}
+                ))) : (
+                  <p>This product has no categories</p>
+                )}
               </div>
             </div>
             <div>

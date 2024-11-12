@@ -1,302 +1,74 @@
-"use client"
+'use client'
 
-import React, { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { HelpCircle } from "lucide-react"
+import React from 'react'
+import { useRouter } from 'next/navigation'
+import { useMutation } from '@tanstack/react-query'
 import { api } from "@/service/api"
-import { Product, ProductCategory } from "@/types/frontend/entities"
-import { FileUpload } from './file-upload'
-import { ApiResponse, PaginatedResponse } from '@/types/api'
-import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { Product } from "@/types/frontend/entities"
 import { useToast } from "@/hooks/use-toast"
+import { ProductFormBase, ProductFormData } from './product-form-base'
 
-interface ProductFormData {
-  name: string
-  categoryId: string
-  description: string
-  sellingPrice: number
-  discount: number
-  quantity: number
-  dimensions: string
-  materials: string[]
-  campaignId: string
-  merchantId: string
-  status: 'ACTIVE' | 'INACTIVE'
-}
-
-const fetchProductCategories = async (
-  page = 1,
-  pageSize = 10
-): Promise<ApiResponse<PaginatedResponse<ProductCategory>>> => {
-  return api.getPaginated<ProductCategory>("product-categories", { page, pageSize })
-}
-
-export default function MerchantCreateProductForm() {
-  const [formData, setFormData] = useState<ProductFormData>({
-    name: "",
-    categoryId: "",
-    description: "",
-    sellingPrice: 0,
-    discount: 0,
-    quantity: 0,
-    dimensions: "",
-    materials: [],
-    campaignId: "",
-    merchantId: "merchant123", // This should be dynamically set based on the logged-in merchant
-    status: 'ACTIVE'
-  })
-
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
-  const [normalImageFiles, setNormalImageFiles] = useState<File[]>([])
-  const [modelTextureFile, setModelTextureFile] = useState<File | null>(null)
-  const [showAlert, setShowAlert] = useState(false)
-  const [alertMessage, setAlertMessage] = useState("")
+export default function CreateProduct() {
+  const router = useRouter()
   const { toast } = useToast()
 
-  const [page, setPage] = useState(1)
-
-  const productCategoriesQuery = useQuery({
-    queryKey: ["productCategories", page],
-    queryFn: () => fetchProductCategories(page),
-  })
-
-  const categories = productCategoriesQuery.data?.data?.items ?? []
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: ['sellingPrice', 'discount', 'quantity'].includes(name) ? Number(value) : value
-    }))
-  }
-
-  const handleCategoryChange = (value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      categoryId: value
-    }))
-  }
-
-  const handleMaterialChange = (material: string, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      materials: checked
-        ? [...prev.materials, material]
-        : prev.materials.filter(m => m !== material)
-    }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Form data:', formData)
-
-    try {
-      // Validate required fields
-      if (!formData.name || !formData.categoryId || !formData.description || !formData.sellingPrice) {
-        setAlertMessage("Please fill in all required fields.")
-        setShowAlert(true)
-        return
-      }
-
-      // Prepare the data for API submission
-      const productData = {
-        ...formData,
-        "category-id": [formData.categoryId],
-        "selling-price": formData.sellingPrice,
-        "true-price": formData.sellingPrice - formData.discount,
-        images: {
-          thumbnail: thumbnailFile ? URL.createObjectURL(thumbnailFile) : "",
-          "normal-images": normalImageFiles.map(file => URL.createObjectURL(file))
-        },
-        "model-texture-url": modelTextureFile ? URL.createObjectURL(modelTextureFile) : "",
-        "campaign-id": formData.campaignId,
-        "merchant-id": formData.merchantId
-      }
-
-      // Create product
-      const response = await api.post<Product>('products', productData)
-      console.log('Product created successfully:', response)
-
-      // Show success message
+  const createProductMutation = useMutation({
+    mutationFn: (formData: ProductFormData) => {
+      console.log('Form data before mapping:', JSON.stringify(formData))
+      const mappedData = mapFrontendToBackend(formData)
+      console.log('Mapped data being sent to API:', JSON.stringify(mappedData, null, 2))
+      return api.post<Product>('products', mappedData)
+    },
+    onSuccess: (data) => {
+      console.log('API response:', JSON.stringify(data))
       toast({
         title: "Product Created",
         description: "Your product has been created successfully.",
       })
-
-      // Reset form
-      setFormData({
-        name: "",
-        categoryId: "",
-        description: "",
-        sellingPrice: 0,
-        discount: 0,
-        quantity: 0,
-        dimensions: "",
-        materials: [],
-        campaignId: "",
-        merchantId: "merchant123",
-        status: 'ACTIVE'
-      })
-      setThumbnailFile(null)
-      setNormalImageFiles([])
-      setModelTextureFile(null)
-
-    } catch (error) {
+      router.push("/merchant/products")
+    },
+    onError: (error) => {
       console.error('Error creating product:', error)
-      setAlertMessage("An error occurred while creating the product. Please try again.")
-      setShowAlert(true)
+      toast({
+        title: "Error",
+        description: "An error occurred while creating the product. Please try again.",
+        variant: "destructive",
+      })
+    }
+  })
+
+  const handleSubmit = async (formData: ProductFormData) => {
+    createProductMutation.mutate(formData)
+  }
+
+  const mapFrontendToBackend = (frontendData: ProductFormData): any => {
+    return {
+      name: frontendData.name,
+      "category-ids": frontendData.categoryIds,
+      description: frontendData.description,
+      "true-price": frontendData.sellingPrice,
+      discount: frontendData.discount,
+      quantity: frontendData.quantity,
+      dimensions: frontendData.dimensions,
+      materials: frontendData.materials,
+      "campaign-id": frontendData.campaignId,
+      "merchant-id": frontendData.merchantId,
+      status: frontendData.status,
+      images: {
+        thumbnail: frontendData.thumbnailUrl,
+        "normal-images": frontendData.normalImageUrls
+      },
+      "model-texture-url": frontendData.modelTextureUrl,
     }
   }
 
   return (
     <section className="max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold my-2">Product Management - Create Product</h1>
-      <h3 className="text-sm font-medium mb-4">Please complete the form to create a Product</h3>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="name">Product Name</Label>
-            <Input 
-              id="name" 
-              name="name" 
-              value={formData.name} 
-              onChange={handleChange} 
-              required 
-            />
-          </div>
-          <div>
-            <Label htmlFor="category">Product Category</Label>
-            <Select onValueChange={handleCategoryChange} value={formData.categoryId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories?.map(category => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="col-span-2">
-            <Label htmlFor="description">Product Description</Label>
-            <Textarea 
-              id="description" 
-              name="description" 
-              value={formData.description} 
-              onChange={handleChange} 
-              required 
-            />
-          </div>
-          <div>
-            <div className="flex items-center space-x-2">
-              <Label htmlFor="sellingPrice">Selling Price</Label>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-4 w-4 rounded-full p-0">
-                      <HelpCircle className="h-4 w-4" />
-                      <span className="sr-only">Selling price information</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>This price will be updated according to the Terms of Service of the application.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-            <Input 
-              id="sellingPrice" 
-              name="sellingPrice" 
-              type="number" 
-              value={formData.sellingPrice} 
-              onChange={handleChange} 
-              required 
-            />
-          </div>
-          <div>
-            <Label htmlFor="quantity">Quantity</Label>
-            <Input 
-              id="quantity" 
-              name="quantity" 
-              type="number" 
-              value={formData.quantity} 
-              onChange={handleChange} 
-              required 
-            />
-          </div>
-          <div>
-            <Label htmlFor="dimensions">Dimensions</Label>
-            <Input 
-              id="dimensions" 
-              name="dimensions" 
-              value={formData.dimensions} 
-              onChange={handleChange} 
-              placeholder="e.g., 200cm x 90cm x 85cm"
-            />
-          </div>
-          <div className="col-span-2">
-            <Label>Materials</Label>
-            <div className="flex flex-wrap gap-4 mt-2">
-              {['fabric', 'wood', 'foam', 'metal', 'plastic'].map((material) => (
-                <div key={material} className="flex items-center space-x-2">
-                  <Checkbox 
-                    id={`material-${material}`}
-                    checked={formData.materials.includes(material)}
-                    onCheckedChange={(checked) => handleMaterialChange(material, checked as boolean)}
-                  />
-                  <label htmlFor={`material-${material}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    {material}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <FileUpload
-            label="Thumbnail Image"
-            accept="image/*"
-            onChange={(file: File) => setThumbnailFile(file)}
-          />
-          <FileUpload
-            label="Normal Images"
-            accept="image/*"
-            multiple
-            onChange={(files: File[]) => setNormalImageFiles(files)}
-          />
-          <FileUpload
-            label="Model Texture"
-            accept="image/*"
-            onChange={(file: File) => setModelTextureFile(file)}
-          />
-        </div>
-
-        <Button type="submit" className="w-full">Create Product</Button>
-      </form>
-
-      <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Alert</AlertDialogTitle>
-            <AlertDialogDescription>
-              {alertMessage}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction>OK</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <h1 className="text-2xl font-bold my-2">Product Management - Create New Product</h1>
+      <ProductFormBase 
+        onSubmit={handleSubmit} 
+        submitButtonText="Create Product" 
+      />
     </section>
   )
 }
