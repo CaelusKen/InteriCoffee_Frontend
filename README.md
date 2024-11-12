@@ -35,29 +35,31 @@ To get a local copy up and running, follow these steps:
 1. Clone the repository:
    ```bash
    git clone https://github.com/CaelusKen/InteriCoffee_Frontend.git
+   ```
+
 Install dependencies:
 
-bash
-Copy code
-cd project-name <!-- Replace "project-name" with your project folder name if different -->
-npm install
-
+    ```bash
+    Copy code
+    cd project-name <!-- Replace "project-name" with your project folder name if different -->
+    npm install
+    ```
 Start the application:
 
-bash
 Copy code
+```bash
 npm start
+```
 🧩 Usage
-Example Usage
-Provide a code example for using your project:
+Coming soon, just play around with whatever you can see
 
 javascript
 Copy code
-javascript
+```javascript
 import { YourComponent } from 'project-name';
 
 <YourComponent prop1="value" prop2="value" />;
-
+```
 📖 Documentation
 Refer to the documentation for detailed information on how each component or module works.
 Topics include:
