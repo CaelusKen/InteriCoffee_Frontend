@@ -61,6 +61,7 @@ import { YourComponent } from 'project-name';
 <YourComponent prop1="value" prop2="value" />;
 ```
 📖 Documentation
+
 Refer to the documentation for detailed information on how each component or module works.
 Topics include:
 
@@ -69,27 +70,39 @@ Advanced configurations
 API integration
 
 🛠️ Technologies
+
 Frontend: NextJS, Tailwind CSS
+
 Backend: Node.js, C#
+
 Database: MongoDB
+
 Other Tools: Docker, GitHub Actions, etc.
 
-📄 License
+📄 License:
+
 This project did not have license yet.
 
-🤝 Contributing
+🤝 Contributing:
+
 We welcome contributions!
 
-Fork the repo
+Fork the repo:
+
 Create a new branch (git checkout -b feature/AmazingFeature)
+
 Commit your changes (git commit -m 'Add AmazingFeature')
+
 Push to the branch (git push origin feature/AmazingFeature)
+
 Open a Pull Request
 
 💬 Contact
+
 Have questions? Reach out!
 
 GitHub: @CaelusKen
+
 Email: caelus.khangthuan1209@gmail.com
 
 📝 Acknowledgements
