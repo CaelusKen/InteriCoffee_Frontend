@@ -4,9 +4,10 @@ import React from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { api } from "@/service/api"
-import { Product } from "@/types/frontend/entities"
+import { Account, Product } from "@/types/frontend/entities"
 import { useToast } from "@/hooks/use-toast"
 import { ProductFormBase, ProductFormData } from './product-form-base'
+import { useSession } from 'next-auth/react'
 
 interface UpdateProductProps {
   productId: string
@@ -16,6 +17,17 @@ export default function UpdateProduct({ productId }: UpdateProductProps) {
   const router = useRouter()
   const { toast } = useToast()
 
+  const { data: session, status: sessionStatus } = useSession()
+
+  const { data: accountInfo } = useQuery({
+    queryKey: ['account', session?.user?.email],
+    queryFn: async () => {
+      if (!session?.user?.email) throw new Error('No email found in session')
+      return api.get<Account>(`accounts/${encodeURIComponent(session.user.email)}/info`)
+    },
+    enabled: !!session?.user?.email,
+  })
+
   const productQuery = useQuery({
     queryKey: ["product", productId],
     queryFn: () => api.getById<Product>(`products`, productId),
@@ -23,13 +35,10 @@ export default function UpdateProduct({ productId }: UpdateProductProps) {
 
   const updateProductMutation = useMutation({
     mutationFn: (formData: ProductFormData) => {
-      console.log('Form data before mapping:', JSON.stringify(formData))
       const mappedData = mapFrontendToBackend(formData)
-      console.log('Mapped data:', JSON.stringify(mappedData))
       return api.patch<Product>(`products/${productId}`, mappedData)
     },
     onSuccess: (data) => {
-      console.log('API response:', JSON.stringify(data))
       toast({
         title: "Product Updated",
         description: "Your product has been updated successfully.",
@@ -62,7 +71,7 @@ export default function UpdateProduct({ productId }: UpdateProductProps) {
       dimensions: frontendData.dimensions,
       materials: frontendData.materials,
       "campaign-id": frontendData.campaignId,
-      "merchant-id": frontendData.merchantId,
+      "merchant-id": accountInfo?.data.merchantId,
       status: frontendData.status,
       images: {
         thumbnail: frontendData.thumbnailUrl,
