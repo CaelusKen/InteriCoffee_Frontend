@@ -71,7 +71,7 @@ export default function UpdateProduct({ productId }: UpdateProductProps) {
       dimensions: frontendData.dimensions,
       materials: frontendData.materials,
       "campaign-id": frontendData.campaignId,
-      "merchant-id": accountInfo?.data.merchantId,
+      "merchant-id": frontendData.merchantId,
       status: frontendData.status,
       images: {
         thumbnail: frontendData.thumbnailUrl,
