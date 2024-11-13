@@ -2,43 +2,73 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeft, Chrome, Facebook } from 'lucide-react'
+import { ArrowLeft, Chrome } from 'lucide-react'
 import { signIn } from 'next-auth/react'
-import { useState, FormEvent } from 'react'
-import { useRouter } from 'next/navigation'
+import { useToast } from "@/hooks/use-toast"
 
-export default function RegisterPage() {
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
+interface RegisterPageProps {
+  onSubmit: (data: {
+    username: string
+    email: string
+    password: string
+    termsAccepted: boolean
+  }) => void
+  initialData?: {
+    username?: string
+    email?: string
+    termsAccepted?: boolean
+  }
+}
+
+export default function RegisterPage({ onSubmit, initialData }: RegisterPageProps) {
+  const [username, setUsername] = useState(initialData?.username || '')
+  const [email, setEmail] = useState(initialData?.email || '')
   const [password, setPassword] = useState('')
   const [repeatPassword, setRepeatPassword] = useState('')
+  const [termsAccepted, setTermsAccepted] = useState(initialData?.termsAccepted || false)
+  const { toast } = useToast()
 
-  const router = useRouter();
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Add your signup logic here
-    // You might want to create a new user in your database
-    // and then sign them in using NextAuth
-    // For example:
-    // const result = await createUser({ username, email, password })
-    // if (result.success) {
-    //   await signIn('credentials', { email, password })
-    // }
+    
+    if (password !== repeatPassword) {
+      toast({
+        title: "Password Error",
+        description: "Passwords do not match",
+        variant: "destructive"
+      })
+      return
+    }
+    
+    if (!termsAccepted) {
+      toast({
+        title: "Terms & Conditions",
+        description: "Please accept the terms and conditions to continue",
+        variant: "destructive"
+      })
+      return
+    }
+    
+    onSubmit({
+      username,
+      email,
+      password,
+      termsAccepted
+    })
   }
 
   return (
     <div className="flex min-h-screen">
-      {/* Left Column */}
       <div className="flex-1 bg-gray-100 dark:bg-gray-800 flex flex-col justify-between p-12">
         <div>
-          <Button variant={'link'} onClick={() => router.back()} className='w-fit p-0 my-2'>
-              <ArrowLeft size={24}/>
-              <p>Back</p>
+          <Button variant="link" onClick={() => window.history.back()} className="w-fit p-0 my-2">
+            <ArrowLeft size={24}/>
+            <p>Back</p>
           </Button>
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8">Welcome!</h1>
           <div className="flex items-center">
@@ -53,7 +83,6 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Right Column */}
       <div className="flex-1 flex flex-col justify-center px-8 py-12 bg-white dark:bg-gray-900">
         <div className="w-full max-w-md mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Register with your e-mail</h2>
@@ -117,7 +146,11 @@ export default function RegisterPage() {
                 <label htmlFor="contact-me" className="text-sm text-gray-600 dark:text-gray-400">Please contact me via e-mail</label>
               </div>
               <div className="flex items-center space-x-2">
-                <Checkbox id="terms" />
+                <Checkbox 
+                  id="terms" 
+                  checked={termsAccepted}
+                  onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+                />
                 <label htmlFor="terms" className="text-sm text-gray-600 dark:text-gray-400">I have read and accept the Terms and Conditions</label>
               </div>
             </div>
@@ -133,10 +166,6 @@ export default function RegisterPage() {
                 <Chrome size={24} />
                 <span>Google</span>
               </Button>
-              {/* <Button onClick={() => signIn('facebook')} variant="outline" className="flex items-center justify-center w-full hover:bg-secondary-700 space-x-2">
-                <Facebook size={24} />
-                <span>Facebook</span>
-              </Button> */}
             </div>
           </div>
         </div>
