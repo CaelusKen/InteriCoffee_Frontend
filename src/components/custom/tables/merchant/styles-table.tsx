@@ -83,12 +83,13 @@ export default function MerchantStylesTable() {
       toast({
         title: "Style deleted",
         description: "The style has been successfully deleted.",
+        variant: "destructive",
       })
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to delete the style. Please try again.",
+        description: "Failed to delete the style.",
         variant: "destructive",
       })
     },
