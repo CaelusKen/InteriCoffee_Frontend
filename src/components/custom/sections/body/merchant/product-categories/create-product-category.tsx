@@ -8,13 +8,10 @@ import { ProductCategory } from "@/types/frontend/entities"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
-import { useSession } from 'next-auth/react'
-import { mapBackendToFrontend } from '@/lib/entity-handling/handler'
 import ProductCategoryFormBase, { ProductCategoryFormData } from './product-category-form-base'
 
 const CreateProductCategory = () => {
   const router = useRouter()
-  const { toast } = useToast()
 
   const createProductCategoryMutation = useMutation({
      mutationFn: (formData: ProductCategoryFormData) => {
