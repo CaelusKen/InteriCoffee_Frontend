@@ -1,12 +1,12 @@
 'use client'
 
-import SignupForm from '@/components/custom/forms/signup'
+import SignupFlow from '@/components/custom/forms/setup/signup-flow'
 import React from 'react'
 
 export default function SignupPage()  {
   return (
     <main>
-        <SignupForm />
+        <SignupFlow />
     </main>
   )
 }

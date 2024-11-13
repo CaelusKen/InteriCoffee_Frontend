@@ -10,14 +10,18 @@ import { ThemeToggler } from '../../buttons/theme-toggler'
 
 type UserType = 'customer' | 'merchant' | 'fun'
 
-export default function SetupSecond() {
-  const [userType, setUserType] = useState<UserType | null>(null)
+interface SetupSecondProps {
+  onSubmit: (data: { userType: UserType }) => void
+  initialData?: { userType?: UserType }
+}
+
+export default function SetupSecond({ onSubmit, initialData }: SetupSecondProps) {
+  const [userType, setUserType] = useState<UserType | null>(initialData?.userType || null)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (userType) {
-      console.log('Selected user type:', userType)
-      // Here you would typically send this data to your backend or perform further actions
+      onSubmit({ userType })
     }
   }
 
@@ -44,7 +48,6 @@ export default function SetupSecond() {
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen">
-      {/* Left Column */}
       <div className="lg:flex-1 bg-gray-100 dark:bg-gray-800 flex flex-col justify-between p-6 lg:p-12">
         <div>
           <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-4 lg:mb-8">Welcome to InteriCoffee!</h1>
@@ -56,7 +59,6 @@ export default function SetupSecond() {
         <ThemeToggler />
       </div>
       
-      {/* Right Column */}
       <div className="lg:flex-1 flex flex-col justify-center px-6 py-8 lg:px-8 lg:py-12 bg-white dark:bg-gray-900">
         <form onSubmit={handleSubmit} className="space-y-6 lg:space-y-8 w-full max-w-md mx-auto">
           <div>
@@ -70,7 +72,7 @@ export default function SetupSecond() {
                 key={option.type}
                 className={`cursor-pointer transition-all ${
                   userType === option.type 
-                    ? 'bg-primary text-primary-foreground text-white' 
+                    ? 'bg-primary text-primary-foreground text-black' 
                     : 'hover:bg-primary/10'
                 }`}
                 onClick={() => setUserType(option.type)}
