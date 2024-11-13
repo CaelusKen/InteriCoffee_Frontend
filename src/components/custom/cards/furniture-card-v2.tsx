@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, Suspense } from "react";
 import Slider from "react-slick";
 import { Canvas, useThree } from "@react-three/fiber";
 import {
@@ -22,17 +22,16 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 import { useCart } from "../cart/cart-context";
-
-interface ProductImage {
-  src: string;
-  alt: string;
-}
+import { MerchantInfo } from "../sections/body/merchant/products/merchant-info";
+import LoadingPage from "../loading/loading";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProductProps {
   id: string;
   name: string;
   merchant: string;
-  images: ProductImage[];
+  images: string[];
   modelUrl: string;
   price: number;
 }
@@ -80,6 +79,9 @@ export default function FurnitureProductCard({
   const [showModel, setShowModel] = useState(false);
   const sliderRef = useRef<Slider>(null);
   const { addItem } = useCart()
+  const { toast } = useToast()
+
+  const router = useRouter();
 
   const sliderSettings = {
     dots: false,
@@ -105,11 +107,31 @@ export default function FurnitureProductCard({
   };
 
   const handleAddToCart = () => {
-    addItem({ id, name, price, quantity: 1 })
+    try {
+      addItem({
+        id: id,
+        name: name,
+        price: price,
+        quantity: 1,
+      });
+      toast({
+        title: "Add to cart successfully",
+        description: `Item ${name} has been added to your cart`,
+        type: "foreground",
+        className: "bg-green-500",
+      });
+    } catch (error) {
+      toast({
+        title: "Add to cart fail",
+        description: `Item ${name} cannot be added due to ${error}`,
+        type: "foreground",
+        className: "bg-red-500",
+      });
+    }
   };
 
   const handleViewDetails = () => {
-    // Implement view details functionality
+    router.push(`/furnitures/${id}`)
     console.log("Viewing details for:", id);
   };
 
@@ -134,8 +156,8 @@ export default function FurnitureProductCard({
                   {images.map((image, index) => (
                     <div key={index} className="relative aspect-square">
                       <img
-                        src={image.src}
-                        alt={image.alt}
+                        src={image}
+                        alt={"Product Image"}
                         className="w-full h-full object-cover"
                         loading="lazy"
                       />
@@ -154,18 +176,20 @@ export default function FurnitureProductCard({
                 transition={{ duration: 0.3 }}
                 className="absolute inset-0"
               >
-                <Canvas>
-                  <PerspectiveCamera makeDefault fov={50} />
-                  <ambientLight intensity={0.5} />
-                  <spotLight
-                    position={[10, 10, 10]}
-                    angle={0.15}
-                    penumbra={1}
-                  />
-                  <Model url={modelUrl} />
-                  <OrbitControls enableZoom={false} />
-                  <Environment preset="apartment" background blur={0.5} />
-                </Canvas>
+                <Suspense fallback={<LoadingPage />}>
+                  <Canvas>
+                    <PerspectiveCamera makeDefault fov={50} />
+                    <ambientLight intensity={0.5} />
+                    <spotLight
+                      position={[10, 10, 10]}
+                      angle={0.15}
+                      penumbra={1}
+                    />
+                    <Model url={modelUrl} />
+                    <OrbitControls enableZoom={false} />
+                    <Environment preset="apartment" background blur={0.5} />
+                  </Canvas>
+                </Suspense>
               </motion.div>
             )}
           </AnimatePresence>
@@ -184,11 +208,9 @@ export default function FurnitureProductCard({
         <div className="flex justify-between items-start w-full">
           <div className="space-y-1">
             <h3 className="text-lg font-semibold leading-none">{name}</h3>
-            <Badge variant="secondary" className="text-xs">
-              By {merchant}
-            </Badge>
+            <MerchantInfo merchantId={merchant} />
           </div>
-          <div className="text-lg font-bold">${price.toFixed(2)}</div>
+          <div className="text-lg font-bold">{price.toLocaleString("vi-VN", { style:'currency', currency: 'VND' })}</div>
         </div>
         <div className="grid grid-cols-2 gap-2 w-full">
           <Button

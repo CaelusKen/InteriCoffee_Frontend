@@ -8,33 +8,33 @@ import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Search } from 'lucide-react'
 
-type FilterOption<T extends string | number | boolean> = {
-  type: 'text' | 'select' | 'range' | 'checkbox';
-  label: string;
-  key: string;
-  options?: T[];
-  min?: number;
-  max?: number;
-  step?: number;
+type FilterOption = {
+  type: 'text' | 'select' | 'range' | 'checkbox'
+  label: string
+  key: string
+  options?: string[]
+  min?: number
+  max?: number
+  step?: number
 }
 
-type FilterValues = Record<string, string | number | boolean | [number, number]>;
-
-interface AbstractFilterComponentProps<T extends FilterValues> {
-  filters: T;
-  setFilters: React.Dispatch<React.SetStateAction<T>>;
-  filterOptions: FilterOption<string | number | boolean>[];
+type FilterValues = {
+  search: string
+  category: string
+  priceRange: [number, number]
 }
 
-export default function Filter<T extends FilterValues>({
+interface FilterComponentProps {
+  filters: FilterValues
+  setFilters: (key: string, value: string | number | boolean | [number, number]) => void
+  filterOptions: FilterOption[]
+}
+
+export default function Filter({
   filters,
   setFilters,
   filterOptions
-}: AbstractFilterComponentProps<T>) {
-  const handleFilterChange = (key: string, value: string | number | boolean | [number, number]) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-  };
-
+}: FilterComponentProps) {
   return (
     <div className="space-y-4">
       {filterOptions.map((option) => (
@@ -45,8 +45,8 @@ export default function Filter<T extends FilterValues>({
               <Input
                 id={option.key}
                 placeholder={`Search ${option.label.toLowerCase()}...`}
-                value={filters[option.key] as string}
-                onChange={(e) => handleFilterChange(option.key, e.target.value)}
+                value={filters[option.key as keyof FilterValues] as string}
+                onChange={(e) => setFilters(option.key, e.target.value)}
                 className="pl-10"
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -54,15 +54,15 @@ export default function Filter<T extends FilterValues>({
           )}
           {option.type === 'select' && option.options && (
             <Select 
-              value={filters[option.key] as string} 
-              onValueChange={(value) => handleFilterChange(option.key, value)}
+              value={filters[option.key as keyof FilterValues] as string} 
+              onValueChange={(value) => setFilters(option.key, value)}
             >
               <SelectTrigger id={option.key}>
                 <SelectValue placeholder={`Select ${option.label.toLowerCase()}`} />
               </SelectTrigger>
               <SelectContent className='bg-white text-black'>
                 {option.options.map((opt) => (
-                  <SelectItem key={opt.toString()} value={opt.toString()}>{opt.toString()}</SelectItem>
+                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -72,23 +72,23 @@ export default function Filter<T extends FilterValues>({
               <Input
                 type="number"
                 placeholder="Min"
-                value={(filters[option.key] as [number, number])[0]}
-                onChange={(e) => handleFilterChange(option.key, [Number(e.target.value), (filters[option.key] as [number, number])[1]])}
+                value={(filters[option.key as keyof FilterValues] as [number, number])[0]}
+                onChange={(e) => setFilters(option.key, [Number(e.target.value), (filters[option.key as keyof FilterValues] as [number, number])[1]])}
                 className="w-24"
               />
               <Slider
                 min={option.min || 0}
                 max={option.max || 100}
                 step={option.step || 1}
-                value={filters[option.key] as [number, number]}
-                onValueChange={(value) => handleFilterChange(option.key, [value[0], value[1] ?? value[0]])}
+                value={filters[option.key as keyof FilterValues] as [number, number]}
+                onValueChange={(value) => setFilters(option.key, value as [number, number])}
                 className="w-full"
               />
               <Input
                 type="number"
                 placeholder="Max"
-                value={(filters[option.key] as [number, number])[1]}
-                onChange={(e) => handleFilterChange(option.key, [(filters[option.key] as [number, number])[0], Number(e.target.value)])}
+                value={(filters[option.key as keyof FilterValues] as [number, number])[1]}
+                onChange={(e) => setFilters(option.key, [(filters[option.key as keyof FilterValues] as [number, number])[0], Number(e.target.value)])}
                 className="w-24"
               />
             </div>
@@ -97,8 +97,8 @@ export default function Filter<T extends FilterValues>({
             <div className="flex items-center space-x-2">
               <Checkbox
                 id={option.key}
-                checked={filters[option.key] as boolean}
-                onCheckedChange={(checked) => handleFilterChange(option.key, checked as boolean)}
+                checked={Boolean(filters[option.key as keyof FilterValues])}
+                onCheckedChange={(checked) => setFilters(option.key, checked)}
               />
               <Label htmlFor={option.key}>{option.label}</Label>
             </div>
