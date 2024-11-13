@@ -20,6 +20,7 @@ import LoadingPage from "@/components/custom/loading/loading"
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -48,7 +49,7 @@ import { useToast } from "@/hooks/use-toast"
 
 const fetchProducts = async (
   page = 1,
-  pageSize = 10
+  pageSize = 20
 ): Promise<ApiResponse<PaginatedResponse<Product>>> => {
   return api.getPaginated<Product>("products", { page, pageSize })
 }
@@ -114,7 +115,7 @@ export default function MerchantProductsTable() {
 
   const products = productsQuery.data?.data?.items ?? []
   const totalCount = productsQuery.data?.data?.totalCount ?? 0
-  const pageSize = productsQuery.data?.data?.pageSize ?? 10
+  const pageSize = productsQuery.data?.data?.pageSize ?? 20
 
   const columns: ColumnDef<Product>[] = [
     {
