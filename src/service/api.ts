@@ -30,8 +30,6 @@ async function fetchAPI<T>(
     });
   }
 
-  console.log('Fetching from URL:', url.toString());
-
   try {
     const res = await fetch(url.toString(), {
       ...options,
@@ -42,7 +40,6 @@ async function fetchAPI<T>(
     });
 
     const responseData = await res.json();
-    console.log('API Response:', responseData);
 
     if (!res.ok) {
       throw new Error(`API error: ${res.status} ${responseData.message || res.statusText}`);
@@ -72,7 +69,6 @@ export const api = {
 
   getPaginated: async <T>(endpoint: string, queryParams?: QueryParams): Promise<ApiResponse<PaginatedResponse<T>>> => {
     try {
-      console.log('getPaginated called with:', { endpoint, queryParams });
 
       const formattedQueryParams = {
         'page-no': queryParams?.page,
@@ -80,7 +76,6 @@ export const api = {
       };
 
       const response = await fetchAPI<any>(endpoint, { method: 'GET' }, formattedQueryParams);
-      console.log('getPaginated response:', response);
 
       if (!response.data) {
         console.error('Response data is undefined:', response);
@@ -90,7 +85,6 @@ export const api = {
       const entityType = endpoint.endsWith('s') ? endpoint.slice(0, -1) : endpoint;
       
       const mappedData = mapBackendListToFrontend<T>(response.data, entityType);
-      console.log('Mapped data:', mappedData);
 
       return {
         data: mappedData,

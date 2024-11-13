@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label"
 import Image from 'next/image'
 import { Canvas } from '@react-three/fiber'
 import { useGLTF, OrbitControls } from '@react-three/drei'
+import { storage } from '@/service/firebase'
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 
 type SingleFileUploadProps = {
   label: string
@@ -38,22 +40,24 @@ function Model({ url }: { url: string }) {
 
 export function FileUpload(props: FileUploadProps) {
   const { label, accept, onChange, multiple, preview } = props
-  const [previewFiles, setPreviewFiles] = useState<PreviewFile[]>(
-    preview
-      ? (Array.isArray(preview)
-          ? preview.map(url => ({ url, type: '3d', file: null }))
-          : [{ url: preview, type: '3d', file: null }]
-        )
-      : []
-  )
+  const [previewFiles, setPreviewFiles] = useState<PreviewFile[]>([])
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
+    if (preview) {
+      setPreviewFiles(
+        Array.isArray(preview)
+          ? preview.map(url => ({ url, type: '3d', file: null }))
+          : [{ url: preview, type: '3d', file: null }]
+      )
+    }
+
     return () => {
       previewFiles.forEach(file => URL.revokeObjectURL(file.url))
     }
-  }, [previewFiles])
+  }, [preview])
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files
     if (!fileList) return
 
@@ -70,6 +74,46 @@ export function FileUpload(props: FileUploadProps) {
     } else {
       onChange(files[0])
       setPreviewFiles([newPreviewFiles[0]])
+    }
+
+    // Upload files to Firebase
+    await uploadFilesToFirebase(files)
+  }
+
+  const uploadFilesToFirebase = async (files: File[]) => {
+    setUploading(true)
+    try {
+      const uploads = files.map(async (file) => {
+        const storageRef = ref(storage, `3d-models/${Date.now()}-${file.name}`)
+        const uploadTask = uploadBytesResumable(storageRef, file)
+
+        return new Promise<string>((resolve, reject) => {
+          uploadTask.on(
+            'state_changed',
+            null,
+            (error) => reject(error),
+            async () => {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref)
+              resolve(downloadURL)
+            }
+          )
+        })
+      })
+
+      const uploadedURLs = await Promise.all(uploads)
+      console.log('Uploaded files URLs:', uploadedURLs)
+
+      // Update previews with Firebase URLs
+      setPreviewFiles((prev) =>
+        prev.map((preview, i) => ({
+          ...preview,
+          url: uploadedURLs[i] || preview.url,
+        }))
+      )
+    } catch (error) {
+      console.error('Error uploading files:', error)
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -130,6 +174,7 @@ export function FileUpload(props: FileUploadProps) {
           className="p-2 text-sm border-gray-300 rounded-md"
         />
       </div>
+      {uploading && <p>Uploading...</p>}
       {renderPreview()}
     </div>
   )
