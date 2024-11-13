@@ -2,25 +2,39 @@
 
 import React from 'react'
 import { useRouter } from 'next/navigation'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { api } from "@/service/api"
-import { Product } from "@/types/frontend/entities"
+import { Account, Product } from "@/types/frontend/entities"
 import { useToast } from "@/hooks/use-toast"
 import { ProductFormBase, ProductFormData } from './product-form-base'
+import { Button } from '@/components/ui/button'
+import { ArrowLeft } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { mapBackendToFrontend } from '@/lib/entity-handling/handler'
 
 export default function CreateProduct() {
   const router = useRouter()
   const { toast } = useToast()
 
+  const { data: session, status: sessionStatus } = useSession();
+  
+  const { data: accountInfo, isLoading, error } = useQuery({
+    queryKey: ['account', session?.user?.email],
+    queryFn: async () => {
+      if (!session?.user?.email) throw new Error('No email found in session')
+      const response = await api.get(`accounts/${encodeURIComponent(session.user.email)}/info`)
+      return mapBackendToFrontend<Account>(response.data, 'account')
+    },
+    enabled: !!session?.user?.email,
+  })
+
   const createProductMutation = useMutation({
     mutationFn: (formData: ProductFormData) => {
-      console.log('Form data before mapping:', JSON.stringify(formData))
       const mappedData = mapFrontendToBackend(formData)
-      console.log('Mapped data being sent to API:', JSON.stringify(mappedData, null, 2))
+      console.log(mappedData)
       return api.post<Product>('products', mappedData)
     },
     onSuccess: (data) => {
-      console.log('API response:', JSON.stringify(data))
       toast({
         title: "Product Created",
         description: "Your product has been created successfully.",
@@ -52,7 +66,7 @@ export default function CreateProduct() {
       dimensions: frontendData.dimensions,
       materials: frontendData.materials,
       "campaign-id": frontendData.campaignId,
-      "merchant-id": frontendData.merchantId,
+      "merchant-id": accountInfo?.merchantId,
       status: frontendData.status,
       images: {
         thumbnail: frontendData.thumbnailUrl,
@@ -64,6 +78,10 @@ export default function CreateProduct() {
 
   return (
     <section className="max-w-6xl mx-auto">
+      <Button variant={'link'} onClick={() => router.push('/merchant/products')} className='p-0'>
+        <ArrowLeft size={16}/>
+        <h3>Back to List Product</h3>
+      </Button>
       <h1 className="text-2xl font-bold my-2">Product Management - Create New Product</h1>
       <ProductFormBase 
         onSubmit={handleSubmit} 

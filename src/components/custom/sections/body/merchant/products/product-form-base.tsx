@@ -9,12 +9,16 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { api } from "@/service/api"
-import { Product, ProductCategory } from "@/types/frontend/entities"
+import { Account, Product, ProductCategory } from "@/types/frontend/entities"
 import { FileUpload } from './file-upload'
 import { ApiResponse, PaginatedResponse } from '@/types/api'
 import { useToast } from "@/hooks/use-toast"
 import { storage } from '@/service/firebase'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { useRouter } from 'next/navigation'
+import { CheckCircle, Loader2 } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { mapBackendToFrontend } from '@/lib/entity-handling/handler'
 
 export interface ProductFormData {
   name: string
@@ -47,6 +51,18 @@ const fetchProductCategories = async (
 }
 
 export function ProductFormBase({ initialData, onSubmit, submitButtonText }: ProductFormBaseProps) {
+  const { data: session, status: sessionStatus } = useSession();
+  
+  const { data: accountInfo, isLoading, error } = useQuery({
+    queryKey: ['account', session?.user?.email],
+    queryFn: async () => {
+      if (!session?.user?.email) throw new Error('No email found in session')
+      const response = await api.get(`accounts/${encodeURIComponent(session.user.email)}/info`)
+      return mapBackendToFrontend<Account>(response.data, 'account')
+    },
+    enabled: !!session?.user?.email,
+  })
+
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
     categoryIds: [],
@@ -57,7 +73,7 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
     dimensions: "",
     materials: [],
     campaignId: "",
-    merchantId: "merchant123",
+    merchantId: accountInfo?.merchantId || 'merchant123',
     status: 'ACTIVE'
   })
 
@@ -65,6 +81,9 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
   const [normalImageFiles, setNormalImageFiles] = useState<File[]>([])
   const [modelTextureFile, setModelTextureFile] = useState<File | null>(null)
   const { toast } = useToast()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const router = useRouter()
 
   const productCategoriesQuery = useQuery({
     queryKey: ["productCategories"],
@@ -83,7 +102,7 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
         dimensions: initialData.dimensions,
         materials: initialData.materials,
         campaignId: initialData.campaignId || "",
-        merchantId: initialData.merchantId,
+        merchantId: accountInfo?.merchantId|| initialData.merchantId,
         status: initialData.status as 'ACTIVE' | 'INACTIVE',
         thumbnailUrl: initialData.images?.thumbnail,
         normalImageUrls: initialData.images?.normalImages,
@@ -126,9 +145,10 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSubmitting(true)
     try {
       const updatedFormData = { ...formData}
-
+      
       if (thumbnailFile) {
         const thumbnailUrl = await uploadFile(thumbnailFile, `products/${formData.name}/thumbnail`)
         updatedFormData.thumbnailUrl = thumbnailUrl
@@ -144,15 +164,29 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
       }
 
       if (modelTextureFile) {
-        const modelTextureUrl = await uploadFile(modelTextureFile, `products/${formData.name}/model-texture`)
-        updatedFormData.modelTextureUrl = modelTextureUrl
+        const fileExtension = modelTextureFile.name.split('.').pop()?.toLowerCase();
+        if (fileExtension === 'glb' || fileExtension === 'gltf') {
+          const modelTextureUrl = await uploadFile(modelTextureFile, `products/${formData.name}/model-texture`);
+          updatedFormData.modelTextureUrl = modelTextureUrl;
+        } else {
+          toast({
+            title: "Invalid File Type",
+            description: "Please upload a .glb or .gltf file for the 3D model.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
 
       await onSubmit(updatedFormData)
+      setIsSuccess(true)
       toast({
         title: "Success",
         description: "Product submitted successfully.",
       })
+      setTimeout(() => {
+        router.push('/merchant/products')
+      }, 2000)
     } catch (error) {
       console.error('Error submitting product:', error)
       toast({
@@ -164,7 +198,7 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="">
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="name">Product Name</Label>
@@ -178,7 +212,7 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
         </div>
         <div>
           <Label>Product Categories</Label>
-          <div className="flex flex-wrap gap-4 items-center w-full space-y-2 mt-2">
+          <div className="flex flex-wrap gap-4 items-center w-full mt-4">
             {productCategoriesQuery.data?.data?.items.map(category => (
               <div key={category.id} className="flex items-center space-x-2">
                   <Checkbox 
@@ -206,27 +240,29 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
             required 
           />
         </div>
-        <div>
-          <Label htmlFor="sellingPrice">Selling Price</Label>
-          <Input 
-            id="sellingPrice" 
-            name="sellingPrice" 
-            type="number" 
-            value={formData.sellingPrice} 
-            onChange={handleChange} 
-            required 
-          />
-        </div>
-        <div>
-          <Label htmlFor="quantity">Quantity</Label>
-          <Input 
-            id="quantity" 
-            name="quantity" 
-            type="number" 
-            value={formData.quantity} 
-            onChange={handleChange} 
-            required 
-          />
+        <div className='flex justify-between gap-4'>
+          <div className='w-full'>
+            <Label htmlFor="sellingPrice">Selling Price</Label>
+            <Input 
+              id="sellingPrice" 
+              name="sellingPrice" 
+              type="number" 
+              value={formData.sellingPrice} 
+              onChange={handleChange} 
+              required 
+            />
+          </div>
+          <div className='w-full '>
+            <Label htmlFor="quantity">Quantity</Label>
+            <Input 
+              id="quantity" 
+              name="quantity" 
+              type="number" 
+              value={formData.quantity} 
+              onChange={handleChange} 
+              required 
+            />
+          </div>
         </div>
         <div>
           <Label htmlFor="dimensions">Dimensions</Label>
@@ -238,7 +274,7 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
             placeholder="e.g., 200cm x 90cm x 85cm"
           />
         </div>
-        <div className="col-span-2">
+        <div className="col-span-2 my-4">
           <Label>Materials</Label>
           <div className="flex flex-wrap gap-4 mt-2">
             {['fabric', 'wood', 'foam', 'metal', 'plastic'].map((material) => (
@@ -257,7 +293,7 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-2 justify-items-stretch">
         <FileUpload
           label="Thumbnail Image"
           accept="image/*"
@@ -271,12 +307,35 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
         />
         <FileUpload
           label="Model Texture"
-          accept=".glb,.gltf"
+          accept=".glb"
           onChange={(file: File) => setModelTextureFile(file)}
         />
       </div>
 
-      <Button type="submit" className="w-full">{submitButtonText}</Button>
+      <div className="flex justify-end items-center space-x-4">
+        {isSuccess && (
+          <div className="flex items-center text-green-600">
+            <CheckCircle className="mr-2" />
+            <span>Submission successful!</span>
+          </div>
+        )}
+        <Button 
+          type="submit" 
+          disabled={isSubmitting || isSuccess}
+          className="w-40"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Submitting...
+            </>
+          ) : isSuccess ? (
+            "Redirecting..."
+          ) : (
+            submitButtonText
+          )}
+        </Button>
+      </div>
     </form>
   )
 }
