@@ -31,15 +31,7 @@ export default function CreateProduct() {
   const createProductMutation = useMutation({
     mutationFn: (formData: ProductFormData) => {
       const mappedData = mapFrontendToBackend(formData)
-      console.log(mappedData)
       return api.post<Product>('products', mappedData)
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "Product Created",
-        description: "Your product has been created successfully.",
-      })
-      router.push("/merchant/products")
     },
     onError: (error) => {
       console.error('Error creating product:', error)
