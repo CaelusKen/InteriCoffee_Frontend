@@ -410,9 +410,6 @@ export function mapBackendListToFrontend<T>(backendResponse: any, entityType: st
 
     // Extract the data array based on different possible response structures
     let entityArray;
-    
-    // Log the response structure for debugging
-    console.log('Response structure:', JSON.stringify(backendResponse, null, 2));
 
     if (Array.isArray(backendResponse)) {
         // If response is directly an array
