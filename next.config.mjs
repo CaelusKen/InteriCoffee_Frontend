@@ -8,6 +8,12 @@ const nextConfig = {
             port: '',
             pathname: '/**',
           },
+          {
+            protocol: 'https',
+            hostname: 'firebasestorage.googleapis.com',
+            port: '',
+            pathname: '/v0/b/intericoffee-442da.appspot.com/**',
+          },
         ],
     },
     reactStrictMode: true,

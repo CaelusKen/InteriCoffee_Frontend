@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
@@ -12,14 +11,39 @@ import { ThemeToggler } from '../../buttons/theme-toggler'
 
 type StyleOption = 'modern' | 'traditional' | 'eclectic';
 
-export default function SetupFirst() {
-  const [roomWidth, setRoomWidth] = useState<string>('')
-  const [roomLength, setRoomLength] = useState<string>('')
-  const [roomHeight, setRoomHeight] = useState<string>('')
-  const [measurement, setMeasurement] = useState<string>('feet')
-  const [colorPalettes, setColorPalettes] = useState<string[]>([])
-  const [mainStyles, setMainStyles] = useState<StyleOption[]>([])
-  const [subStyles, setSubStyles] = useState<string[]>([])
+interface SetupFirstProps {
+  onSubmit: (data: {
+    roomSize: {
+      width: string
+      length: string
+      height: string
+      measurement: string
+    }
+    colorPalettes: string[]
+    mainStyles: StyleOption[]
+    subStyles: string[]
+  }) => void
+  initialData?: {
+    roomSize?: {
+      width: string
+      length: string
+      height: string
+      measurement: string
+    }
+    colorPalettes?: string[]
+    mainStyles?: StyleOption[]
+    subStyles?: string[]
+  }
+}
+
+export default function SetupFirst({ onSubmit, initialData }: SetupFirstProps) {
+  const [roomWidth, setRoomWidth] = useState(initialData?.roomSize?.width || '')
+  const [roomLength, setRoomLength] = useState(initialData?.roomSize?.length || '')
+  const [roomHeight, setRoomHeight] = useState(initialData?.roomSize?.height || '')
+  const [measurement, setMeasurement] = useState(initialData?.roomSize?.measurement || 'feet')
+  const [colorPalettes, setColorPalettes] = useState<string[]>(initialData?.colorPalettes || [])
+  const [mainStyles, setMainStyles] = useState<StyleOption[]>(initialData?.mainStyles || [])
+  const [subStyles, setSubStyles] = useState<string[]>(initialData?.subStyles || [])
 
   const colorPaletteOptions = ['Warm', 'Cool', 'Neutral', 'Vibrant']
   const mainStyleOptions: StyleOption[] = ['modern', 'traditional', 'eclectic']
@@ -54,9 +78,23 @@ export default function SetupFirst() {
     )
   }
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onSubmit({
+      roomSize: {
+        width: roomWidth,
+        length: roomLength,
+        height: roomHeight,
+        measurement
+      },
+      colorPalettes,
+      mainStyles,
+      subStyles
+    })
+  }
+
   return (
     <div className="flex flex-col lg:flex-row min-h-screen">
-      {/* Left Column */}
       <div className="lg:flex-1 bg-gray-100 dark:bg-gray-800 flex flex-col justify-between p-6 lg:p-12">
         <div>
           <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4 lg:mb-8">Welcome back!</h1>
@@ -68,11 +106,9 @@ export default function SetupFirst() {
         <ThemeToggler/>
       </div>
       
-      {/* Right Column */}
       <div className="lg:flex-1 flex flex-col justify-center px-6 py-8 lg:px-8 lg:py-12 bg-white dark:bg-gray-900">
-        <form className="space-y-6 lg:space-y-8 w-full max-w-md mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-6 lg:space-y-8 w-full max-w-md mx-auto">
           <h2 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-4 lg:mb-6">Setup Your Space</h2>
-          {/* Room Size */}
           <div className="space-y-4">
             <Label>Room Size</Label>
             <div className="grid grid-cols-3 gap-2 lg:gap-4">
@@ -106,7 +142,6 @@ export default function SetupFirst() {
             </Select>
           </div>
 
-          {/* Color Palette */}
           <div className="space-y-4">
             <Label>Color Palette Preference</Label>
             <div className="flex flex-wrap gap-2">
@@ -123,7 +158,6 @@ export default function SetupFirst() {
             </div>
           </div>
 
-          {/* Interior Design Style */}
           <div className="space-y-4">
             <Label>Interior Design Style</Label>
             <div className="flex flex-wrap gap-2">

@@ -10,19 +10,34 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowRight, Mail, Bell } from 'lucide-react'
 
-export default function SetupLast() {
-  const [email, setEmail] = useState('')
-  const [notifications, setNotifications] = useState(true)
+interface SetupLastProps {
+  onSubmit: (data: {
+    phoneNumber: string
+    notifications: boolean
+    avatar?: string
+    address?: string
+  }) => void
+  initialData?: {
+    phoneNumber?: string
+    notifications?: boolean
+    avatar?: string
+    address?: string
+  }
+}
+
+export default function SetupLast({ onSubmit, initialData }: SetupLastProps) {
+  const [phoneNumber, setPhoneNumber] = useState(initialData?.phoneNumber || '')
+  const [notifications, setNotifications] = useState(initialData?.notifications ?? true)
+  const [avatar, setAvatar] = useState(initialData?.avatar || '')
+  const [address, setAddress] = useState(initialData?.address || '')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Registration complete:', { email, notifications })
-    // Here you would typically send this data to your backend and complete the registration process
+    onSubmit({ phoneNumber, notifications, avatar, address })
   }
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen">
-      {/* Left Column */}
       <div className="lg:flex-1 bg-gray-100 dark:bg-gray-800 flex flex-col justify-between p-6 lg:p-12">
         <div>
           <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-4 lg:mb-8">Almost there!</h1>
@@ -38,7 +53,6 @@ export default function SetupLast() {
         </div>
       </div>
       
-      {/* Right Column */}
       <div className="lg:flex-1 flex flex-col justify-center px-6 py-8 lg:px-8 lg:py-12 bg-white dark:bg-gray-900">
         <form onSubmit={handleSubmit} className="space-y-6 lg:space-y-8 w-full max-w-md mx-auto">
           <div>
@@ -50,19 +64,35 @@ export default function SetupLast() {
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email address</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
+                  <Label htmlFor="phoneNumber">Phone Number</Label>
+                  <Input
+                    id="phoneNumber"
+                    type="tel"
+                    placeholder="Your phone number"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="avatar">Avatar URL (optional)</Label>
+                  <Input
+                    id="avatar"
+                    type="url"
+                    placeholder="https://example.com/avatar.jpg"
+                    value={avatar}
+                    onChange={(e) => setAvatar(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address">Address (optional)</Label>
+                  <Input
+                    id="address"
+                    type="text"
+                    placeholder="Your address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                  />
                 </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox
