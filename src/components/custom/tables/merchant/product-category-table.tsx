@@ -138,9 +138,6 @@ export default function MerchantProductCategoryTable() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => router.push(`/merchant/product-categories/${productCategory.id}`)}>
-                      View Details
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => router.push(`/merchant/product-categories/${productCategory.id}/update`)}>
                       Edit
                     </DropdownMenuItem>
@@ -177,7 +174,7 @@ export default function MerchantProductCategoryTable() {
 
     return (
         <section className="space-y-4">
-      <h1 className="text-2xl font-bold">Product Management</h1>
+      <h1 className="text-2xl font-bold">Product Categories Management</h1>
 
       <div className="flex items-center gap-2">
         <Button onClick={() => router.push('/merchant/product-categories/create')} className="bg-green-500 hover:bg-green-700 text-white">

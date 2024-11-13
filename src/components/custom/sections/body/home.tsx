@@ -24,9 +24,7 @@ const products = [
     name: "Modern Chair",
     merchant: "FurniCraft",
     images: [
-      { src: "https://placehold.co/300", alt: "Modern Chair" },
-      { src: "https://placehold.co/300", alt: "Modern Chair" },
-      { src: "https://placehold.co/300", alt: "Modern Chair" }
+      "https://placehold.co/300", "https://placehold.co/300","https://placehold.co/300"
     ],
     modelUrl: "/assets/3D/modern-chair.glb",
     price: 199.99,
@@ -37,9 +35,7 @@ const products = [
     name: "Classic Coffee Table",
     merchant: "WoodWorks",
     images: [
-      { src: "https://placehold.co/400", alt: "Classic Coffee Table" },
-      { src: "https://placehold.co/400", alt: "Classic Coffee Table" },
-      { src: "https://placehold.co/400", alt: "Classic Coffee Table" }
+      "https://placehold.co/300", "https://placehold.co/300","https://placehold.co/300"
     ],
     modelUrl: "/assets/3D/classic-coffee-table.glb",
     price: 299.99,
@@ -50,9 +46,7 @@ const products = [
     name: "Cozy Sofa",
     merchant: "ComfortZone",
     images: [
-      { src: "https://placehold.co/500", alt: "Cozy Sofa" },
-      { src: "https://placehold.co/500", alt: "Cozy Sofa" },
-      { src: "https://placehold.co/500", alt: "Cozy Sofa" }
+      "https://placehold.co/300", "https://placehold.co/300","https://placehold.co/300"
     ],
     modelUrl: "/assets/3D/sofa.glb",
     price: 599.99,
@@ -63,9 +57,7 @@ const products = [
     name: "Dining Table",
     merchant: "DineDesign",
     images: [
-      { src: "https://placehold.co/600", alt: "Dining Table" },
-      { src: "https://placehold.co/600", alt: "Dining Table" },
-      { src: "https://placehold.co/600", alt: "Dining Table" }
+      "https://placehold.co/300", "https://placehold.co/300","https://placehold.co/300"
     ],
     modelUrl: "/assets/3D/table.glb",
     price: 399.99,

@@ -134,18 +134,7 @@ export default function ConsultantTemplateDetailsPage() {
               id={item.name}
               images={
                 [
-                  {
-                    src: 'https://placeholder.co/400',
-                    alt: 'product image'
-                  },
-                  {
-                    src: 'https://placeholder.co/400',
-                    alt: 'product image'
-                  },
-                  {
-                    src: 'https://placeholder.co/400',
-                    alt: 'product image'
-                  },
+                  'https://placeholder.co/400', 'https://placeholder.co/400', 'https://placeholder.co/400'
                 ]
               }
               merchant={'Merchant A'}
