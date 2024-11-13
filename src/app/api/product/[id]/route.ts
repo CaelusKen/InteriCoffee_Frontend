@@ -24,6 +24,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   
   if (data.data) {
     const mappedData = mapBackendToFrontend<Product>(data.data, 'product');
+    console.log(JSON.stringify(mappedData))
     return NextResponse.json({ ...data, data: mappedData });
   }
   

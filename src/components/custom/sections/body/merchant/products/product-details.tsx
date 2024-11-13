@@ -1,110 +1,202 @@
 'use client'
 
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import React from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { ChevronLeft, Edit2, Trash2 } from 'lucide-react'
+import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button"
+import { api } from "@/service/api"
+import { Product, ProductCategory } from "@/types/frontend/entities"
+import { ApiResponse, PaginatedResponse } from '@/types/api'
+import Link from 'next/link'
+import { ArrowLeft, Edit } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Canvas } from "@react-three/fiber"
+import {
+  OrbitControls,
+  PerspectiveCamera,
+  Environment,
+} from "@react-three/drei"
+import LoadingPage from '@/components/custom/loading/loading'
+import { Model } from './model'
+import { MerchantInfo } from './merchant-info'
 
-export default function ProductDetails() {
-  const [product, setProduct] = useState({
-    id: '1',
-    name: 'Modern Leather Sofa',
-    description: 'A sleek and comfortable leather sofa perfect for modern living rooms.',
-    price: 1299.99,
-    stock: 15,
-    category: 'Sofas',
-    style: 'Modern Minimalist',
-    badges: ['Leather', 'Comfortable', 'Durable'],
-    images: ['https://placehold.co/400', 'https://placehold.co/400', 'https://placehold.co/400', 'https://placehold.co/400']
+const fetchProduct = async (id: string): Promise<ApiResponse<Product>> => {
+  return api.getById<Product>(`products`, id)
+}
+
+const fetchCategory = async(
+  page = 1,
+  pageSize = 10
+) : Promise<ApiResponse<PaginatedResponse<ProductCategory>>> => {
+  return api.getPaginated<ProductCategory>('product-categories', { page, pageSize })
+}
+
+interface ProductDetailsProps {
+  productId: string
+}
+
+export default function ProductDetails({ productId }: ProductDetailsProps) {
+  const productQuery = useQuery({
+    queryKey: ["product", productId],
+    queryFn: () => fetchProduct(productId),
+    enabled: !!productId,
   })
 
+  const productCategoriesQuery = useQuery({
+    queryKey: ["product-categories"],
+    queryFn: () => fetchCategory(1)
+  })
+
+  if (productQuery.isLoading) {
+    return <LoadingPage />
+  }
+  
+  if (productQuery.isError) {
+    return <div>Error loading product data. Please try again.</div>
+  }
+  
+  const product = productQuery.data?.data
+  
+  const productCategories = productCategoriesQuery.data?.data.items ?? []
+
+  const currentProductCategoryNames = product?.categoryIds
+    .map(categoryId => productCategories.find(category => category.id === categoryId)?.name)
+    .filter(Boolean)
+
+  if (!product) {
+    return <div>No product found.</div>
+  }
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="max-w-6xl mx-auto">
-        <Button variant="ghost" className="mb-6">
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Back to Product Stocks
-        </Button>
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">{product.name}</h1>
-          <div className="space-x-2">
-            <Button variant="destructive" className='bg-yellow-300 hover:bg-yellow-400 text-black'>
-              <Edit2 className="mr-2 h-4 w-4" />
-              Edit
-            </Button>
-            <Button variant="destructive" className='bg-red-400 hover:bg-red-500'>
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </Button>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="col-span-2">
-            <CardHeader>
-              <CardTitle>Product Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="category">Category</Label>
-                  <Input id="category" value={product.category} readOnly className="bg-background dark:bg-gray-700" />
-                </div>
-                <div>
-                  <Label htmlFor="style">Style</Label>
-                  <Input id="style" value={product.style} readOnly className="bg-background dark:bg-gray-700" />
-                </div>
-                <div>
-                  <Label htmlFor="price">Price</Label>
-                  <Input id="price" value={`$${product.price.toFixed(2)}`} readOnly className="bg-background dark:bg-gray-700" />
-                </div>
-                <div>
-                  <Label htmlFor="stock">Stock</Label>
-                  <Input id="stock" value={product.stock} readOnly className="bg-background dark:bg-gray-700" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <Label htmlFor="description">Description</Label>
-                <textarea
-                  title='Description'
-                  placeholder=''
-                  id="description"
-                  value={product.description}
-                  readOnly
-                  className="w-full h-24 mt-1 bg-background dark:bg-gray-700 border border-input rounded-md p-2"
+    <section className="max-w-7xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <Link href="/merchant/products" className="flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-gray-100">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Products
+        </Link>
+        <Link href={`/merchant/products/${productId}/update`} passHref>
+          <Button variant="outline" className="flex items-center">
+            <Edit className="mr-2 h-4 w-4" />
+            Edit Product
+          </Button>
+        </Link>
+      </div>
+
+      <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <Tabs defaultValue="images" className="w-[400px]">
+          <TabsList>
+            <TabsTrigger value="images">Images</TabsTrigger>
+            <TabsTrigger value="model">Model</TabsTrigger>
+          </TabsList>
+          <TabsContent value="images">
+            <div>
+              <div className="aspect-square relative overflow-hidden rounded-lg mb-4">
+                <img
+                  src={product.images.thumbnail || "/placeholder.svg"}
+                  alt={product.name}
+                  className="h-[480px] object-cover"
                 />
               </div>
-              <div className="mt-4">
-                <Label>Categories</Label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {product.badges.map((badge, index) => (
-                    <Badge key={index} variant="secondary" className='bg-secondary-600 hover:bg-secondary-800 cursor-default'>{badge}</Badge>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Product Images</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                {product.images.map((image, index) => (
-                  <img
-                    key={index}
-                    src={image}
-                    alt={`Product image ${index + 1}`}
-                    className="w-full h-auto rounded-md"
-                  />
+              <div className="grid grid-cols-4 gap-2">
+                {product.images.normalImages.map((image, index) => (
+                  <div key={index} className="aspect-square relative overflow-hidden rounded-lg">
+                    <img
+                      src={image}
+                      alt={`${product.name} - Image ${index + 1}`}
+                      className="object-cover h-[160px] w-[160px]"
+                    />
+                  </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </TabsContent>
+          <TabsContent value="model">
+            {product.modelTextureUrl ? (
+              <Canvas>
+                <PerspectiveCamera makeDefault fov={50} />
+                <ambientLight intensity={0.5} />
+                <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+                <Model url={product.modelTextureUrl} />
+                <OrbitControls enableZoom={false} />
+                <Environment preset="apartment" background blur={0.5} />
+              </Canvas>
+            ) : (
+              <p>No model found for this product</p>
+            )}
+          </TabsContent>
+        </Tabs>
+
+        <div className="space-y-6">
+          <div>
+            <Label className="text-lg font-semibold">Description</Label>
+            <p className="mt-1 text-gray-600">{product.description}</p>
+          </div>
+
+          <Separator />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-sm font-semibold">Category</Label>
+              <div className="mt-1 flex flex-wrap gap-2">
+                {currentProductCategoryNames?.length ? (
+                  currentProductCategoryNames.map((productCategory, index) => (
+                    <span key={index} className="px-4 py-1 bg-gray-100 text-black w-fit rounded-full text-sm">
+                      {productCategory}
+                    </span>
+                  ))
+                ) : (
+                  <p>This product has no categories</p>
+                )}
+              </div>
+            </div>
+            <div>
+              <Label className="text-sm font-semibold">Status</Label>
+              <p className="mt-1">{product.status}</p>
+            </div>
+            <div>
+              <Label className="text-sm font-semibold">Selling Price</Label>
+              <p className="mt-1">{product.sellingPrice.toLocaleString("vi-VN", {style:"currency", currency:"VND"})}</p>
+            </div>
+            <div>
+              <Label className="text-sm font-semibold">True Price</Label>
+              <p className="mt-1">{product.truePrice.toLocaleString("vi-VN", {style:"currency", currency:"VND"})}</p>
+            </div>
+            <div>
+              <Label className="text-sm font-semibold">Quantity</Label>
+              <p className="mt-1">{product.quantity}</p>
+            </div>
+            <div>
+              <Label className="text-sm font-semibold">Dimensions</Label>
+              <p className="mt-1">{product.dimensions}</p>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div>
+            <Label className="text-sm font-semibold">Materials</Label>
+            <div className="mt-1 flex flex-wrap gap-2">
+              {product.materials.map((material, index) => (
+                <span key={index} className="px-4 py-1 bg-gray-100 text-black w-fit rounded-full text-sm">
+                  {material}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <Separator />
+
+          <div>
+            <Label className="text-sm font-semibold">Available Sale Campaigns</Label>
+            <p className="mt-1">{product.campaignId || "There are no campaigns for this product"}</p>
+          </div>
+
+          <MerchantInfo merchantId={product.merchantId} />
         </div>
       </div>
-    </div>
+    </section>
   )
 }

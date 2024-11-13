@@ -79,7 +79,6 @@ export default function AccountManagement() {
       queryClient.invalidateQueries({
         queryKey: ["account", selectedAccountId],
       })
-      console.log('Update successful:', data);
     },
     onError: (error) => {
       console.error('Update failed:', error);

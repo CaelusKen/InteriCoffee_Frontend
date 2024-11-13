@@ -1,6 +1,6 @@
 import React from "react";
-import SaleCampagign from "@/components/custom/sections/body/merchant/sale-campaigns/sale-campaigns";
+import MerchantSaleCampaignsTable from "@/components/custom/tables/merchant/sale-campaigns-table";
 
 export default function SaleCampaignHome() {
-    return <SaleCampagign />
+    return <MerchantSaleCampaignsTable />
 }

@@ -172,7 +172,7 @@ export default function ProductManagement() {
       {selectedProductId && selectedProductQuery.data && (
         <div className="mb-4">
           <h2 className="text-xl font-semibold mb-2">Selected Product Details</h2>
-          <div className="bg-black p-4 rounded-lg">
+          <div className="bg-black p-4 rounded-lg grid grid-cols-2">
             <p><strong>Name:</strong> {selectedProductQuery.data.data.name}</p>
             <p><strong>Description:</strong> {selectedProductQuery.data.data.description}</p>
             <p><strong>Selling Price:</strong> ${selectedProductQuery.data.data.sellingPrice}</p>
@@ -186,6 +186,10 @@ export default function ProductManagement() {
             <p><strong>Campaign ID:</strong> {selectedProductQuery.data.data.campaignId || 'N/A'}</p>
             <p><strong>Created Date:</strong> {selectedProductQuery.data.data.createdDate.toLocaleString()}</p>
             <p><strong>Updated Date:</strong> {selectedProductQuery.data.data.updatedDate.toLocaleString()}</p>
+            <div>
+              <p><strong>Image Preview:</strong></p>
+              <img src={selectedProductQuery.data.data.images.thumbnail} alt={selectedProductQuery.data.data.name} className="w-[240px] h-full object-cover" />
+            </div>
           </div>
         </div>
       )}

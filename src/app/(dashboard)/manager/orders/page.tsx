@@ -1,6 +1,6 @@
 import React from 'react'
-import Order from '@/components/custom/sections/body/manager/orders/order'
+import ManagerOrdersTable from '@/components/custom/tables/manager/orders-table'
 
 export default function OrderHomePage() {
-    return <Order />
+    return <ManagerOrdersTable />
 }
