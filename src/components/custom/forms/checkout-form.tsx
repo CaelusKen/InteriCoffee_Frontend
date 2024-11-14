@@ -131,13 +131,12 @@ export default function CheckoutForm() {
       "order-id": orderId,
       "full-name": formData.fullName,
       "description": `Payment for order ${orderId}`,
-      "created-date": new Date().toISOString(),
       "total-amount": total,
       "payment-method": "VNPay",
       "currency": "VND"
     }
 
-    const response = await api.post<{ result: string }>('transactions/vnpay', transactionData)
+    const response = await api.post<{ url: string }>('transactions/vnpay', transactionData)
     return response.data
   }
 
@@ -150,8 +149,9 @@ export default function CheckoutForm() {
       
       if (values.paymentMethod === 'VNPay') {
         const vnpayResponse = await createVNPayTransaction(orderId, values)
+        console.log(JSON.stringify(vnpayResponse.url))
         clearCart()
-        window.location.href = vnpayResponse.result
+        window.location.href = vnpayResponse.url
       } else if (values.paymentMethod === 'PayPal') {
         toast.error('PayPal payment is not implemented yet')
       } else {
