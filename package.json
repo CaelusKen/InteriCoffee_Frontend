@@ -56,6 +56,7 @@
     "react-hotkeys-hook": "^4.5.1",
     "react-reconciler": "^0.29.2",
     "react-resizable-panels": "^2.1.6",
+    "react-router-dom": "^6.28.0",
     "react-slick": "^0.30.2",
     "recharts": "^2.13.0",
     "slick-carousel": "^1.8.1",

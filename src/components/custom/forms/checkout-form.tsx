@@ -137,9 +137,7 @@ export default function CheckoutForm() {
       "currency": "VND"
     }
 
-    console.log(transactionData)
-
-    const response = await api.post<{ paymentUrl: string }>('transactions/vnpay', transactionData)
+    const response = await api.post<{ result: string }>('transactions/vnpay', transactionData)
     return response.data
   }
 
@@ -153,16 +151,17 @@ export default function CheckoutForm() {
       if (values.paymentMethod === 'VNPay') {
         const vnpayResponse = await createVNPayTransaction(orderId, values)
         clearCart()
-        window.location.href = vnpayResponse.paymentUrl
+        window.location.href = vnpayResponse.result
       } else if (values.paymentMethod === 'PayPal') {
         toast.error('PayPal payment is not implemented yet')
       } else {
         clearCart()
         toast.success('Order placed successfully!')
-        router.push(`/order-confirmation/${orderResponse.id}`)
+        router.push(`/order-confirmation/success`)
       }
     } catch (error) {
       console.error('Error processing order:', error)
+      router.push(`/order-confirmation/fail`)
       toast.error('Failed to process order. Please try again.')
     } finally {
       setIsProcessing(false)
