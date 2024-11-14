@@ -1,4 +1,4 @@
-import { CheckoutForm } from '@/components/custom/forms/checkout-form'
+import CheckoutForm from '@/components/custom/forms/checkout-form'
 
 export default function CheckoutPage() {
   return (
