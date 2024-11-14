@@ -32,11 +32,6 @@ const fetchOrders = async(): Promise<ApiResponse<Order[]>> => {
   return api.get<Order[]>('orders')
 }
 
-type OrderResponse = {
-  id: string
-  status: string
-}
-
 const formSchema = z.object({
   fullName: z.string().min(2, 'Full name is required'),
   email: z.string().email('Invalid email address'),
@@ -125,7 +120,8 @@ export default function CheckoutForm() {
       "voucher-id": ''
     }
 
-    const response = await api.post<OrderResponse>('orders', orderData)
+    const response = await api.post<{id: string}>('orders', orderData)
+    console.log(response.data.id)
     return response.data
   }
 
@@ -141,6 +137,8 @@ export default function CheckoutForm() {
       "currency": "VND"
     }
 
+    console.log(transactionData)
+
     const response = await api.post<{ paymentUrl: string }>('transactions/vnpay', transactionData)
     return response.data
   }
@@ -149,9 +147,11 @@ export default function CheckoutForm() {
     setIsProcessing(true)
     try {
       const orderResponse = await createOrder(values)
+
+      const orderId = typeof orderResponse === 'string' ? orderResponse : orderResponse.id
       
       if (values.paymentMethod === 'VNPay') {
-        const vnpayResponse = await createVNPayTransaction(orderResponse.id, values)
+        const vnpayResponse = await createVNPayTransaction(orderId, values)
         clearCart()
         window.location.href = vnpayResponse.paymentUrl
       } else if (values.paymentMethod === 'PayPal') {
