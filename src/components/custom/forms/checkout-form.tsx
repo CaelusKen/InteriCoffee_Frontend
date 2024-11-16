@@ -157,11 +157,11 @@ export default function CheckoutForm() {
       } else {
         clearCart()
         toast.success('Order placed successfully!')
-        router.push(`/order-confirmation/success`)
+        // router.push(`/order-confirmation/success`)
       }
     } catch (error) {
       console.error('Error processing order:', error)
-      router.push(`/order-confirmation/fail`)
+      // router.push(`/order-confirmation/fail`)
       toast.error('Failed to process order. Please try again.')
     } finally {
       setIsProcessing(false)
