@@ -1,9 +1,11 @@
+'use client'
+
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { XCircle } from 'lucide-react'
 
-export default function TransactionFailure() {
+const TransactionFailure = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { orderId, errorMessage } = location.state || {}
@@ -31,3 +33,5 @@ export default function TransactionFailure() {
     </div>
   )
 }
+
+export default TransactionFailure
