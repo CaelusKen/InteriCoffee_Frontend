@@ -22,6 +22,9 @@ export const options: NextAuthOptions = {
     pages: {
         signIn: '/login'
     },
+    session: {
+        maxAge: 1 * 60 * 60 // 1 hour
+    },
     providers: [
         FacebookProvider({
             clientId: process.env.AUTH_FACEBOOK_ID as string,
