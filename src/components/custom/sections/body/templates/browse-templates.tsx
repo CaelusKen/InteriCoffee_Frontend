@@ -1,45 +1,35 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import TemplateCard from '@/components/custom/cards/default-template-card'
+import { ApiResponse, PaginatedResponse } from '@/types/api'
+import { api } from '@/service/api'
+import { Style, Template } from '@/types/frontend/entities'
+import { useToast } from '@/hooks/use-toast'
 
-interface Template {
-  id: string
-  imageUrl: string
-  style: string
-  creatorName: string
-  creatorAvatar: string
-  title: string
+const fetchTemplates = async({ pageNo = 1, pageSize = 10}) : Promise<ApiResponse<PaginatedResponse<Template>>> => {
+  return api.getPaginated('templates', { pageNo, pageSize })
 }
 
-const dummyTemplates: Template[] = [
-  {
-    id: '1',
-    imageUrl: 'https://placehold.co/300x300',
-    style: 'Modern',
-    creatorName: 'Alice Johnson',
-    creatorAvatar: 'https://placehold.co/50x50',
-    title: 'Sleek Living Room'
-  },
-  {
-    id: '2',
-    imageUrl: 'https://placehold.co/300x300',
-    style: 'Rustic',
-    creatorName: 'Bob Smith',
-    creatorAvatar: 'https://placehold.co/50x50',
-    title: 'Cozy Bedroom'
-  },
-  {
-    id: '3',
-    imageUrl: 'https://placehold.co/300x300',
-    style: 'Minimalist',
-    creatorName: 'Charlie Brown',
-    creatorAvatar: 'https://placehold.co/50x50',
-    title: 'Clean Kitchen'
-  },
-  // Add more dummy templates as needed
-]
-
 export default function TemplateGallery() {
-  const [templates, setTemplates] = useState<Template[]>(dummyTemplates)
+  const [pageNo, setPageNo] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [templates, setTemplates] = useState<Template[] | null>(null)
+  const [styleName, setStyleName] = useState<string | null>(null)
+
+  const { toast } = useToast()
+
+  useEffect(() => {
+    fetchTemplates({pageNo, pageSize}).then((res) => {
+      if(res.data && res.status == 200) {
+        setTemplates(res.data.items)
+      }
+    }).catch((err) => {
+      toast({
+        title: 'Fetch Templates fail',
+        description: `Template fetching fail at ${err}`,
+        className: 'bg-red-500'
+      })
+    })
+  }, [])
 
   const handleSave = (id: string) => {
     console.log(`Saving template with id: ${id}`)
@@ -55,14 +45,14 @@ export default function TemplateGallery() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8 text-center">Template Gallery</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {templates.map((template) => (
+        {templates && templates?.map((template) => (
           <TemplateCard
             key={template.id}
             imageUrl={template.imageUrl}
-            style={template.style}
-            creatorName={template.creatorName}
-            creatorAvatar={template.creatorAvatar}
-            title={template.title}
+            style={template?.styleId || 'Anything'}
+            creatorName={template.accountId}
+            creatorAvatar={'https://github.com/shadcn.png'}
+            title={template.name}
             onSave={() => handleSave(template.id)}
             onViewDetails={() => handleViewDetails(template.id)}
           />
