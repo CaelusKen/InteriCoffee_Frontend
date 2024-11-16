@@ -3,7 +3,7 @@
 import { mapBackendToFrontend } from '@/lib/entity-handling/handler'
 import { api } from '@/service/api'
 import { ApiResponse, PaginatedResponse } from '@/types/api'
-import { Account, Product, Style } from '@/types/frontend/entities'
+import { Account, Product, ProductCategory, Style, Template } from '@/types/frontend/entities'
 import { useSession } from 'next-auth/react'
 import React, { useEffect, useState } from 'react'
 import { useToast } from '@/hooks/use-toast'
@@ -23,7 +23,6 @@ const fetchAccountByEmail = async(email: string): Promise<ApiResponse<Account>> 
 const fetchStyles =  async({ pageNo = 1, pageSize = 10 }): Promise<ApiResponse<PaginatedResponse<Style>>> => {
   return api.getPaginated<Style>('styles', { pageNo, pageSize })
 }
-
 
 export default function ConsultantCreateTemplate() {
   const [pageNo, setPageNo] = useState(1)
@@ -71,12 +70,33 @@ export default function ConsultantCreateTemplate() {
 
   const handleSave = (data: any) => {
     setTemplateData(data)
-    console.log('Template data:', data)
-    toast({
-      title: 'Success',
-      description: 'Sketch saved successfully',
+    api.post<Template>('templates', {
+      "account-id": account?.id,
+      "merchant-id": account?.merchantId,
+      name: data.name,
+      description: data.description,
+      "style-id": data.styleId,
+      image: data.imageUrl,
+      floors: null,
+      type: "Sketch",
+      categories: data.categories,
     })
-    router.push('/consultant/templates')
+      .then((res) => {
+        if (res.data != null && res.status == 200) {
+          toast({
+            title: 'Success',
+            description: `Template created successfully`,
+          })
+          router.push('/consultant/templates')
+        }
+      })
+      .catch((err) => {
+        toast({
+          title: 'Error',
+          description: `${err}. Check the network for details`,
+          variant: 'destructive'
+        })
+      })
   }
 
   if (!account) {

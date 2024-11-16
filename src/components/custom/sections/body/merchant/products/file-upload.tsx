@@ -12,7 +12,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 type SingleFileUploadProps = {
   label: string
   accept: string
-  onChange: (file: File) => void
+  onChange: (file: File, downloadURL: string) => void
   multiple?: false
   preview?: string
 }
@@ -20,7 +20,7 @@ type SingleFileUploadProps = {
 type MultipleFileUploadProps = {
   label: string
   accept: string
-  onChange: (files: File[]) => void
+  onChange: (files: File[], downloadURLs: string[]) => void
   multiple: true
   preview?: string[]
 }
@@ -69,22 +69,26 @@ export function FileUpload(props: FileUploadProps) {
     }))
 
     if (multiple) {
-      onChange(files)
       setPreviewFiles(prevFiles => [...prevFiles, ...newPreviewFiles])
     } else {
-      onChange(files[0])
       setPreviewFiles([newPreviewFiles[0]])
     }
 
     // Upload files to Firebase
-    await uploadFilesToFirebase(files)
+    const uploadedURLs = await uploadFilesToFirebase(files)
+
+    if (multiple) {
+      onChange(files, uploadedURLs)
+    } else {
+      onChange(files[0], uploadedURLs[0])
+    }
   }
 
-  const uploadFilesToFirebase = async (files: File[]) => {
+  const uploadFilesToFirebase = async (files: File[]): Promise<string[]> => {
     setUploading(true)
     try {
       const uploads = files.map(async (file) => {
-        const storageRef = ref(storage, `3d-models/${Date.now()}-${file.name}`)
+        const storageRef = ref(storage, `template-images/${Date.now()}-${file.name}`)
         const uploadTask = uploadBytesResumable(storageRef, file)
 
         return new Promise<string>((resolve, reject) => {
@@ -110,8 +114,11 @@ export function FileUpload(props: FileUploadProps) {
           url: uploadedURLs[i] || preview.url,
         }))
       )
+
+      return uploadedURLs
     } catch (error) {
       console.error('Error uploading files:', error)
+      return []
     } finally {
       setUploading(false)
     }
@@ -120,7 +127,7 @@ export function FileUpload(props: FileUploadProps) {
   const handleRemoveFile = (index: number) => {
     setPreviewFiles(prevFiles => prevFiles.filter((_, i) => i !== index))
     if (multiple) {
-      onChange(previewFiles.filter((_, i) => i !== index).map(file => file.file as File))
+      onChange(previewFiles.filter((_, i) => i !== index).map(file => file.file as File), [])
     }
   }
 
