@@ -18,7 +18,7 @@ export default function UpdateStyleForm({ styleId }: UpdateStyleProps) {
   const router = useRouter()
   const { toast } = useToast()
 
-  const productCategoryQuery = useQuery({
+  const styleQuery = useQuery({
     queryKey: ["style", styleId],
     queryFn: () => api.getById<Style>(`styles`, styleId),
   })
@@ -56,11 +56,11 @@ export default function UpdateStyleForm({ styleId }: UpdateStyleProps) {
     }
   }
 
-  if (productCategoryQuery.isLoading) {
+  if (styleQuery.isLoading) {
     return <div>Loading...</div>
   }
 
-  if (productCategoryQuery.isError) {
+  if (styleQuery.isError) {
     return <div>Error loading product category data. Please try again.</div>
   }
 
@@ -68,13 +68,13 @@ export default function UpdateStyleForm({ styleId }: UpdateStyleProps) {
     <section className="max-w-6xl mx-auto">
       <Button variant={'link'} onClick={() => router.push('/merchant/product-categories')} className='p-0'>
         <ArrowLeft size={16}/>
-        <span className="ml-2">Back to Product Categories</span>
+        <span className="ml-2">Back to Styles</span>
       </Button>
-      <h1 className="text-2xl font-bold my-4">Product Category Management - Update Category</h1>
+      <h1 className="text-2xl font-bold my-4">Style Management - Update Style</h1>
       <StyleFormBase 
-        initialData={productCategoryQuery.data?.data} 
+        initialData={styleQuery.data?.data} 
         onSubmit={handleSubmit} 
-        submitButtonText="Update Category" 
+        submitButtonText="Update Style" 
       />
     </section>
   )
