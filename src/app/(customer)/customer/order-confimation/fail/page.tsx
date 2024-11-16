@@ -1,3 +1,5 @@
+'use client'
+
 import TransactionFailure from '@/components/custom/sections/body/order-confirmation/fail-confirmation'
 import React from 'react'
 
