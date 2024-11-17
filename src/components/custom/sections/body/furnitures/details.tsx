@@ -236,7 +236,7 @@ const FurnitureDetailsSection: React.FC<ProductProps> = ({ id }) => {
             </div>
           </CardFooter> */}
         </Card>
-        <Card className="col-span-1 h-full">
+        <Card className="col-span-2 lg:col-span-1 h-full">
           <CardContent className="p-6 space-y-6">
             <div className="flex justify-between">
               <h1 className="text-3xl font-bold dark:text-white">

@@ -63,17 +63,17 @@ export default function RegisterPage({ onSubmit, initialData }: RegisterPageProp
   }
 
   return (
-    <div className="flex min-h-screen">
-      <div className="flex-1 bg-gray-100 dark:bg-gray-800 flex flex-col justify-between p-12">
+    <div className="flex flex-col lg:flex-row min-h-screen">
+      <div className="lg:w-1/2 bg-gray-100 dark:bg-gray-800 p-6 lg:p-12 flex flex-col justify-between">
         <div>
           <Button variant="link" onClick={() => window.history.back()} className="w-fit p-0 my-2">
-            <ArrowLeft size={24}/>
-            <p>Back</p>
+            <ArrowLeft size={20} className="mr-2" />
+            <span className="text-sm">Back</span>
           </Button>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8">Welcome!</h1>
+          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4 lg:mb-8">Welcome!</h1>
           <div className="flex items-center">
-            <span className="text-8xl font-bold mr-4 text-gray-900 dark:text-white">InteriCoffee.</span>
-            <Image src="/placeholder.svg" alt="Logo" width={96} height={96} />
+            <span className="text-4xl lg:text-6xl xl:text-8xl font-bold mr-2 lg:mr-4 text-gray-900 dark:text-white">InteriCoffee.</span>
+            <Image src="/placeholder.svg" alt="Logo" width={64} height={64} className="w-12 h-12 lg:w-16 lg:h-16 xl:w-24 xl:h-24" />
           </div>
         </div>
         <div>
@@ -83,9 +83,9 @@ export default function RegisterPage({ onSubmit, initialData }: RegisterPageProp
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center px-8 py-12 bg-white dark:bg-gray-900">
+      <div className="lg:w-1/2 bg-white dark:bg-gray-900 p-6 lg:p-12 flex items-center">
         <div className="w-full max-w-md mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Register with your e-mail</h2>
+          <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-6">Register with your e-mail</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="username" className="text-xs text-gray-500 dark:text-gray-400 uppercase">Username (*)</Label>
@@ -111,8 +111,8 @@ export default function RegisterPage({ onSubmit, initialData }: RegisterPageProp
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div className="flex space-x-4">
-              <div className="flex-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
                 <Label htmlFor="password" className="text-xs text-gray-500 dark:text-gray-400 uppercase">Password (*)</Label>
                 <Input 
                   id="password" 
@@ -124,7 +124,7 @@ export default function RegisterPage({ onSubmit, initialData }: RegisterPageProp
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
-              <div className="flex-1">
+              <div>
                 <Label htmlFor="repeat-password" className="text-xs text-gray-500 dark:text-gray-400 uppercase">Repeat Password (*)</Label>
                 <Input 
                   id="repeat-password" 
@@ -161,9 +161,9 @@ export default function RegisterPage({ onSubmit, initialData }: RegisterPageProp
           </form>
           <div className="mt-6">
             <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">Or register with</p>
-            <div className="flex justify-between items-center gap-4">
-              <Button onClick={() => signIn('google')} variant="outline" className="flex items-center justify-center w-full hover:bg-secondary-700 space-x-2">
-                <Chrome size={24} />
+            <div className="flex justify-center">
+              <Button onClick={() => signIn('google')} variant="outline" className="flex items-center justify-center w-full sm:w-auto hover:bg-secondary-700 space-x-2">
+                <Chrome size={20} />
                 <span>Google</span>
               </Button>
             </div>

@@ -9,6 +9,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CalendarDays, Mail, Phone, MessageSquare, ShoppingBag, Pencil } from "lucide-react"
+import { ApiResponse, PaginatedResponse } from "@/types/api"
+import { Account, Order } from "@/types/frontend/entities"
+import { api } from "@/service/api"
+import { useQuery } from "@tanstack/react-query"
+import { useSession } from "next-auth/react"
+import { mapBackendListToFrontend, mapBackendToFrontend } from "@/lib/entity-handling/handler"
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 interface Activity {
   type: "message" | "purchase" | "design"
@@ -16,33 +32,48 @@ interface Activity {
   date: string
 }
 
-interface CustomerData {
-  name: string
-  email: string
-  phone: string
-  avatar: string
-  recentActivities: Activity[]
+const fetchAccount = async (email: string): Promise<ApiResponse<Account>> => {
+  const response = await api.get(`accounts/${email}/info`)
+  return {
+    ...response,
+    data: mapBackendToFrontend<Account>(response.data, 'account')
+  }
 }
 
+const fetchOrders = async (): Promise<ApiResponse<PaginatedResponse<Order>>> => {
+  return await api.getPaginated<Order>('orders')
+}
+
+
 export default function CustomerProfilePage() {
-  const [isEditing, setIsEditing] = useState(false)
-  const [customer, setCustomer] = useState<CustomerData>({
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    phone: "+1 (555) 123-4567",
-    avatar: "/placeholder.svg?height=128&width=128",
-    recentActivities: [
-      { type: "message", content: "Inquired about product availability", date: "2023-05-20" },
-      { type: "purchase", content: "Purchased 'Premium Package'", date: "2023-05-18" },
-      { type: "design", content: "Edited 'Summer Campaign' design", date: "2023-05-15" },
-    ]
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+
+  const { data: session } = useSession()
+  
+  const accountQuery = useQuery({
+    queryKey: ['account', session?.user.email],
+    queryFn: () => fetchAccount(session?.user?.email || ''),
+    enabled: !!session?.user?.email
   })
 
-  const handleSave = () => {
-    // Here you would typically send the updated customer data to your backend
-    setIsEditing(false)
-  }
+  const ordersQuery = useQuery({
+    queryKey: ['orders'],
+    queryFn: () => fetchOrders()
+  })
 
+  const account = accountQuery.data?.data
+
+  const orders = ordersQuery.data?.data?.items ?? []
+
+  console.log(orders)
+
+  const accountOrders = orders
+    .filter((order) => order.accountId === account?.id)
+    .sort((a, b) => b.updatedDate.getTime() - a.updatedDate.getTime())
+    .slice(0, 5)
+
+  
   const getActivityIcon = (type: Activity["type"]) => {
     switch (type) {
       case "message":
@@ -62,59 +93,31 @@ export default function CustomerProfilePage() {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>Profile</CardTitle>
-                <Button variant="outline" size="sm" onClick={() => setIsEditing(!isEditing)}>
-                  {isEditing ? "Cancel" : "Edit"}
-                </Button>
               </div>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col items-center">
                 <Avatar className="w-32 h-32">
-                  <AvatarImage src={customer.avatar} alt={customer.name} />
-                  <AvatarFallback>{customer.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                  <AvatarImage src={account?.avatar} alt={account?.userName} />
+                  <AvatarFallback>{session?.user?.name}</AvatarFallback>
                 </Avatar>
-                {isEditing ? (
-                  <Input
-                    value={customer.name}
-                    onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-                    className="mt-4"
-                  />
-                ) : (
-                  <h2 className="mt-4 text-2xl font-bold">{customer.name}</h2>
-                )}
+                <h2>{account?.userName}</h2>
               </div>
               <div className="mt-6 space-y-4">
                 <div className="flex items-center">
                   <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
-                  {isEditing ? (
-                    <Input
-                      value={customer.email}
-                      onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
-                    />
-                  ) : (
-                    <span>{customer.email}</span>
-                  )}
+                  <span>{session?.user?.email}</span>
                 </div>
                 <div className="flex items-center">
                   <Phone className="mr-2 h-4 w-4 text-muted-foreground" />
-                  {isEditing ? (
-                    <Input
-                      value={customer.phone}
-                      onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
-                    />
-                  ) : (
-                    <span>{customer.phone}</span>
-                  )}
+                  <span>{account?.phoneNumber || "No phone number"}</span>
                 </div>
               </div>
-              {isEditing && (
-                <Button onClick={handleSave} className="mt-4 w-full">Save Changes</Button>
-              )}
             </CardContent>
           </Card>
         </div>
         <div className="md:w-2/3">
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle>Recent Activities</CardTitle>
             </CardHeader>
@@ -136,8 +139,52 @@ export default function CustomerProfilePage() {
                 ))}
               </div>
             </CardContent>
+          </Card> */}
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between">
+                <p>Recent Purchases</p>
+                <Button>View all orders</Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                      <TableHead className="w-[100px]">No.</TableHead>
+                      <TableHead>Order Id</TableHead>
+                      <TableHead>Shipping Address</TableHead>
+                      <TableHead>Created At</TableHead>
+                      <TableHead className="text-right">Order Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {accountOrders.map((accountOrder, index) => (
+                    <TableRow key={accountOrder.id}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{accountOrder.id}</TableCell>
+                        <TableCell>{accountOrder.shippingAddress}</TableCell>
+                        <TableCell>{accountOrder.updatedDate.toLocaleDateString()}</TableCell>
+                        <TableCell className="text-right">{accountOrder.status}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
           </Card>
         </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <Card>
+          <CardHeader>
+            Recent Designs
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            Recent Chat
+          </CardHeader>
+        </Card>
       </div>
     </div>
   )

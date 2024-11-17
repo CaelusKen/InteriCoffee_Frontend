@@ -95,20 +95,20 @@ export default function SetupFirst({ onSubmit, initialData }: SetupFirstProps) {
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen">
-      <div className="lg:flex-1 bg-gray-100 dark:bg-gray-800 flex flex-col justify-between p-6 lg:p-12">
+      <div className="lg:w-1/2 bg-gray-100 dark:bg-gray-800 p-6 lg:p-12 flex flex-col justify-between">
         <div>
           <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4 lg:mb-8">Welcome back!</h1>
           <div className="flex items-center">
-            <span className="text-4xl lg:text-8xl font-bold mr-4 text-gray-900 dark:text-white">InteriCoffee</span>
-            <Image src="/placeholder.svg" alt="Logo" width={64} height={64} className="lg:w-24 lg:h-24" />
+            <span className="text-4xl lg:text-6xl xl:text-8xl font-bold mr-2 lg:mr-4 text-gray-900 dark:text-white">InteriCoffee</span>
+            <Image src="/placeholder.svg" alt="Logo" width={64} height={64} className="w-12 h-12 lg:w-16 lg:h-16 xl:w-24 xl:h-24" />
           </div>
         </div>
         <ThemeToggler/>
       </div>
       
-      <div className="lg:flex-1 flex flex-col justify-center px-6 py-8 lg:px-8 lg:py-12 bg-white dark:bg-gray-900">
+      <div className="lg:w-1/2 bg-white dark:bg-gray-900 p-6 lg:p-12 flex items-center">
         <form onSubmit={handleSubmit} className="space-y-6 lg:space-y-8 w-full max-w-md mx-auto">
-          <h2 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-4 lg:mb-6">Setup Your Space</h2>
+          <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-4 lg:mb-6">Setup Your Space</h2>
           <div className="space-y-4">
             <Label>Room Size</Label>
             <div className="grid grid-cols-3 gap-2 lg:gap-4">

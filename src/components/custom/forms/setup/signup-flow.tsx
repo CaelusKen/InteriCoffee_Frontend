@@ -107,23 +107,6 @@ export default function SignupFlow() {
           description: "Please return to the login",
         })
         
-        // Store preferences in a separate API call if needed
-        // await api.post('user-preferences', {
-        //   userId: response.data.id,
-        //   roomSize: finalData.roomSize,
-        //   colorPalettes: finalData.colorPalettes,
-        //   styles: {
-        //     main: finalData.mainStyles,
-        //     sub: finalData.subStyles
-        //   },
-        //   userType: finalData.userType
-        // })
-
-        // Redirect based on user type
-        // const redirectPath = finalData.userType === 'merchant' 
-        //   ? '/merchant/dashboard'
-        //   : '/customer/dashboard'
-        
         router.push('/login')
       }
     } catch (error) {
@@ -137,38 +120,40 @@ export default function SignupFlow() {
   }
 
   return (
-    <div className="h-screen flex flex-col relative">
-      <div className="absolute top-0 left-1 bg-white dark:bg-gray-900 border-b z-10">
+    <div className="min-h-screen flex flex-col relative">
+      <div className="sticky top-0 left-0 right-0 bg-white dark:bg-gray-900 border-b z-10 p-2">
         <Progress value={step * 25} className="w-full" />
       </div>
       
-      {step === 1 && (
-        <RegisterPage 
-          onSubmit={handleInitialSignup}
-          initialData={signupData}
-        />
-      )}
-      
-      {step === 2 && (
-        <SetupFirst
-          onSubmit={handleRoomPreferences}
-          initialData={signupData}
-        />
-      )}
-      
-      {step === 3 && (
-        <SetupSecond
-          onSubmit={handleUserType}
-          initialData={signupData}
-        />
-      )}
-      
-      {step === 4 && (
-        <SetupLast
-          onSubmit={handleFinalSetup}
-          initialData={signupData}
-        />
-      )}
+      <div className="flex-grow">
+        {step === 1 && (
+          <RegisterPage 
+            onSubmit={handleInitialSignup}
+            initialData={signupData}
+          />
+        )}
+        
+        {step === 2 && (
+          <SetupFirst
+            onSubmit={handleRoomPreferences}
+            initialData={signupData}
+          />
+        )}
+        
+        {step === 3 && (
+          <SetupSecond
+            onSubmit={handleUserType}
+            initialData={signupData}
+          />
+        )}
+        
+        {step === 4 && (
+          <SetupLast
+            onSubmit={handleFinalSetup}
+            initialData={signupData}
+          />
+        )}
+      </div>
     </div>
   )
 }

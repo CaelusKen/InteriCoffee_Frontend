@@ -61,21 +61,21 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex flex-col lg:flex-row min-h-screen">
       {/* Left Column */}
-      <div className="flex-1 bg-gray-100 dark:bg-gray-800 flex flex-col justify-between p-12">
+      <div className="flex-1 bg-gray-100 dark:bg-gray-800 flex flex-col justify-between p-6 lg:p-12">
         <div>
           <Button variant={'link'} onClick={() => router.back()} className='w-fit p-0 my-2'>
-              <ArrowLeft size={24}/>
-              <p>Back</p>
+            <ArrowLeft size={20} className="mr-2" />
+            <p className="text-sm">Back</p>
           </Button>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8">Welcome back!</h1>
+          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4 lg:mb-8">Welcome back!</h1>
           <div className="flex items-center">
-            <span className="text-8xl font-bold mr-4 text-gray-900 dark:text-white">InteriCoffee</span>
-            <Image src="/placeholder.svg" alt="Logo" width={96} height={96} />
+            <span className="text-4xl lg:text-6xl xl:text-8xl font-bold mr-2 lg:mr-4 text-gray-900 dark:text-white">InteriCoffee</span>
+            <Image src="/placeholder.svg" alt="Logo" width={64} height={64} className="w-12 h-12 lg:w-16 lg:h-16 xl:w-24 xl:h-24" />
           </div>
         </div>
-        <div>
+        <div className="mt-6 lg:mt-0">
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Don't have an account? <Link href="/signup" className="font-medium text-gray-900 dark:text-white hover:underline">Sign up now</Link>
           </p>
@@ -83,16 +83,16 @@ export default function LoginPage() {
       </div>
 
       {/* Right Column */}
-      <div className="flex-1 flex flex-col justify-center px-8 py-12 bg-white dark:bg-gray-900">
+      <div className="flex-1 flex flex-col justify-center px-6 py-8 lg:px-8 lg:py-12 bg-white dark:bg-gray-900">
         <div className="w-full max-w-md mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Log in to your account</h2>
+          <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-6">Log in to your account</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="email" className="text-xs text-gray-500 dark:text-gray-400 uppercase">Email</Label>
               <Input 
                 id="email" 
                 type="email" 
-                className="mt-1" 
+                className="mt-1 w-full" 
                 placeholder="m@example.com" 
                 required 
                 value={email}
@@ -104,14 +104,14 @@ export default function LoginPage() {
               <Input 
                 id="password" 
                 type="password" 
-                className="mt-1" 
+                className="mt-1 w-full" 
                 placeholder="••••••••" 
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
               <div className="flex items-center">
                 <Checkbox id="remember-me" />
                 <label htmlFor="remember-me" className="ml-2 text-sm text-gray-600 dark:text-gray-400">
@@ -122,20 +122,20 @@ export default function LoginPage() {
                 Forgot your password?
               </Link>
             </div>
-            {error && <p className="text-red-500 w-full">{error}</p>}
+            {error && <p className="text-red-500 w-full text-sm">{error}</p>}
             <Button type="submit" className="w-full bg-gray-900 dark:bg-gray-100 hover:bg-primary-800 dark:hover:bg-primary-500 dark:hover:text-white text-white dark:text-gray-900">
               Log in
             </Button>
           </form>
           <div className="mt-6">
             <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">Or log in with</p>
-            <div className="flex justify-between gap-4">
+            <div className="flex flex-col sm:flex-row justify-between gap-4">
               <Button onClick={() => handleSocialLogin('google')} variant="outline" className="flex items-center justify-center space-x-2 w-full hover:bg-secondary-700">
-                <Chrome size={24}/>
+                <Chrome size={20}/>
                 <span>Google</span>
               </Button>
               {/* <Button onClick={() => handleSocialLogin('facebook')} variant="outline" className="flex items-center justify-center space-x-2 w-full hover:bg-secondary-700">
-                <Facebook size={24}/>
+                <Facebook size={20}/>
                 <span>Facebook</span>
               </Button> */}
             </div>

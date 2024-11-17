@@ -30,39 +30,39 @@ export default function SetupSecond({ onSubmit, initialData }: SetupSecondProps)
       type: 'customer',
       title: 'Design Enthusiast',
       description: 'Discover unique products and create your dream spaces',
-      icon: <ShoppingBag className="w-8 h-8" />
+      icon: <ShoppingBag className="w-6 h-6 lg:w-8 lg:h-8" />
     },
     {
       type: 'merchant',
       title: 'Brand Visionary',
       description: 'Showcase your products and inspire with creative templates',
-      icon: <Store className="w-8 h-8" />
+      icon: <Store className="w-6 h-6 lg:w-8 lg:h-8" />
     },
     {
       type: 'fun',
       title: 'Casual Explorer',
       description: 'Unleash your creativity and experiment with interior design',
-      icon: <Coffee className="w-8 h-8" />
+      icon: <Coffee className="w-6 h-6 lg:w-8 lg:h-8" />
     }
   ]
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen">
-      <div className="lg:flex-1 bg-gray-100 dark:bg-gray-800 flex flex-col justify-between p-6 lg:p-12">
+      <div className="lg:w-1/2 bg-gray-100 dark:bg-gray-800 p-6 lg:p-12 flex flex-col justify-between">
         <div>
           <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-4 lg:mb-8">Welcome to InteriCoffee!</h1>
           <div className="flex items-center">
-            <span className="text-4xl lg:text-8xl font-bold mr-4 text-foreground">InteriCoffee</span>
-            <Image src="/placeholder.svg" alt="Logo" width={64} height={64} className="lg:w-24 lg:h-24" />
+            <span className="text-4xl lg:text-6xl xl:text-8xl font-bold mr-2 lg:mr-4 text-foreground">InteriCoffee</span>
+            <Image src="/placeholder.svg" alt="Logo" width={64} height={64} className="w-12 h-12 lg:w-16 lg:h-16 xl:w-24 xl:h-24" />
           </div>
         </div>
         <ThemeToggler />
       </div>
       
-      <div className="lg:flex-1 flex flex-col justify-center px-6 py-8 lg:px-8 lg:py-12 bg-white dark:bg-gray-900">
+      <div className="lg:w-1/2 bg-white dark:bg-gray-900 p-6 lg:p-12 flex items-center">
         <form onSubmit={handleSubmit} className="space-y-6 lg:space-y-8 w-full max-w-md mx-auto">
           <div>
-            <h2 className="text-xl lg:text-2xl font-bold text-foreground mb-2">How will you use InteriCoffee?</h2>
+            <h2 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">How will you use InteriCoffee?</h2>
             <p className="text-sm text-muted-foreground">Select the option that best describes your purpose</p>
           </div>
           
@@ -72,24 +72,24 @@ export default function SetupSecond({ onSubmit, initialData }: SetupSecondProps)
                 key={option.type}
                 className={`cursor-pointer transition-all ${
                   userType === option.type 
-                    ? 'bg-primary text-primary-foreground text-black' 
+                    ? 'bg-primary text-primary-foreground' 
                     : 'hover:bg-primary/10'
                 }`}
                 onClick={() => setUserType(option.type)}
               >
-                <CardContent className="flex items-center p-6">
+                <CardContent className="flex items-center p-4 lg:p-6">
                   <div className="mr-4">
                     {userType === option.type ? (
-                      <div className="bg-secondary text-white rounded-full p-2">
-                        <Check className="w-6 h-6" />
+                      <div className="bg-secondary text-secondary-foreground rounded-full p-2">
+                        <Check className="w-5 h-5 lg:w-6 lg:h-6" />
                       </div>
                     ) : (
                       <div className="text-primary">{option.icon}</div>
                     )}
                   </div>
                   <div className="flex-grow">
-                    <h3 className="font-semibold text-lg ">{option.title}</h3>
-                    <p className={`text-sm  ${userType === option.type ? 'text-primary-foreground/90' : 'text-muted-foreground'}`}>
+                    <h3 className="font-semibold text-base lg:text-lg">{option.title}</h3>
+                    <p className={`text-sm ${userType === option.type ? 'text-primary-foreground/90' : 'text-muted-foreground'}`}>
                       {option.description}
                     </p>
                   </div>
