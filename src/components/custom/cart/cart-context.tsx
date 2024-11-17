@@ -54,10 +54,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const updateQuantity = (id: string, quantity: number) => {
     setItems(prevItems =>
-      prevItems.map(item =>
-        item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item
-      )
-    )
+      prevItems.reduce((acc, item) => {
+        if (item.id === id) {
+          if (quantity > 0) {
+            acc.push({ ...item, quantity });
+          } else {
+            toast.info(`${item.name} removed from cart`);
+          }
+        } else {
+          acc.push(item);
+        }
+        return acc;
+      }, [] as CartItem[])
+    );
   }
 
   const clearCart = () => {

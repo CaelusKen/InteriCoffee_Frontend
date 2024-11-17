@@ -120,6 +120,10 @@ const Header = () => {
           </>
         ) : (
           <>
+            <Button variant={'ghost'} onClick={() => router.push('/simulation')}>
+              <Layers size={24}/>
+              <p>Simulate</p>
+            </Button>
             <Button onClick={() => router.push('/login')} variant={'link'} className='text-black dark:text-white dark:hover:text-primary-400 hover:text-primary-400 transition-colors duration-200'>
               Login
             </Button>
