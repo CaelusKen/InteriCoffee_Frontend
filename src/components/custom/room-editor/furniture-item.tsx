@@ -81,11 +81,11 @@ export default function FurnitureItem({
       const newScale = groupRef.current.scale.toArray() as [number, number, number]
 
       // Apply constraints based on category
-      if (category === 'lightings') {
+      if (category.find((category) => category.match('Lightings'))) {
         newPosition[1] = roomDimensions.height - modelDimensions.y / 4.2 // Stick to ceiling
         newPosition[0] = Math.max(-roomDimensions.width / 2, Math.min(roomDimensions.width / 2, newPosition[0])) // Constrain X
         newPosition[2] = Math.max(-roomDimensions.length / 2, Math.min(roomDimensions.length / 2, newPosition[2])) // Constrain Z
-      } else if (category === 'doors') {
+      } else if (category.find((category) => category.match('Doors and Windows'))) {
         // Snap to nearest wall
         const snapThreshold = 1 // Adjust as needed
         if (Math.abs(newPosition[0]) > Math.abs(newPosition[2])) {
