@@ -4,6 +4,7 @@ import { ApiResponse, PaginatedResponse } from '@/types/api'
 import { api } from '@/service/api'
 import { Style, Template } from '@/types/frontend/entities'
 import { useToast } from '@/hooks/use-toast'
+import { Input } from '@/components/ui/input'
 
 const fetchTemplates = async({ pageNo = 1, pageSize = 10}) : Promise<ApiResponse<PaginatedResponse<Template>>> => {
   return api.getPaginated('templates', { pageNo, pageSize })
@@ -13,7 +14,6 @@ export default function TemplateGallery() {
   const [pageNo, setPageNo] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [templates, setTemplates] = useState<Template[] | null>(null)
-  const [styleName, setStyleName] = useState<string | null>(null)
 
   const { toast } = useToast()
 
@@ -42,17 +42,21 @@ export default function TemplateGallery() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-center">Template Gallery</h1>
+    <div className="px-8 py-8">
+      <span className='flex flex-col mb-4'>
+        <h3 className='text-lg sm:text-xl text-left py-2'>
+          Template
+        </h3>
+        <h1 className='text-3xl sm:text-5xl md:text-7xl uppercase font-bold text-left py-2'>
+          Gallery
+        </h1>
+      </span>
+      <Input type='text' placeholder='Search products here' className='my-4'/>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {templates && templates?.map((template) => (
+        {templates && templates?.map((template, index) => (
           <TemplateCard
-            key={template.id}
-            imageUrl={template.imageUrl}
-            style={template?.styleId || 'Anything'}
-            creatorName={template.accountId}
-            creatorAvatar={'https://github.com/shadcn.png'}
-            title={template.name}
+            key={index}
+            template={template}
             onSave={() => handleSave(template.id)}
             onViewDetails={() => handleViewDetails(template.id)}
           />
