@@ -33,8 +33,16 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
 import { useHotkeys } from "react-hotkeys-hook";
+import { ApiResponse, PaginatedResponse } from "@/types/api";
+import { api } from "@/service/api";
+import { ProductCategory } from "@/types/frontend/entities";
+import { useQuery } from "@tanstack/react-query";
 
 const ROOM_SCALE_FACTOR = 10;
+
+const fetchProductCategories = async (): Promise<ApiResponse<PaginatedResponse<ProductCategory>>> => {
+  return api.getPaginated<ProductCategory>('product-categories')
+}
 
 export default function RoomEditor() {
   const [floors, updateFloors, undo, redo] = useUndoRedo<Floor[]>([
@@ -62,7 +70,14 @@ export default function RoomEditor() {
     return ROOM_SCALE_FACTOR / maxDimension;
   };
 
-  const addFurniture = (model: string, category: Furniture['category']) => {
+  const { data: categoriesData } = useQuery({
+    queryKey: ['product-categories'],
+    queryFn: fetchProductCategories
+  })
+
+  const categories = categoriesData?.data.items ?? []
+
+  const addFurniture = (model: string, category: ProductCategory['name'][]) => {
     const newItem: Furniture = {
       id: Date.now(),
       name: `Furniture ${getCurrentFurniture().length + 1}`,

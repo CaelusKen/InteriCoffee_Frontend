@@ -50,8 +50,8 @@ export default function LoginPage() {
       email,
       password,
     })
-    if (result?.error) {
-      setError(result.error)
+    if (result?.error?.match("CredentialsSignin")) {
+      setError(`Incorrect email or password, please try again`)
     }
     // The redirection will be handled by the useEffect hook
   }
@@ -122,7 +122,7 @@ export default function LoginPage() {
                 Forgot your password?
               </Link>
             </div>
-            {error && <p className="text-red-500">{error}</p>}
+            {error && <p className="text-red-500 w-full">{error}</p>}
             <Button type="submit" className="w-full bg-gray-900 dark:bg-gray-100 hover:bg-primary-800 dark:hover:bg-primary-500 dark:hover:text-white text-white dark:text-gray-900">
               Log in
             </Button>

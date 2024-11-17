@@ -180,6 +180,7 @@ export interface BackendTemplate {
     "account-id":   string;
     "merchant-id":  string;
     "style-id":     string;
+    image:          string;
 }
 
 export interface BackendTransaction {
