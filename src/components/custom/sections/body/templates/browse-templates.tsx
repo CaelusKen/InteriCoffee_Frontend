@@ -2,34 +2,29 @@ import { useEffect, useState } from 'react'
 import TemplateCard from '@/components/custom/cards/default-template-card'
 import { ApiResponse, PaginatedResponse } from '@/types/api'
 import { api } from '@/service/api'
-import { Style, Template } from '@/types/frontend/entities'
+import { Merchant, Style, Template } from '@/types/frontend/entities'
 import { useToast } from '@/hooks/use-toast'
 import { Input } from '@/components/ui/input'
+import { useQuery } from '@tanstack/react-query'
+import LoadingPage from '@/components/custom/loading/loading'
+import { useRouter } from 'next/navigation'
 
-const fetchTemplates = async({ pageNo = 1, pageSize = 10}) : Promise<ApiResponse<PaginatedResponse<Template>>> => {
-  return api.getPaginated('templates', { pageNo, pageSize })
+const fetchTemplates = async() : Promise<ApiResponse<PaginatedResponse<Template>>> => {
+  return api.getPaginated('templates')
 }
 
 export default function TemplateGallery() {
   const [pageNo, setPageNo] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  const [templates, setTemplates] = useState<Template[] | null>(null)
 
-  const { toast } = useToast()
+  const router = useRouter()
 
-  useEffect(() => {
-    fetchTemplates({pageNo, pageSize}).then((res) => {
-      if(res.data && res.status == 200) {
-        setTemplates(res.data.items)
-      }
-    }).catch((err) => {
-      toast({
-        title: 'Fetch Templates fail',
-        description: `Template fetching fail at ${err}`,
-        className: 'bg-red-500'
-      })
-    })
-  }, [])
+  const templateQuery = useQuery({
+    queryKey: ['template'],
+    queryFn: () => fetchTemplates()
+  })
+
+  const templates = templateQuery.data?.data?.items?? []
 
   const handleSave = (id: string) => {
     console.log(`Saving template with id: ${id}`)
@@ -38,8 +33,11 @@ export default function TemplateGallery() {
 
   const handleViewDetails = (id: string) => {
     console.log(`Viewing details of template with id: ${id}`)
-    // Implement navigation to details page here
+    router.push(`/templates/${id}`)
   }
+
+  if (templateQuery.isLoading) return <LoadingPage />
+  if(templateQuery.isError) return <p>Error loading Template</p>
 
   return (
     <div className="px-8 py-8">
@@ -58,7 +56,6 @@ export default function TemplateGallery() {
             key={index}
             template={template}
             onSave={() => handleSave(template.id)}
-            onViewDetails={() => handleViewDetails(template.id)}
           />
         ))}
       </div>

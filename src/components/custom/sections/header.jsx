@@ -103,7 +103,7 @@ const Header = () => {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className='hover:bg-slate-100'>
+                <DropdownMenuItem className='hover:bg-slate-100' onClick={() => router.push('/customer/profile')}>
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
