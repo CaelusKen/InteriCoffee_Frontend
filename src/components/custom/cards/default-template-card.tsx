@@ -5,29 +5,44 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Bookmark, Eye } from 'lucide-react'
 import { ApiResponse } from "@/types/api"
-import { Style, Template } from "@/types/frontend/entities"
+import { Merchant, Style, Template } from "@/types/frontend/entities"
 import { api } from "@/service/api"
 import { useEffect, useState } from "react"
 import { useToast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
 
 const fetchStyleNameById = async(id: string) : Promise<ApiResponse<Style>> => {
   return api.getById<Style>('styles', id)
 }
 
+const fetchMerchantById = async(id: string): Promise<ApiResponse<Merchant>> => {
+  return api.getById('merchants', id)
+}
+
 interface TemplateCardProps {
   template: Template
   onSave: () => void
-  onViewDetails: () => void
 }
 
 export default function TemplateCard({
   template,
   onSave,
-  onViewDetails
 }: TemplateCardProps) {
   const [styleName, setStyleName] = useState<string | null>(null)
 
+  const [merchant, setMerchant] = useState<string | null>(null)
+
   const { toast } = useToast()
+
+  const getMerchantById = (id: string) => {
+    fetchMerchantById(id).then((res) => {
+      if(res.status === 200) {
+        setMerchant(res.data.name)
+      }
+      else throw new Error('Failed to fetch merchant')
+    })
+    return merchant
+  }
 
   useEffect(() => {
      fetchStyleNameById(template.styleId).then((res) => {
@@ -41,8 +56,10 @@ export default function TemplateCard({
      })
   })
 
+  const router = useRouter()
+
   return (
-    <Card className="w-full max-w-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg dark:hover:shadow-primary/25">
+    <Card className="w-full max-w-[280px] sm:max-w-[320px] md:max-w-sm overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg dark:hover:shadow-primary/25">
       <div className="relative aspect-square">
         <img
           src={template.imageUrl}
@@ -56,10 +73,10 @@ export default function TemplateCard({
           {styleName}
         </Badge>
       </div>
-      <CardContent className="p-4">
-        <div className="flex justify-between items-center gap-2">
-          <h3 className="text-lg font-semibold mb-2">{template.name}</h3>
-          <Badge className={`${template.type.match("Sketch") ? 'bg-yellow-500': 'bg-green-500'}`}>
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2">
+          <h3 className="text-base sm:text-lg font-semibold line-clamp-2">{template.name}</h3>
+          <Badge className={`${template.type.match("Sketch") ? 'bg-yellow-500': 'bg-green-500'} whitespace-nowrap`}>
             {template.type.match("Sketch") ? "Sketch" : "Template"}
           </Badge>
         </div>
@@ -69,17 +86,17 @@ export default function TemplateCard({
             alt={'Avatar'}
             className="w-[24px] h-[24px] object-cover rounded-full"
           />
-          <span className="text-sm text-muted-foreground">{template.accountId}</span>
+          <span className="text-xs sm:text-sm text-muted-foreground truncate">{getMerchantById(template.merchantId)}</span>
         </div>
       </CardContent>
-      <CardFooter className="p-4 flex justify-between items-center">
-        <Button variant="outline" size="sm" onClick={onSave}>
+      <CardFooter className="p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2">
+        <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={onSave}>
           <Bookmark className="w-4 h-4 mr-2" />
-          Save To Collection
+          <span className="whitespace-nowrap">Save To Collection</span>
         </Button>
-        <Button variant="secondary" size="sm" onClick={onViewDetails}>
+        <Button variant="secondary" size="sm" className="w-full sm:w-auto" onClick={() => router.push(`/templates/${template.id}`)}>
           <Eye className="w-4 h-4 mr-2" />
-          View Details
+          <span className="whitespace-nowrap">View Details</span>
         </Button>
       </CardFooter>
     </Card>
