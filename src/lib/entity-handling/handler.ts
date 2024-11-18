@@ -296,7 +296,11 @@ export function mapBackendTemplateToFrontend(backendTemplate: BackEndTypes.Backe
         accountId: backendTemplate["account-id"],
         merchantId: backendTemplate["merchant-id"],
         styleId: backendTemplate["style-id"],
-        imageUrl: backendTemplate["image"]
+        imageUrl: backendTemplate["image"],
+        products: backendTemplate.products.map((product) => ({
+            id: product["_id"],
+            quantity: product.quantity,
+        })),
     };
 }
 

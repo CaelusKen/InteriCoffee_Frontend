@@ -57,7 +57,6 @@ export default function ConsultantTemplateCard(data: Template) {
   }
 
   const handleViewTemplateDetails = () => {
-    setIsLoading(true)
     router.push(`/consultant/templates/${data.id}`)
   }
 
