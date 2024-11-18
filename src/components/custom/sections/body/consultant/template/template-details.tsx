@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import React, { useState, useEffect, Suspense } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -11,30 +11,72 @@ import { ChevronLeft, Edit2, Trash2, Maximize2 } from 'lucide-react'
 import SceneContent from '@/components/custom/room-editor/scene-view'
 import { TemplateData, Furniture, Room, TransformUpdate } from '@/types/room-editor'
 import FurnitureProductCard from '@/components/custom/cards/furniture-card-v2'
+import { ApiResponse } from '@/types/api'
+import { Product, Template } from '@/types/frontend/entities'
+import { api } from '@/service/api'
+import { useQuery } from '@tanstack/react-query'
 
-export default function ConsultantTemplateDetailsPage() {
-  const [template, setTemplate] = useState<TemplateData | null>(null)
+interface TemplateProps {
+  id: string,
+}
+
+const fetchTemplateById = async(id: string) : Promise<ApiResponse<Template>> => {
+  return api.getById<Template>('templates', id)
+}
+
+const fetchProductById = async(id: string) : Promise<ApiResponse<Product>> => {
+  return api.getById<Product>('products', id)
+}
+
+export function ProductCard({ productId, quantity }: { productId: string, quantity: number }) {
+  const productQuery = useQuery({
+    queryKey: ['product', productId],
+    queryFn: () => fetchProductById(productId),
+  })
+
+  const product = productQuery.data?.data
+
+  if (productQuery.isLoading) return <div>Loading...</div>
+  if (productQuery.isError) return <div>Error loading product</div>
+
+  return (
+    <div className="space-y-4">
+      <FurnitureProductCard
+        id={product?.id || ''}
+        images={product?.images.normalImages || []}
+        merchant={product?.merchantId || ''}
+        modelUrl={product?.modelTextureUrl || ''}
+        name={product?.name || ''}
+        price={product?.truePrice || 0}
+      />
+      <CardFooter>
+        <CardDescription>Quantity: {quantity}</CardDescription>
+      </CardFooter>
+    </div>
+  )
+}
+
+export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const params = useParams()
   const router = useRouter()
+  
+  const templateQuery = useQuery({
+    queryKey: ['template', id],
+    queryFn: () => fetchTemplateById(id),
+  })
 
-  useEffect(() => {
-    const savedTemplates = JSON.parse(localStorage.getItem('merchantTemplates') || '[]') as TemplateData[]
-    const styleId = params.id as string
-    const selectedTemplate = savedTemplates[parseInt(styleId) - 1]
-    if (selectedTemplate) {
-      setTemplate(selectedTemplate)
-    } else {
-      router.push('/consultant/templates')
-    }
-  }, [params.id, router])
+  const template = templateQuery.data?.data
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen)
   }
 
-  if (!template) {
+  if (templateQuery.isLoading) {
     return <div>Loading...</div>
+  }
+
+  if (templateQuery.isError) {
+    return <div>Error loading template</div>
   }
 
   const handleUpdateTransform = (update: TransformUpdate) => {
@@ -42,18 +84,18 @@ export default function ConsultantTemplateDetailsPage() {
     console.log('Update transform:', update)
   }
 
-  const currentRoom = template.floors[0]?.rooms[0]
-  const furniture = currentRoom?.furniture || []
+  // const currentRoom = template.floors[0]?.rooms[0]
+  // const furniture = currentRoom?.furniture || []
 
   return (
     <div className="min-h-screen bg-background text-foreground p-8">
       <div className="max-w-6xl mx-auto">
-        <Button variant="ghost" className="mb-6" onClick={() => router.push('/merchant/styles')}>
+        <Button variant="ghost" className="mb-6" onClick={() => router.push('/consultant/templates')}>
           <ChevronLeft className="mr-2 h-4 w-4" />
-          Back to Styles
+          Back to Templates
         </Button>
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">{template.templateName}</h1>
+          <h1 className="text-3xl font-bold">{template?.name}</h1>
           <div className="space-x-2">
             <Button variant="destructive" className='bg-yellow-300 hover:bg-yellow-400 text-black'>
               <Edit2 className="mr-2 h-4 w-4" />
@@ -71,34 +113,25 @@ export default function ConsultantTemplateDetailsPage() {
               <CardTitle>Style Preview</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* <div className={`relative ${isFullscreen ? 'fixed inset-0 z-50' : 'h-[400px]'}`}>
-                <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
+              {/* 3D preview content */}
+              {template?.type === "Template" && (
+                <Canvas>
+                  <ambientLight intensity={0.5} />
+                  <pointLight position={[10, 10, 10]} />
                   <Suspense fallback={null}>
-                    {currentRoom && (
-                      <SceneContent
-                        room={currentRoom}
-                        furniture={furniture}
-                        selectedItem={null}
-                        onSelectItem={() => {}}
-                        onUpdateTransform={handleUpdateTransform}
-                        transformMode="translate"
-                      />
-                    )}
-                    <OrbitControls makeDefault />
-                    <Grid infiniteGrid />
-                    <Environment preset="apartment" />
+                    <mesh position={[0, 0, 0]} rotation={[0, 0, 0]} scale={[0.5, 0.5, 0.5]}>
+                      <boxGeometry />
+                      <meshStandardMaterial color="red" />
+                    </mesh>
                   </Suspense>
                 </Canvas>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="absolute top-2 right-2"
-                  onClick={toggleFullscreen}
-                >
-                  <Maximize2 className="h-4 w-4" />
-                  <span className="sr-only">Toggle fullscreen</span>
-                </Button>
-              </div> */}
+              )}
+              {template?.type === "Sketch" && (
+                <div className="text-red-500 mb-4 flex items-center">
+                  <Maximize2 className="mr-2 h-4 w-4" />
+                  This template is a sketch and cannot be viewed in the 3D model viewer.
+                </div>
+              )}
             </CardContent>
           </Card>
           <Card>
@@ -106,20 +139,12 @@ export default function ConsultantTemplateDetailsPage() {
               <CardTitle>Style Information</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground mb-4">{template.description}</p>
+              <p className="text-muted-foreground mb-4">{template?.description}</p>
               <div className="mb-4">
                 <h3 className="text-lg font-semibold mb-2">Main Categories</h3>
                 <div className="flex flex-wrap gap-2">
-                  {template.mainCategories.map((category, index) => (
+                  {template?.categories.map((category, index) => (
                     <Badge key={index} variant="secondary">{category}</Badge>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Sub Categories</h3>
-                <div className="flex flex-wrap gap-2">
-                  {template.subCategories.map((category, index) => (
-                    <Badge key={index} variant="outline">{category}</Badge>
                   ))}
                 </div>
               </div>
@@ -128,20 +153,8 @@ export default function ConsultantTemplateDetailsPage() {
         </div>
         <h2 className="text-2xl font-semibold mb-4">Furniture in this Style</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {furniture.map((item) => (
-            <FurnitureProductCard
-              key={item.id}
-              id={item.name}
-              images={
-                [
-                  'https://placeholder.co/400', 'https://placeholder.co/400', 'https://placeholder.co/400'
-                ]
-              }
-              merchant={'Merchant A'}
-              modelUrl={item.model}
-              name={item.name}
-              price={500}
-            />
+          {template?.products.map((item, index) => (
+            <ProductCard key={index} productId={item.id} quantity={item.quantity} />
           ))}
         </div>
       </div>

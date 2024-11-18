@@ -183,7 +183,11 @@ export interface Template {
     accountId:      Account["id"];
     merchantId:     Merchant["id"];
     styleId:        Style["id"];
-    imageUrl:          string;
+    imageUrl:       string;
+    products:   {
+        id:         Product["id"],
+        quantity:   number;
+    }[]
 }
 
 export interface Transaction {

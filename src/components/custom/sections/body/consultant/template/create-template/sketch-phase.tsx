@@ -79,9 +79,23 @@ export const SketchPhase: React.FC<SketchPhaseProps> = ({ account, products, sty
     setSelectedStyleId(style ? style.id : null)
   }
 
+  //Get any selected products, in each selectModels contains the id of the product
+  const templateProducts = selectedModels.map(modelId => {
+    const product = products.find(product => product.id === modelId)
+    if (product) {
+      return {
+       id: product.id,
+       quantity: 1
+      }
+    }
+    return null
+  }).filter(product => product) as Product[]
+
   const handleSave = async () => {
     if (templateName && templateImage && selectedModels.length >= 5 && selectedStyleId) {
       const categoriesSet = new Set<string>()
+
+      
 
       try {
         for (const model of selectedModels) {
@@ -103,7 +117,8 @@ export const SketchPhase: React.FC<SketchPhaseProps> = ({ account, products, sty
           description: templateDescription,
           imageUrl: templateImage,
           categories: uniqueCategories,
-          styleId: selectedStyleId
+          styleId: selectedStyleId,
+          products: templateProducts,
         })
       } catch (err) {
         toast({

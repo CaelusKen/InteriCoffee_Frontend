@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ProductCard } from "../consultant/template/template-details";
 
 const fetchTemplateById = async (
   id: string
@@ -224,21 +225,19 @@ export default function TemplateDetailsBody({ id }: TemplateDetailsProps) {
         </div>
       </motion.section>
 
-      {/* <motion.section
+      <motion.section
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.75, delay: 1.1 }}
         className="mb-12"
       >
         <h2 className="text-2xl font-bold mb-4">Featured Products</h2>
-        <div className="flex flex-wrap gap-2">
-          {template..map((product, index) => (
-            <Badge key={index} variant="outline" className="text-lg px-4 py-2">
-              {product}
-            </Badge>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {template?.products.map((product, index) => (
+            <ProductCard key={index} productId={product.id} quantity={product.quantity} />
           ))}
         </div>
-      </motion.section> */}
+      </motion.section>
 
       {/* <motion.section
         initial={{ opacity: 0, y: -50 }}

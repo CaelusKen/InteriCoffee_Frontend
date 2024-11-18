@@ -80,6 +80,12 @@ export default function ConsultantCreateTemplate() {
       floors: null,
       type: "Sketch",
       categories: data.categories,
+      products: data.products.map((product : {id: any, quantity: any}) => {
+        return {
+          "_id": product.id,
+          quantity: product.quantity
+        }
+      })
     })
       .then((res) => {
         if (res.data != null && res.status == 200) {

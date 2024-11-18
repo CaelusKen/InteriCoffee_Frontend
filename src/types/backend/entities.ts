@@ -181,6 +181,10 @@ export interface BackendTemplate {
     "merchant-id":  string;
     "style-id":     string;
     image:          string;
+    products: {
+        "_id":      string;
+        quantity:   number;
+    }[]
 }
 
 export interface BackendTransaction {
