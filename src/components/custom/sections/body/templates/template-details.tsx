@@ -31,6 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ProductCard } from "../consultant/template/template-details";
+import { useSession } from "next-auth/react";
 
 const fetchTemplateById = async (
   id: string
@@ -63,6 +64,8 @@ export default function TemplateDetailsBody({ id }: TemplateDetailsProps) {
   const { toast } = useToast()
 
   const router = useRouter()
+
+  const { data: session } = useSession()
 
   const getMerchantById = (id: string) => {
     fetchMerchantById(id).then((res) => {
@@ -125,7 +128,7 @@ export default function TemplateDetailsBody({ id }: TemplateDetailsProps) {
   }
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <main className="container mx-auto px-8 py-4">
       <motion.section
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -139,16 +142,18 @@ export default function TemplateDetailsBody({ id }: TemplateDetailsProps) {
         {/* For actions */}
         <div className="flex gap-4">
           <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size={"icon"} onClick={handleSaveToCollection}>
-                  <Bookmark size={24} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Save to Collections</p>
-              </TooltipContent>
-            </Tooltip>
+            { session?.user.role === "CUSTOMER" && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size={"icon"} onClick={handleSaveToCollection}>
+                    <Bookmark size={24} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Save to Collections</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button

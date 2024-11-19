@@ -10,6 +10,7 @@ import { api } from "@/service/api"
 import { useEffect, useState } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 
 const fetchStyleNameById = async(id: string) : Promise<ApiResponse<Style>> => {
   return api.getById<Style>('styles', id)
@@ -33,6 +34,8 @@ export default function TemplateCard({
   const [merchant, setMerchant] = useState<string | null>(null)
 
   const { toast } = useToast()
+
+  const { data: session } = useSession()
 
   const getMerchantById = (id: string) => {
     fetchMerchantById(id).then((res) => {
@@ -90,10 +93,20 @@ export default function TemplateCard({
         </div>
       </CardContent>
       <CardFooter className="p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2">
-        <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={onSave}>
-          <Bookmark className="w-4 h-4 mr-2" />
-          <span className="whitespace-nowrap">Save To Collection</span>
-        </Button>
+        {
+          session && session.user.role === "CUSTOMER" && (
+            <>
+              <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={onSave}>
+                <Bookmark className="w-4 h-4 mr-2" />
+                <span className="whitespace-nowrap">Save To Collection</span>
+              </Button>
+              <Button variant="secondary" size="sm" className="w-full sm:w-auto" onClick={() => router.push(`/templates/${template.id}`)}>
+                <Eye className="w-4 h-4 mr-2" />
+                <span className="whitespace-nowrap">View Details</span>
+              </Button>
+            </>
+          )
+        }
         <Button variant="secondary" size="sm" className="w-full sm:w-auto" onClick={() => router.push(`/templates/${template.id}`)}>
           <Eye className="w-4 h-4 mr-2" />
           <span className="whitespace-nowrap">View Details</span>

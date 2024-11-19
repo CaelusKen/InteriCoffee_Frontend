@@ -26,6 +26,7 @@ import { MerchantInfo } from "../sections/body/merchant/products/merchant-info";
 import LoadingPage from "../loading/loading";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { useSession } from "next-auth/react";
 
 interface ProductProps {
   id: string;
@@ -80,6 +81,8 @@ export default function FurnitureProductCard({
   const sliderRef = useRef<Slider>(null);
   const { addItem } = useCart()
   const { toast } = useToast()
+
+  const { data: session } = useSession()
 
   const router = useRouter();
 
@@ -193,15 +196,17 @@ export default function FurnitureProductCard({
               </motion.div>
             )}
           </AnimatePresence>
-          <Button
-            variant="secondary"
-            size="icon"
-            className="absolute top-2 right-2 z-10"
-            onClick={handleSaveToCollection}
-          >
-            <Bookmark className="h-4 w-4" />
-            <span className="sr-only">Save to Collection</span>
-          </Button>
+          { session?.user.role === "CUSTOMER" && (
+            <Button
+              variant="secondary"
+              size="icon"
+              className="absolute top-2 right-2 z-10"
+              onClick={handleSaveToCollection}
+            >
+              <Bookmark className="h-4 w-4" />
+              <span className="sr-only">Save to Collection</span>
+            </Button>
+          )}
         </div>
       </CardContent>
       <CardFooter className="flex flex-col items-start gap-4 p-4">
