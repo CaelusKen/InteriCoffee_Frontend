@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { Order } from "@/types/frontend/entities"
+import { Account, Order } from "@/types/frontend/entities"
 import { ApiResponse, PaginatedResponse } from "@/types/api"
 import { api } from "@/service/api"
 import LoadingPage from "@/components/custom/loading/loading"
@@ -19,12 +19,18 @@ import {
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { Currency } from "lucide-react"
+import { useAccessToken } from "@/hooks/use-access-token"
 
 const fetchOrders = async (
     page = 1,
-    pageSize = 10
+    pageSize = 10,
+    accessToken = ''
 ): Promise<ApiResponse<PaginatedResponse<Order>>> => {
-    return api.getPaginated<Order>("orders", { page, pageSize })
+    return api.getPaginated<Order>("orders", { page, pageSize }, accessToken)
+}
+
+const fetchAccountById = async(id: string, accessToken: string) : Promise<ApiResponse<Account>> => {
+    return api.getById('accounts', id, accessToken)
 }
 
 export default function ManagerOrdersTable() {
@@ -32,9 +38,11 @@ export default function ManagerOrdersTable() {
 
     const router = useRouter();
 
+    const accessToken = useAccessToken();
+
     const ordersQuery = useQuery({
         queryKey: ["orders", page],
-        queryFn: () => fetchOrders(page),
+        queryFn: () => fetchOrders(page, 10, accessToken ?? ''),
     });
 
     const orders = ordersQuery.data?.data.items ?? []
@@ -59,7 +67,6 @@ export default function ManagerOrdersTable() {
                                 <TableHead className="w-[100px]">No.</TableHead>
                                 <TableHead>Order Date</TableHead>
                                 <TableHead>Order Total</TableHead>
-                                <TableHead>Order User</TableHead>
                                 <TableHead>Shipping Address</TableHead>
                                 <TableHead className="text-right">Order Status</TableHead>
                             </TableRow>
@@ -67,10 +74,9 @@ export default function ManagerOrdersTable() {
                         <TableBody>
                             {orders.map((order, index) => (
                                 <TableRow key={index}>
-                                    <TableCell>{index}</TableCell>
+                                    <TableCell>{index + 1}</TableCell>
                                     <TableCell>{order.orderDate.toDateString()}</TableCell>
                                     <TableCell>{order.totalAmount.toLocaleString("vi-VN", {style: "currency", currency: "VND"})}</TableCell>
-                                    <TableCell>{order.accountId}</TableCell>
                                     <TableCell>{order.shippingAddress}</TableCell>
                                     <TableCell className="text-right">
                                         {order.status}
