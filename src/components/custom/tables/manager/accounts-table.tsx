@@ -17,20 +17,27 @@ import {
     TableRow,
   } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { useSession } from "next-auth/react"
+import { useAccessToken } from "@/hooks/use-access-token"
 
-const fetchAccounts = async (
+
+export const fetchAccounts = async (
     page = 1,
-    pageSize = 10
+    pageSize = 10,
+    accessToken = ''
 ): Promise<ApiResponse<PaginatedResponse<Account>>> => {
-    return api.getPaginated<Account>("accounts", { page, pageSize })
+    return api.getPaginated<Account>("accounts", { page, pageSize }, accessToken)
 }
 
 export default function AccountsTable() {
     const [page, setPage] = useState(1)
+    const accessToken = useAccessToken()
 
     const accountsQuery = useQuery({
         queryKey: ["accounts", page],
-        queryFn: () => fetchAccounts(page),
+        queryFn: () => fetchAccounts(page, 10, accessToken || ''),
+        enabled: !!accessToken,
+
       })
     
     const accounts = accountsQuery.data?.data?.items ?? []
@@ -68,7 +75,7 @@ export default function AccountsTable() {
                             {accounts.map((account, index) => (
                                 <TableRow key={index}>
                                     <TableCell className="font-medium">
-                                        <img src={account.avatar} alt={account.userName} className="w-[40px] rounded-full h-full object-cover"/>
+                                        <img src={account.avatar || "https://github.com/shadcn.png"} alt={account.userName} className="w-[40px] rounded-full h-full object-cover"/>
                                     </TableCell>
                                     <TableCell>{account.userName}</TableCell>
                                     <TableCell>{account.email}</TableCell>

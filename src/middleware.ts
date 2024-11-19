@@ -16,7 +16,7 @@ export default withAuth(
     },
     {
         callbacks: {
-            authorized: ({ token }) => ROLES.includes(token?.role as string)
+            authorized: ({ token }) => !!token?.accessToken && ROLES.includes(token?.role as string)
         }
     }
 )

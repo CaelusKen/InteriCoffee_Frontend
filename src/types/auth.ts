@@ -4,13 +4,14 @@ import { Session } from "next-auth"
 declare module "next-auth" {
     interface User {
       role: string
+      "access-token"?: string
     }
   }
 
 declare module "next-auth" {
     interface Session {
       user: {
-        id?: string
+        accessToken?: string
         role?: string
       } & DefaultSession["user"]
     }
@@ -19,5 +20,6 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
     interface JWT {
         role?: string
+        accessToken?: string
     }
 }

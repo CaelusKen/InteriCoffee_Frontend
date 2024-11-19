@@ -8,15 +8,20 @@ type QueryParams = Record<string, string | number | boolean | undefined>;
 async function fetchAPI<T>(
   endpoint: string, 
   options: RequestInit = {}, 
-  queryParams?: QueryParams
+  queryParams?: QueryParams,
+  accessToken?: string
 ): Promise<ApiResponse<T>> {
   if (!API_URL) {
     throw new Error('API_URL is not defined');
   }
 
-  const defaultHeaders = {
+  const defaultHeaders: HeadersInit = {
     'Content-Type': 'application/json',
   };
+
+  if (accessToken) {
+    defaultHeaders['Authorization'] = `Bearer ${accessToken}`;
+  }
 
   // Build URL with query parameters
   const url = new URL(`${API_URL}/${endpoint.replace(/^\//, '')}`);
@@ -57,9 +62,9 @@ async function fetchAPI<T>(
 }
 
 export const api = {
-  get: async <T>(endpoint: string, queryParams?: QueryParams): Promise<ApiResponse<T>> => {
+  get: async <T>(endpoint: string, queryParams?: QueryParams, accessToken?: string): Promise<ApiResponse<T>> => {
     try {
-      const response = await fetchAPI<T>(endpoint, { method: 'GET' }, queryParams);
+      const response = await fetchAPI<T>(endpoint, { method: 'GET' }, queryParams, accessToken);
       return response;
     } catch (error) {
       console.error('Error in get:', error);
@@ -67,7 +72,7 @@ export const api = {
     }
   },
 
-  getPaginated: async <T>(endpoint: string, queryParams?: QueryParams): Promise<ApiResponse<PaginatedResponse<T>>> => {
+  getPaginated: async <T>(endpoint: string, queryParams?: QueryParams, accessToken?: string): Promise<ApiResponse<PaginatedResponse<T>>> => {
     try {
 
       const formattedQueryParams = {
@@ -75,7 +80,7 @@ export const api = {
         'page-size': queryParams?.pageSize,
       };
 
-      const response = await fetchAPI<any>(endpoint, { method: 'GET' }, formattedQueryParams);
+      const response = await fetchAPI<any>(endpoint, { method: 'GET' }, formattedQueryParams, accessToken );
 
       if (!response.data) {
         console.error('Response data is undefined:', response);
@@ -106,9 +111,9 @@ export const api = {
     }
   },
 
-  getById: async <T>(endpoint: string, id: string | number): Promise<ApiResponse<T>> => {
+  getById: async <T>(endpoint: string, id: string | number, accessToken?: string): Promise<ApiResponse<T>> => {
     try {
-      const response = await fetchAPI<T>(`${endpoint}/${id}`, { method: 'GET' });
+      const response = await fetchAPI<T>(`${endpoint}/${id}`, { method: 'GET' }, { accessToken: accessToken });
       const entityType = endpoint.endsWith('s') ? endpoint.slice(0, -1) : endpoint;
       response.data = mapBackendToFrontend<T>(response.data, entityType);
       return response;
@@ -118,12 +123,12 @@ export const api = {
     }
   },
 
-  post: async <T>(endpoint: string, data: any): Promise<ApiResponse<T>> => {
+  post: async <T>(endpoint: string, data: any, accessToken?: string): Promise<ApiResponse<T>> => {
     try {
       const response = await fetchAPI<T>(endpoint, {
         method: 'POST',
         body: JSON.stringify(data)
-      });
+      }, { accessToken: accessToken });
       return response;
     } catch (error) {
       console.error('Error in post:', error);
@@ -131,7 +136,7 @@ export const api = {
     }
   },
 
-  patch: async <T>(endpoint: string, data: any, options?: { onRequestStart?: (config: any) => void }): Promise<ApiResponse<T>> => {
+  patch: async <T>(endpoint: string, data: any, options?: { onRequestStart?: (config: any) => void }, accessToken?: string): Promise<ApiResponse<T>> => {
     try {
       if (options?.onRequestStart) {
         options.onRequestStart({ data });
@@ -139,8 +144,8 @@ export const api = {
 
       const response = await fetchAPI<T>(endpoint, {
         method: 'PATCH',
-        body: JSON.stringify(data)
-      });
+        body: JSON.stringify(data),
+      }, { accessToken: accessToken });
       return response;
     } catch (error) {
       console.error('Error in patch:', error);
@@ -148,9 +153,9 @@ export const api = {
     }
   },
 
-  delete: async <T>(endpoint: string): Promise<ApiResponse<T>> => {
+  delete: async <T>(endpoint: string, accessToken?: string): Promise<ApiResponse<T>> => {
     try {
-      const response = await fetchAPI<T>(endpoint, { method: 'DELETE' });
+      const response = await fetchAPI<T>(endpoint, { method: 'DELETE' }, { accessToken: accessToken });
       return response;
     } catch (error) {
       console.error('Error in delete:', error);

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowLeft, Chrome, Facebook } from 'lucide-react'
-import { signIn, useSession } from 'next-auth/react'
+import { getSession, signIn, useSession } from 'next-auth/react'
 import { useState, FormEvent, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -52,7 +52,17 @@ export default function LoginPage() {
     })
     if (result?.error?.match("CredentialsSignin")) {
       setError(`Incorrect email or password, please try again`)
-    }
+    } else if (result?.ok) {
+      // Set the access token as a cookie
+      const session = await getSession()
+      if (session?.user?.accessToken) {
+          await fetch('/api/auth/set-access-token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accessToken: session.user.accessToken }),
+          })
+        }
+      }
     // The redirection will be handled by the useEffect hook
   }
 
