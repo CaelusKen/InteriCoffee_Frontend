@@ -55,8 +55,15 @@ export const options: NextAuthOptions = {
                   });
                 const user = await res.json()
                 if (res.ok && user) {
-                    const decodedToken = decodeAccessToken(user['access-token']);
-                    return { ...user, role: decodedToken?.role || user.role }
+                    const decodedToken = decodeAccessToken(user['access-token'])
+        
+                    return {
+                        id: user.id,
+                        email: user.email,
+                        name: user.name,
+                        role: decodedToken?.role || user.role,
+                        "access-token": user['access-token'],
+                    };
                 }
                 return null
               }
@@ -66,6 +73,7 @@ export const options: NextAuthOptions = {
         async jwt({token, user, account}) {
             if(user) {
                 token.role = user.role
+                token.accessToken = user["access-token"]
             }
             if (account?.provider === "facebook" || account?.provider === "google") {
                 token.role = "CUSTOMER"
@@ -77,7 +85,8 @@ export const options: NextAuthOptions = {
                 ...session,
                 user: {
                   ...session.user,
-                  role: token.role
+                  role: token.role,
+                  accessToken: token.accessToken
                 }
             };
         },

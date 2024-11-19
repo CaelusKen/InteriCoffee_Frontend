@@ -9,6 +9,7 @@ import SetupLast from './step-3'
 import { api } from "@/service/api"
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
+import { getSession, signIn } from 'next-auth/react'
 
 type StyleOption = 'modern' | 'traditional' | 'eclectic';
 type UserType = 'customer' | 'merchant' | 'fun';
@@ -102,6 +103,35 @@ export default function SignupFlow() {
       })
 
       if (response.status === 200) {
+        const result = await signIn('credentials', {
+          redirect: false,
+          email: finalData.email,
+          password: finalData.password,
+        })
+  
+        if (result?.ok) {
+          // Set the access token as a cookie
+          const session = await getSession()
+          if (session?.user?.accessToken) {
+            await fetch('/api/auth/set-access-token', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ accessToken: session.user.accessToken }),
+            })
+          }
+          toast({
+            title: "Your account has been created successfully!",
+            description: "You are now logged in.",
+          })
+          
+          router.push('/customer')
+        } else {
+          toast({
+            title: "Account created",
+            description: "Please log in with your new account.",
+          })
+          router.push('/login')
+        }
         toast({
           title: "Your account has been created successfully!",
           description: "Please return to the login",
@@ -109,6 +139,7 @@ export default function SignupFlow() {
         
         router.push('/login')
       }
+      
     } catch (error) {
       toast({
         title: "Error",
