@@ -1,21 +1,6 @@
 import * as FrontEndTypes from "@/types/frontend/entities";
 import * as BackEndTypes from "@/types/backend/entities";
-
-const entityTypeMap: { [key: string]: string } = {
-    'accounts': 'account',
-    'chat-sessions': 'chatSession',
-    'designs': 'design',
-    'merchants': 'merchant',
-    'orders': 'order',
-    'products': 'product',
-    'product-categories': 'productCategory',
-    'reviews': 'review',
-    'sale-campaigns': 'saleCampaign',
-    'styles': 'style',
-    'templates': 'template',
-    'transactions': 'transaction',
-    'vouchers': 'voucher',
-};
+import * as RoomEditorTypes from "@/types/room-editor";
 
 export function mapBackendAccountToFrontend(backendAccount: BackEndTypes.BackendAccount): FrontEndTypes.Account {
     if (!backendAccount) {
@@ -23,18 +8,18 @@ export function mapBackendAccountToFrontend(backendAccount: BackEndTypes.Backend
     }
 
     return {
-        id: backendAccount["_id"],
+        id: backendAccount._id,
         userName: backendAccount["user-name"],
-        email: backendAccount["email"],
+        password: backendAccount.password,
+        email: backendAccount.email,
         phoneNumber: backendAccount["phone-number"],
-        address: backendAccount["address"],
-        status: backendAccount["status"],
-        avatar: backendAccount["avatar"],
+        address: backendAccount.address,
+        status: backendAccount.status,
+        avatar: backendAccount.avatar,
         createdDate: new Date(backendAccount["created-date"]),
         updatedDate: new Date(backendAccount["updated-date"]),
         merchantId: backendAccount["merchant-id"],
-        role: backendAccount["role"] || "CUSTOMER",
-        password: backendAccount["password"],
+        role: backendAccount.role,
     };
 }
 
@@ -44,7 +29,7 @@ export function mapBackendChatSessionToFrontend(backendChatSession: BackEndTypes
     }
 
     return {
-        id: backendChatSession["_id"],
+        id: backendChatSession._id,
         messages: backendChatSession.messages.map(mapBackendMessageToFrontend),
         createdDate: new Date(backendChatSession["created-date"]),
         updatedDate: new Date(backendChatSession["updated-date"]),
@@ -59,7 +44,7 @@ export function mapBackendMessageToFrontend(backendMessage: BackEndTypes.Backend
     }
 
     return {
-        id: backendMessage["_id"],
+        id: backendMessage._id,
         sender: backendMessage.sender,
         message: backendMessage.message,
         timeStamp: new Date(backendMessage["time-stamp"]),
@@ -72,7 +57,7 @@ export function mapBackendDesignToFrontend(backendDesign: BackEndTypes.BackendDe
     }
 
     return {
-        id: backendDesign["_id"],
+        id: backendDesign._id,
         name: backendDesign.name,
         description: backendDesign.description,
         createdDate: new Date(backendDesign["created-date"]),
@@ -92,37 +77,96 @@ export function mapBackendFloorToFrontend(backendFloor: BackEndTypes.BackendFloo
     }
 
     return {
-        id: backendFloor["_id"],
+        id: backendFloor._id,
         name: backendFloor.name,
-        products: backendFloor.products.map(mapBackendDesignProductToFrontend),
-        nonProducts: backendFloor["non-products"].map(mapBackendDesignProductToFrontend),
+        designId: backendFloor["design-template-id"],
+        rooms: backendFloor.rooms.map(mapBackendRoomToFrontend),
     };
 }
 
-export function mapBackendDesignProductToFrontend(backendDesignProduct: BackEndTypes.BackendDesignProduct): FrontEndTypes.DesignProduct {
-    if (!backendDesignProduct) {
-        throw new Error('DesignProduct data is undefined');
+export function mapBackendRoomToFrontend(backendRoom: BackEndTypes.BackendRoom): FrontEndTypes.Room {
+    if (!backendRoom) {
+        throw new Error('Room data is undefined');
     }
 
     return {
-        id: backendDesignProduct["_id"],
-        _id: backendDesignProduct["_id"],
-        type: backendDesignProduct.type,
-        position: mapBackendDesignProductValueToFrontend(backendDesignProduct.position),
-        scale: mapBackendDesignProductValueToFrontend(backendDesignProduct.scale),
-        rotation: mapBackendDesignProductValueToFrontend(backendDesignProduct.rotation),
+        _id: backendRoom._id,
+        name: backendRoom.name,
+        width: backendRoom.width,
+        height: backendRoom.height,
+        length: backendRoom.length,
+        furnitures: backendRoom.furnitures.map(mapBackendFurnitureToFrontend),
+        "non-furnitures": backendRoom["non-furnitures"].map(mapBackendFurnitureToFrontend),
     };
 }
 
-export function mapBackendDesignProductValueToFrontend(backendValue: BackEndTypes.BackendDesignProductValue): FrontEndTypes.DesignProductValue {
-    if (!backendValue) {
-        throw new Error('DesignProductValue data is undefined');
+export function mapBackendFurnitureToFrontend(backendFurniture: BackEndTypes.Furniture): FrontEndTypes.Furniture {
+    if (!backendFurniture) {
+        throw new Error('Furniture data is undefined');
     }
 
     return {
-        x: backendValue.x,
-        y: backendValue.y,
-        z: backendValue.z,
+        id: backendFurniture._id,
+        name: backendFurniture.name,
+        model: backendFurniture.model,
+        position: backendFurniture.position,
+        rotation: backendFurniture.rotation,
+        scale: backendFurniture.scale,
+        visible: backendFurniture.visible,
+        category: backendFurniture.category,
+    };
+}
+
+export function mapRoomEditorToFrontend(roomEditorData: RoomEditorTypes.Design): FrontEndTypes.APIDesign {
+    if (!roomEditorData) {
+        throw new Error('RoomEditor data is undefined');
+    }
+
+    return {
+        id: roomEditorData.id,
+        name: roomEditorData.username || '',
+        description: '',
+        createdDate: new Date(roomEditorData.createdAt),
+        updateDate: new Date(roomEditorData.updatedAt),
+        status: 'active', // Assuming a default status
+        type: roomEditorData.type,
+        floors: roomEditorData.floors.map(mapRoomEditorFloorToFrontend),
+        accountId: '', // This information is not available in RoomEditor type
+        templateId: '', // This information is not available in RoomEditor type
+        styleId: '', // This information is not available in RoomEditor type
+    };
+}
+
+function mapRoomEditorFloorToFrontend(roomEditorFloor: RoomEditorTypes.Floor): FrontEndTypes.Floor {
+    return {
+        id: roomEditorFloor.id.toString(), // Convert to string as frontend expects string id
+        name: roomEditorFloor.name,
+        rooms: roomEditorFloor.rooms?.map(mapRoomEditorRoomToFrontend) || [],
+    };
+}
+
+function mapRoomEditorRoomToFrontend(roomEditorRoom: RoomEditorTypes.Room): FrontEndTypes.Room {
+    return {
+        _id: roomEditorRoom.id.toString(), // Convert to string as frontend expects string id
+        name: roomEditorRoom.name,
+        width: roomEditorRoom.width,
+        height: roomEditorRoom.height,
+        length: roomEditorRoom.length,
+        furnitures: roomEditorRoom.furniture.map(mapRoomEditorFurnitureToFrontend),
+        "non-furnitures": [], // Assuming no non-furnitures in RoomEditor type
+    };
+}
+
+function mapRoomEditorFurnitureToFrontend(roomEditorFurniture: RoomEditorTypes.Furniture): FrontEndTypes.Furniture {
+    return {
+        id: roomEditorFurniture.id.toString(), // Convert to string as frontend expects string id
+        name: roomEditorFurniture.name,
+        model: roomEditorFurniture.model,
+        position: roomEditorFurniture.position,
+        rotation: roomEditorFurniture.rotation,
+        scale: roomEditorFurniture.scale,
+        visible: roomEditorFurniture.visible,
+        category: roomEditorFurniture.category,
     };
 }
 
@@ -132,7 +176,7 @@ export function mapBackendMerchantToFrontend(backendMerchant: BackEndTypes.Backe
     }
 
     return {
-        id: backendMerchant["_id"],
+        id: backendMerchant._id,
         name: backendMerchant.name,
         email: backendMerchant.email,
         address: backendMerchant.address,
@@ -164,7 +208,7 @@ export function mapBackendOrderToFrontend(backendOrder: BackEndTypes.BackendOrde
     }
 
     return {
-        id: backendOrder["_id"],
+        id: backendOrder._id,
         orderDate: new Date(backendOrder["order-date"]),
         status: backendOrder.status,
         vat: backendOrder.vat,
@@ -185,7 +229,7 @@ export function mapBackendOrderProductToFrontend(backendOrderProduct: BackEndTyp
     }
 
     return {
-        id: backendOrderProduct["_id"],
+        id: backendOrderProduct._id,
         name: backendOrderProduct.name,
         description: backendOrderProduct.description,
         price: backendOrderProduct.price,
@@ -199,7 +243,7 @@ export function mapBackendProductToFrontend(backendProduct: BackEndTypes.Backend
     }
 
     return {
-        id: backendProduct["_id"],
+        id: backendProduct._id,
         categoryIds: backendProduct["category-ids"],
         name: backendProduct.name,
         description: backendProduct.description,
@@ -228,7 +272,7 @@ export function mapBackendProductCategoryToFrontend(backendProductCategory: Back
     }
 
     return {
-        id: backendProductCategory["_id"],
+        id: backendProductCategory._id,
         name: backendProductCategory.name,
         description: backendProductCategory.description,
     };
@@ -240,7 +284,7 @@ export function mapBackendReviewToFrontend(backendReview: BackEndTypes.BackendRe
     }
 
     return {
-        id: backendReview["_id"],
+        id: backendReview._id,
         comment: backendReview.comment,
         rating: backendReview.rating,
         productId: backendReview["product-id"],
@@ -254,7 +298,7 @@ export function mapBackendSaleCampaignToFrontend(backendSaleCampaign: BackEndTyp
     }
 
     return {
-        id: backendSaleCampaign["_id"],
+        id: backendSaleCampaign._id,
         name: backendSaleCampaign.name,
         description: backendSaleCampaign.description,
         value: backendSaleCampaign.value,
@@ -272,7 +316,7 @@ export function mapBackendStyleToFrontend(backendStyle: BackEndTypes.BackendStyl
     }
 
     return {
-        id: backendStyle["_id"],
+        id: backendStyle._id,
         name: backendStyle.name,
         description: backendStyle.description,
     };
@@ -284,21 +328,21 @@ export function mapBackendTemplateToFrontend(backendTemplate: BackEndTypes.Backe
     }
 
     return {
-        id: backendTemplate["_id"],
+        id: backendTemplate._id,
         name: backendTemplate.name,
         description: backendTemplate.description,
+        createdDate: new Date(backendTemplate["created-date"]),
         updatedDate: new Date(backendTemplate["updated-date"]),
         status: backendTemplate.status,
         type: backendTemplate.type,
         floors: backendTemplate.floors.map(mapBackendFloorToFrontend),
         categories: backendTemplate.categories,
-        createdDate: backendTemplate["created-date"],
         accountId: backendTemplate["account-id"],
         merchantId: backendTemplate["merchant-id"],
         styleId: backendTemplate["style-id"],
-        imageUrl: backendTemplate["image"],
+        imageUrl: backendTemplate.image,
         products: backendTemplate.products.map((product) => ({
-            id: product["_id"],
+            id: product._id,
             quantity: product.quantity,
         })),
     };
@@ -310,7 +354,7 @@ export function mapBackendTransactionToFrontend(backendTransaction: BackEndTypes
     }
 
     return {
-        id: backendTransaction["_id"],
+        id: backendTransaction._id,
         paymentMethod: backendTransaction["payment-method"],
         transactionDate: new Date(backendTransaction["transaction-date"]),
         totalAmount: backendTransaction["total-amount"],
@@ -329,7 +373,7 @@ export function mapBackendVoucherToFrontend(backendVoucher: BackEndTypes.Backend
     }
 
     return {
-        id: backendVoucher["_id"],
+        id: backendVoucher._id,
         code: backendVoucher.code,
         name: backendVoucher.name,
         description: backendVoucher.description,
@@ -346,34 +390,10 @@ export function mapBackendVoucherToFrontend(backendVoucher: BackEndTypes.Backend
     };
 }
 
-function normalizeEntityType(entityType: string): string {
-    // Map of special plural words to their singular form
-    const pluralExceptions: { [key: string]: string } = {
-        categorie: 'category',
-    };
-
-    // Split the string into words
-    const words = entityType.split(/[-\s]+/);
-
-    // Remove trailing 's' or apply exception if present
-    if (words.length > 0) {
-        const lastWord = words[words.length - 1];
-        words[words.length - 1] = pluralExceptions[lastWord] || lastWord.replace(/s$/, '');
-    }
-
-    // Convert to camelCase
-    return words.map((word, index) =>
-        index === 0 ? word.toLowerCase() : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-    ).join('');
-}
-
 export function mapBackendToFrontend<T>(backendData: any, entityType: string): T {
     if (!backendData) {
         throw new Error(`${entityType} data is undefined`);
     }
-
-    // Normalize the entity type
-    const normalizedType = normalizeEntityType(entityType);
 
     const mappers: { [key: string]: (data: any) => any } = {
         account: mapBackendAccountToFrontend,
@@ -391,11 +411,8 @@ export function mapBackendToFrontend<T>(backendData: any, entityType: string): T
         voucher: mapBackendVoucherToFrontend,
     };
 
-    const mapper = mappers[normalizedType];
+    const mapper = mappers[entityType];
     if (!mapper) {
-        console.error('Available mappers:', Object.keys(mappers));
-        console.error('Attempted entity type:', entityType);
-        console.error('Normalized type:', normalizedType);
         throw new Error(`No mapper found for entity type: ${entityType}`);
     }
 
@@ -409,44 +426,19 @@ export function mapBackendListToFrontend<T>(backendResponse: any, entityType: st
     pageSize: number;
 } {
     if (!backendResponse) {
-        console.error('Backend response:', backendResponse);
         throw new Error('Backend response is undefined');
     }
 
-    // Extract the data array based on different possible response structures
-    let entityArray;
+    const entityArray = backendResponse.items || backendResponse.data || backendResponse[`${entityType}s`] || [];
 
-    if (Array.isArray(backendResponse)) {
-        // If response is directly an array
-        entityArray = backendResponse;
-    } else if (backendResponse.items) {
-        // If response has an items property
-        entityArray = backendResponse.items;
-    } else if (backendResponse.data && Array.isArray(backendResponse.data)) {
-        // If response has a data array
-        entityArray = backendResponse.data;
-    } else if (backendResponse[`${normalizeEntityType(entityType)}s`]) {
-        // If response has a property matching the plural form of the entity
-        entityArray = backendResponse[`${normalizeEntityType(entityType)}s`];
-    } else {
-        // If we can't find an array, log the structure and throw an error
-        console.error('Unable to find data array in response:', backendResponse);
+    if (!Array.isArray(entityArray)) {
         throw new Error(`Invalid data structure for ${entityType}`);
     }
 
-    // Map the data using the normalized entity type
     return {
         items: entityArray.map((item: any) => mapBackendToFrontend<T>(item, entityType)),
-        totalCount: backendResponse["list-size"] || 
-                   backendResponse["total-items"] || 
-                   backendResponse.totalCount || 
-                   entityArray.length,
-        pageNumber: backendResponse["page-no"] || 
-                   backendResponse["current-page-size"] || 
-                   backendResponse.pageNumber || 
-                   1,
-        pageSize: backendResponse["page-size"] || 
-                 backendResponse.pageSize || 
-                 entityArray.length
+        totalCount: backendResponse.totalCount || entityArray.length,
+        pageNumber: backendResponse.pageNumber || 1,
+        pageSize: backendResponse.pageSize || entityArray.length,
     };
 }

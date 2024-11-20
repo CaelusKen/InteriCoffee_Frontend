@@ -11,7 +11,7 @@ import {
   Environment,
 } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, ShoppingCart, Star, Eye } from "lucide-react";
+import { Heart, ShoppingCart, Star, Eye, ArrowLeft } from "lucide-react";
 import * as THREE from "three";
 
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import Autoplay from "embla-carousel-autoplay"
+import { useRouter } from "next/navigation";
 
 interface ProductDetailsProps {
   productId: string;
@@ -91,6 +92,8 @@ const FurnitureDetailsSection: React.FC<ProductProps> = ({ id }) => {
 
   const { toast } = useToast();
 
+  const router = useRouter();
+
   const productQuery = useQuery({
     queryKey: ["product", id],
     queryFn: () => fetchProductById(id),
@@ -142,6 +145,10 @@ const FurnitureDetailsSection: React.FC<ProductProps> = ({ id }) => {
   };
   return (
     <div className="container mx-auto px-10 py-8">
+      <Button variant={'link'} onClick={() => router.back()} className="mb-2">
+        <ArrowLeft size={24}/>
+        Back
+      </Button>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 h-fit">
         <Card className="col-span-1 md:col-span-2 lg:col-span-2">
           <CardContent className="p-0">

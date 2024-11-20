@@ -74,13 +74,12 @@ export const api = {
 
   getPaginated: async <T>(endpoint: string, queryParams?: QueryParams, accessToken?: string): Promise<ApiResponse<PaginatedResponse<T>>> => {
     try {
-
       const formattedQueryParams = {
         'page-no': queryParams?.page,
         'page-size': queryParams?.pageSize,
       };
 
-      const response = await fetchAPI<any>(endpoint, { method: 'GET' }, formattedQueryParams, accessToken );
+      const response = await fetchAPI<any>(endpoint, { method: 'GET' }, formattedQueryParams, accessToken);
 
       if (!response.data) {
         console.error('Response data is undefined:', response);
@@ -113,7 +112,7 @@ export const api = {
 
   getById: async <T>(endpoint: string, id: string | number, accessToken?: string): Promise<ApiResponse<T>> => {
     try {
-      const response = await fetchAPI<T>(`${endpoint}/${id}`, { method: 'GET' }, { accessToken: accessToken });
+      const response = await fetchAPI<T>(`${endpoint}/${id}`, { method: 'GET' }, undefined, accessToken);
       const entityType = endpoint.endsWith('s') ? endpoint.slice(0, -1) : endpoint;
       response.data = mapBackendToFrontend<T>(response.data, entityType);
       return response;
@@ -128,7 +127,7 @@ export const api = {
       const response = await fetchAPI<T>(endpoint, {
         method: 'POST',
         body: JSON.stringify(data)
-      }, { accessToken: accessToken });
+      }, undefined, accessToken);
       return response;
     } catch (error) {
       console.error('Error in post:', error);
@@ -145,7 +144,7 @@ export const api = {
       const response = await fetchAPI<T>(endpoint, {
         method: 'PATCH',
         body: JSON.stringify(data),
-      }, { accessToken: accessToken });
+      }, undefined, accessToken);
       return response;
     } catch (error) {
       console.error('Error in patch:', error);
@@ -155,7 +154,7 @@ export const api = {
 
   delete: async <T>(endpoint: string, accessToken?: string): Promise<ApiResponse<T>> => {
     try {
-      const response = await fetchAPI<T>(endpoint, { method: 'DELETE' }, { accessToken: accessToken });
+      const response = await fetchAPI<T>(endpoint, { method: 'DELETE' }, undefined, accessToken);
       return response;
     } catch (error) {
       console.error('Error in delete:', error);

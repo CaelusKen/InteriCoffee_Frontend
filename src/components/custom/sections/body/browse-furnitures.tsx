@@ -63,7 +63,7 @@ export default function BrowseFurnitures() {
 
   return (
     <div className="flex flex-col space-y-6 p-8">
-      <div className="flex justify-between w-full mt-4 px-10">
+      <div className="flex justify-between w-full mt-4">
         {/* Search Bar */}
         <div className="flex justify-start w-fit items-center space-x-2">
           <Input
@@ -135,7 +135,7 @@ export default function BrowseFurnitures() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
             {paginatedProducts.map((product) => (
               <FurnitureProductCard
                 key={product.id}

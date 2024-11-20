@@ -22,8 +22,8 @@ export default function ManagerSidebar() {
 
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, href: "/manager" },
-    { name: "Account", icon: User, href: "/manager/account" },
-    { name: "Products", icon: Package, href: "/manager/product" },
+    { name: "Account", icon: User, href: "/manager/accounts" },
+    { name: "Products", icon: Package, href: "/manager/products" },
     { name: "Styles", icon: Palette, href: "/manager/styles" },
     { name: "Order", icon: ListOrdered, href: "/manager/orders" },
     { name: "Merchant Registration", icon: UserPlus, href: "/manager/merchant-registration" }

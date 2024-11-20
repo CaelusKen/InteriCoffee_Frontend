@@ -1,3 +1,5 @@
+// Backend Entity
+
 export interface BackendAccount {
     _id:            string;
     "user-name":    string;
@@ -45,26 +47,32 @@ export interface BackendDesign {
 }
 
 export interface BackendFloor {
-    _id:            string;
-    name:           string;
-    products:       BackendDesignProduct[];
-    "non-products": BackendDesignProduct[];
+    _id:                  string;
+    name:                 string;
+    "design-template-id": string;
+    rooms:                BackendRoom[];
 }
 
-export interface BackendDesignProduct {
-    _id:      string;
-    type?:    string;
-    position: BackendDesignProductValue;
-    scale:    BackendDesignProductValue;
-    rotation: BackendDesignProductValue;
+export interface BackendRoom {
+    _id:              string;
+    name:             string;
+    width:            number;
+    height:           number;
+    length:           number;
+    furnitures:       Furniture[];
+    "non-furnitures": Furniture[];
 }
 
-export interface BackendDesignProductValue {
-    x: number;
-    y: number;
-    z: number;
+export interface Furniture {
+    _id:       BackendProduct["_id"];
+    name:      BackendProduct["name"];
+    model:     BackendProduct["model-texture-url"];
+    position:  number[];
+    rotation:  number[];
+    scale:     number[];
+    visible:   boolean;
+    category?: BackendProduct["category-ids"];
 }
-
 
 export interface BackendMerchant {
     _id:               string;
@@ -85,8 +93,6 @@ export interface BackendOrderIncome {
     "order-id": string;
     income:     number;
 }
-
-
 export interface BackendOrder {
     _id:                string;
     "order-date":       Date;

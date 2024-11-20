@@ -1,4 +1,4 @@
-//Entities
+// Frontend Entity
 export interface Account {
     id:             string;
     userName:       string;
@@ -47,15 +47,36 @@ export interface APIDesign {
 }
 
 export interface Floor {
-    id:             string;
-    name:           string;
-    products:       DesignProduct[];
-    nonProducts:    DesignProduct[];
+    id:                    string;
+    name:                  string;
+    designId?:             APIDesign["id"];
+    templateId?:           Template["id"]
+    rooms:                 Room[];
+}
+
+export interface Room {
+    _id:              string;
+    name:             string;
+    width:            number;
+    height:           number;
+    length:           number;
+    furnitures:       Furniture[];
+    "non-furnitures": Furniture[];
+}
+
+export interface Furniture {
+    id:        Product["id"];
+    name:      Product["name"];
+    model:     Product["modelTextureUrl"];
+    position:  number[];
+    rotation:  number[];
+    scale:     number[];
+    visible:   boolean;
+    category?: Product["categoryIds"];
 }
 
 export interface DesignProduct {
     id:       string;
-    _id:      string;
     type?:    string;
     position: DesignProductValue;
     scale:    DesignProductValue;

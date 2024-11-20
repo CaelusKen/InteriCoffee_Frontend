@@ -212,7 +212,7 @@ export default function FurnitureProductCard({
       <CardFooter className="flex flex-col items-start gap-4 p-4">
         <div className="flex justify-between items-start w-full">
           <div className="space-y-1">
-            <h3 className="text-lg font-semibold leading-none">{name}</h3>
+            <h3 className="text-[16px] font-semibold leading-none">{name}</h3>
             <MerchantInfo merchantId={merchant} />
           </div>
           <div className="text-lg font-bold">{price.toLocaleString("vi-VN", { style:'currency', currency: 'VND' })}</div>
