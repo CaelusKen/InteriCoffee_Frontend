@@ -24,7 +24,7 @@ const config: Config = {
 				'800': '#6F4F3B',
 				'900': '#5F4234',
 				'1000': '#4F352D',
-				DEFAULT: 'hsl(var(--primary))',
+				DEFAULT: '#9F7651',
 				foreground: 'hsl(var(--primary-foreground))'
 			},
 			secondary: {
@@ -38,7 +38,7 @@ const config: Config = {
 				'800': '#8A7D5D',
 				'900': '#776A48',
 				'1000': '#645733',
-				DEFAULT: 'hsl(var(--secondary))',
+				DEFAULT: '#C2B59C',
 				foreground: 'hsl(var(--secondary-foreground))'
 			},
 			neutrals: {

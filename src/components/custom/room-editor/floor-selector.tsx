@@ -27,13 +27,13 @@ export default function FloorSelector({
             <Button
               variant={selectedFloor === floor.id ? "default" : "outline"}
               className="w-full justify-start"
-              onClick={() => onSelectFloor(floor.id)}
+              onClick={() => onSelectFloor(floor.id as number)}
             >
               {floor.name}
             </Button>
             {selectedFloor === floor.id && (
               <div className="ml-4 mt-1 space-y-1">
-                {floor.rooms.map((room) => (
+                {floor.rooms?.map((room) => (
                   <Button
                     key={room.id}
                     variant={selectedRoom  === room.id ? "default" : "outline"}

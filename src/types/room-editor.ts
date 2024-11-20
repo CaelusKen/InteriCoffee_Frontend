@@ -36,9 +36,9 @@ export interface Room {
 }
 
 export interface Floor {
-    id: number;
+    id: number | string;
     name: string;
-    rooms: Room[];
+    rooms?: Room[];
 }
 
 export interface CoffeeShopData {

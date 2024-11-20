@@ -16,19 +16,12 @@ import {
 } from "@/components/ui/drawer"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Furniture, TemplateData } from "@/types/room-editor"
+import { Template, ProductCategory, Account, Merchant, Product } from "@/types/frontend/entities"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { ApiResponse, PaginatedResponse } from "@/types/api"
-import { Account, Merchant, Product, ProductCategory } from "@/types/frontend/entities"
-import { api } from "@/service/api"
 import { useQuery } from "@tanstack/react-query"
-
-interface Template {
-  id: number
-  name: string
-  items: number
-}
+import { api } from "@/service/api"
+import { ApiResponse, PaginatedResponse } from "@/types/api"
 
 interface ToolbarProps {
   onAddFurniture: (model: string, category: ProductCategory['id'][]) => void
@@ -38,11 +31,12 @@ interface ToolbarProps {
   onRedo: () => void
   onSaveCustomer: () => void
   onSaveMerchant: () => void
-  onLoad: (templateData: TemplateData) => void
+  onLoad: (templateId: string) => void
   onOpenRoomDialog: () => void
   onClearAll: () => void
   onAddFloor: () => void
   onAddRoom: () => void
+  templates: Template[]
 }
 
 const fetchProducts = async (): Promise<ApiResponse<PaginatedResponse<Product>>> => {
@@ -74,10 +68,10 @@ export default function Toolbar({
   onClearAll,
   onAddFloor,
   onAddRoom,
+  templates,
 }: ToolbarProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isLoadDrawerOpen, setIsLoadDrawerOpen] = useState(false)
-  const [templates, setTemplates] = useState<Template[]>([])
 
   const { data: session } = useSession()
   const router = useRouter()
@@ -101,7 +95,7 @@ export default function Toolbar({
 
   const { data: merchantsData } = useQuery({
     queryKey: ['merchants'],
-    queryFn: () => fetchMerchants()
+    queryFn: fetchMerchants
   })
 
   const products = productsData?.data.items ?? []
@@ -111,31 +105,13 @@ export default function Toolbar({
 
   // Memoized handlers
   const handleLoadClick = useCallback(() => {
-    const savedTemplates = JSON.parse(
-      localStorage.getItem("merchantTemplates") || "[]"
-    ) as TemplateData[]
-    setTemplates(
-      savedTemplates.map((template, index) => ({
-        id: index + 1,
-        name: `Template ${index + 1}`,
-        items: template.floors.reduce((acc, floor) => acc + floor.rooms.reduce((acc, room) => acc + room.furniture.length, 0), 0),
-      }))
-    )
     setIsLoadDrawerOpen(true)
   }, [])
 
-  const handleLoadTemplate = useCallback((templateId: number) => {
-    const savedTemplates = JSON.parse(
-      localStorage.getItem("merchantTemplates") || "[]"
-    ) as TemplateData[]
-    const selectedTemplate = savedTemplates[templateId - 1]
-    if (selectedTemplate) {
-      onLoad(selectedTemplate)
-      setIsLoadDrawerOpen(false)
-    } else {
-      alert("Selected template not found!")
-    }
-  }, [onLoad]);
+  const handleLoadTemplate = useCallback((templateId: string) => {
+    onLoad(templateId)
+    setIsLoadDrawerOpen(false)
+  }, [onLoad])
 
   const getMerchantName = useCallback((merchantId: string) => {
     const merchant = merchants.find((merchant) => merchant.id === merchantId);
@@ -340,7 +316,7 @@ export default function Toolbar({
                   onClick={() => handleLoadTemplate(template.id)}
                   className="w-full justify-start mb-2"
                 >
-                  {template.name} ({template.items} items)
+                  {template.name} ({template.products.length} items)
                 </Button>
               ))}
             </ScrollArea>

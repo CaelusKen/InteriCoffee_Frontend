@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect, Suspense } from 'react'
-import TemplateCard from '@/components/custom/cards/template-card'
 import { useRouter } from 'next/navigation'
 import { TemplateData } from '@/types/room-editor'
 import { Button } from '@/components/ui/button'

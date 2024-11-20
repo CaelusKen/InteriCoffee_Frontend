@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
 import { useAccessToken } from "@/hooks/use-access-token";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
 
 export const fetchAccounts = async (
   page = 1,
@@ -43,9 +44,7 @@ export default function AccountsTable() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(6);
 
-  const [selectAccount, setSelectAccount] = useState<string | null>(null);
-
-  const queryClient = useQueryClient();
+  const router = useRouter()
 
   const accessToken = useAccessToken();
 
@@ -122,8 +121,10 @@ export default function AccountsTable() {
                   {/* <TableCell>{account.updatedDate.toLocaleDateString()}</TableCell> */}
                   {/* This will be a toggler for the status of the account */}
                   <TableCell className="flex justify-end items-center gap-4">
-                    <Button>Unban</Button>
-                    <Button>Ban</Button>
+                    <Button onClick={() => router.push(`/manager/accounts/${account.id}`)}>Details</Button>
+                    <Button onClick={() => {}}>Ban</Button>
+                    <Button onClick={() => {}}>Edit</Button>
+                    <Button onClick={() => {}}>Remove</Button>
                   </TableCell>
                 </TableRow>
               ))}

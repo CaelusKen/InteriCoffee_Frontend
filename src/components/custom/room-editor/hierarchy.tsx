@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ChevronRight, Box as BoxIcon, Eye, EyeOff, Trash2, Edit2 } from 'lucide-react'
+import { ChevronRight, BoxIcon, Eye, EyeOff, Trash2, Edit2, Copy } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Furniture } from '@/types/room-editor'
 
 interface HierarchyProps {
@@ -11,6 +10,7 @@ interface HierarchyProps {
   onSelectItem: (id: number) => void;
   onToggleVisibility: (id: number) => void;
   onDeleteItem: (id: number) => void;
+  onDuplicateItem: (id: number) => void;
   onRename: (id: number, newName: string) => void;
 }
 
@@ -20,27 +20,29 @@ export default function Hierarchy({
   onSelectItem,
   onToggleVisibility,
   onDeleteItem,
+  onDuplicateItem,
   onRename,
 }: HierarchyProps) {
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editingName, setEditingName] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingName, setEditingName] = useState('')
 
-  const handleStartEdit = (id: number, name: string) => {
-    setEditingId(id);
-    setEditingName(name);
-  };
+  const handleStartEdit = (id: number, currentName: string) => {
+    setEditingId(id)
+    setEditingName(currentName)
+  }
 
   const handleFinishEdit = () => {
     if (editingId !== null) {
-      onRename(editingId, editingName);
-      setEditingId(null);
+      onRename(editingId, editingName)
+      setEditingId(null)
+      setEditingName('')
     }
-  };
+  }
 
   return (
-    <ScrollArea className="h-[calc(100vh-200px)] w-full">
-      <div className="p-2">
-        <div className="font-bold mb-2">Hierarchy</div>
+    <div className="p-4">
+      <h2 className="text-lg font-semibold mb-2">Hierarchy</h2>
+      <div className="space-y-1">
         {furniture.map((item) => (
           <div
             key={item.id}
@@ -88,6 +90,17 @@ export default function Hierarchy({
               className="ml-1"
               onClick={(e) => {
                 e.stopPropagation()
+                onDuplicateItem(item.id)
+              }}
+            >
+              <Copy className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-1"
+              onClick={(e) => {
+                e.stopPropagation()
                 onDeleteItem(item.id)
               }}
             >
@@ -96,6 +109,6 @@ export default function Hierarchy({
           </div>
         ))}
       </div>
-    </ScrollArea>
+    </div>
   )
 }
