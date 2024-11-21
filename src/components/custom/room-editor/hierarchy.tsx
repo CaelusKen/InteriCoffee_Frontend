@@ -6,12 +6,12 @@ import { Furniture } from '@/types/room-editor'
 
 interface HierarchyProps {
   furniture: Furniture[];
-  selectedItem: number | null;
-  onSelectItem: (id: number) => void;
-  onToggleVisibility: (id: number) => void;
-  onDeleteItem: (id: number) => void;
-  onDuplicateItem: (id: number) => void;
-  onRename: (id: number, newName: string) => void;
+  selectedItem: string | null;
+  onSelectItem: (id: string) => void;
+  onToggleVisibility: (id: string) => void;
+  onDeleteItem: (id: string) => void;
+  onDuplicateItem: (id: string) => void;
+  onRename: (id: string, newName: string) => void;
 }
 
 export default function Hierarchy({
@@ -23,10 +23,10 @@ export default function Hierarchy({
   onDuplicateItem,
   onRename,
 }: HierarchyProps) {
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
 
-  const handleStartEdit = (id: number, currentName: string) => {
+  const handleStartEdit = (id: string, currentName: string) => {
     setEditingId(id)
     setEditingName(currentName)
   }

@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Move, RotateCw, Maximize, Undo, Redo, Save, FolderOpen, Home, Trash2, Plus, Layers } from 'lucide-react'
+import { Move, RotateCw, Maximize, Undo, Redo, Save, FolderOpen, Home, Trash2, Plus, Layers, ChevronRight } from 'lucide-react'
 import { ThemeToggler } from "../buttons/theme-toggler"
 import {
   Drawer,
@@ -15,13 +15,23 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
+} from "@/components/ui/dropdown-menu"
 import { Template, ProductCategory, Account, Merchant, Product } from "@/types/frontend/entities"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@/service/api"
 import { ApiResponse, PaginatedResponse } from "@/types/api"
+import { Furniture } from "@/types/room-editor"
 
 interface ToolbarProps {
   onAddFurniture: (model: string, category: ProductCategory['id'][]) => void
@@ -37,6 +47,7 @@ interface ToolbarProps {
   onAddFloor: () => void
   onAddRoom: () => void
   templates: Template[]
+  pinnedFurniture: Furniture[]
 }
 
 const fetchProducts = async (): Promise<ApiResponse<PaginatedResponse<Product>>> => {
@@ -69,9 +80,11 @@ export default function Toolbar({
   onAddFloor,
   onAddRoom,
   templates,
+  pinnedFurniture,
 }: ToolbarProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isLoadDrawerOpen, setIsLoadDrawerOpen] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
   const { data: session } = useSession()
   const router = useRouter()
@@ -118,83 +131,61 @@ export default function Toolbar({
     return merchant?.name || ''
   }, [merchants])
 
+  const renderCategoryMenu = (categories: ProductCategory[]) => {
+    return categories.map((category) => (
+      <DropdownMenuSub key={category.id}>
+        <DropdownMenuSubTrigger>{category.name}</DropdownMenuSubTrigger>
+        <DropdownMenuPortal>
+          <DropdownMenuSubContent>
+            {merchants.map((merchant) => {
+              const merchantProducts = products.filter(
+                (product) =>
+                  product.categoryIds.includes(category.id) &&
+                  product.merchantId === merchant.id
+              );
+
+              if (merchantProducts.length === 0) return null;
+
+              return (
+                <DropdownMenuSub key={merchant.id}>
+                  <DropdownMenuSubTrigger>{merchant.name}</DropdownMenuSubTrigger>
+                  <DropdownMenuPortal>
+                    <DropdownMenuSubContent>
+                      {merchantProducts.map((product) => (
+                        <DropdownMenuItem
+                          key={product.id}
+                          onSelect={() => {
+                            onAddFurniture(product.modelTextureUrl, product.categoryIds);
+                            setIsDrawerOpen(false);
+                          }}
+                        >
+                          {product.name}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuPortal>
+                </DropdownMenuSub>
+              );
+            })}
+          </DropdownMenuSubContent>
+        </DropdownMenuPortal>
+      </DropdownMenuSub>
+    ));
+  };
+
   return (
     <div className="flex flex-wrap justify-between items-center p-2 dark:bg-gray-800 border-b">
       <div className="space-x-2 mb-2 sm:mb-0 flex flex-wrap items-center gap-2">
-        <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-          <DrawerTrigger asChild>
+      <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" /> Add Furniture
             </Button>
-          </DrawerTrigger>
-          <DrawerContent className="bg-white text-black">
-            <DrawerHeader>
-              <DrawerTitle>Choose Furniture</DrawerTitle>
-              <DrawerDescription>
-                Select the type of furniture you want to add to your room.
-              </DrawerDescription>
-            </DrawerHeader>
-            <Tabs defaultValue={categories[0]?.name} className="w-full px-8">
-              <TabsList className="grid px-8" style={{ gridTemplateColumns: `repeat(${categories.length}, minmax(0, 1fr))` }}>
-                {categories.map((category) => (
-                  <TabsTrigger
-                    key={category.id}
-                    value={category.name}
-                    className="capitalize px-8"
-                  >
-                    {category.name}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              {categories.map((category) => (
-                <TabsContent key={category.id} value={category.name} className="py-4">
-                  <ScrollArea className="h-[300px] w-full rounded-sm border py-4 border-none">
-                    {Object.entries(
-                      products
-                        .filter((item) => item.categoryIds.includes(category.id))
-                        .reduce((acc, item) => {
-                          const merchantId = item.merchantId || 'unknown';
-                          if (!acc[merchantId]) acc[merchantId] = [];
-                          acc[merchantId].push(item);
-                          return acc;
-                        }, {} as Record<string, Product[]>)
-                    ).map(([merchantId, merchantProducts]) => (
-                      <div key={merchantId} className="mb-4">
-                        <h3 className="text-lg font-semibold mb-2">
-                          {merchantId === account?.merchantId ? 'Your Products' : getMerchantName(merchantId)}
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4">
-                          {merchantProducts.map((item) => (
-                            <Button
-                              key={item.id}
-                              onClick={() => {
-                                onAddFurniture(item.modelTextureUrl, item.categoryIds);
-                                setIsDrawerOpen(false);
-                              }}
-                              className="w-full p-2 h-auto flex flex-col items-center justify-start hover:bg-secondary-400"
-                            >
-                              <img 
-                                src={item.images.thumbnail} 
-                                alt={item.name} 
-                                className="w-full h-32 object-cover mb-2 rounded-md"
-                              />
-                              <span className="text-sm text-center">{item.name}</span>
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </ScrollArea>
-                </TabsContent>
-              ))}
-            </Tabs>
-            <DrawerFooter>
-              <DrawerClose asChild>
-                <Button variant="default" className="dark:bg-black dark:text-white w-full px-8">Cancel</Button>
-              </DrawerClose>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            {renderCategoryMenu(categories)}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button
           onClick={onAddFloor}
           className="hover:bg-primary-600 hover:text-white"
@@ -328,6 +319,29 @@ export default function Toolbar({
           </DrawerContent>
         </Drawer>
       </div>
+      {pinnedFurniture.length > 0 && (
+        <div className="w-full mt-2 overflow-x-auto">
+          <ScrollArea className="w-full">
+            <div className="flex space-x-2">
+              {pinnedFurniture.map((item) => (
+                <Button
+                  key={item.id}
+                  onClick={() => onAddFurniture(item.model, item.category)}
+                  className="p-2 h-auto flex flex-col items-center justify-start hover:bg-secondary-400"
+                >
+                  <img
+                    src={item.model}
+                    alt={item.name}
+                    className="w-12 h-12 object-cover mb-1 rounded-md"
+                  />
+                  <span className="text-xs text-center">{item.name}</span>
+                </Button>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+      )}
     </div>
   )
 }
+

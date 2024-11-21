@@ -5,10 +5,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface FloorSelectorProps {
   floors: Floor[];
-  selectedFloor: number;
-  selectedRoom: number;
-  onSelectFloor: (floorId: number) => void;
-  onSelectRoom: (roomId: number) => void;
+  selectedFloor: string;
+  selectedRoom: string;
+  onSelectFloor: (floorId: string) => void;
+  onSelectRoom: (roomId: string) => void;
 }
 
 export default function FloorSelector({
@@ -27,7 +27,7 @@ export default function FloorSelector({
             <Button
               variant={selectedFloor === floor.id ? "default" : "outline"}
               className="w-full justify-start"
-              onClick={() => onSelectFloor(floor.id as number)}
+              onClick={() => onSelectFloor(floor.id as string)}
             >
               {floor.name}
             </Button>
@@ -39,7 +39,7 @@ export default function FloorSelector({
                     variant={selectedRoom  === room.id ? "default" : "outline"}
                     size="sm"
                     className="w-full justify-start"
-                    onClick={() => onSelectRoom(room.id as number)}
+                    onClick={() => onSelectRoom(room.id ?? '')}
                   >
                     {room.name}
                   </Button>

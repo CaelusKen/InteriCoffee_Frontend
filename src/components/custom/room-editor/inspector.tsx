@@ -7,11 +7,11 @@ import { Furniture, TransformUpdate } from '@/types/room-editor'
 import { Trash2, Edit2 } from 'lucide-react'
 
 interface InspectorProps {
-  selectedItem: number | null;
+  selectedItem: string | null;
   furniture: Furniture[];
   onUpdateTransform: (update: TransformUpdate) => void;
-  onDeleteItem: (id: number) => void;
-  onRename: (id: number, newName: string) => void;
+  onDeleteItem: (id: string) => void;
+  onRename: (id: string, newName: string) => void;
 }
 
 export default function Inspector({ selectedItem, furniture, onUpdateTransform, onDeleteItem, onRename }: InspectorProps) {

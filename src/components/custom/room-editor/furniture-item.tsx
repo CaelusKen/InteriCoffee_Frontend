@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 interface FurnitureItemProps extends Furniture {
   onSelect: (event: THREE.Event) => void;
   isSelected: boolean;
-  onUpdateTransform: (update: { id: number; type: 'position' | 'rotation' | 'scale'; value: [number, number, number] }) => void;
+  onUpdateTransform: (update: { id: string; type: 'position' | 'rotation' | 'scale'; value: [number, number, number] }) => void;
   roomDimensions: { width: number; length: number; height: number };
 }
 
