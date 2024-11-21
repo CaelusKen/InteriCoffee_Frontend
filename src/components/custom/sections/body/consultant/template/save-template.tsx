@@ -16,10 +16,6 @@ import { Badge } from "@/components/ui/badge"
 import { X, Plus } from 'lucide-react'
 import { Room, Furniture, MainCategory, SubCategory, TemplateData, Floor } from '@/types/room-editor'
 
-const MAIN_CATEGORIES: MainCategory[] = [
-  "Minimalist", "Vintage", "Modern", "Industrial", "Scandinavian", "Bohemian", "Contemporary", "Traditional"
-];
-
 export default function ConsultantSaveTemplatePage() {
   
 
