@@ -11,8 +11,8 @@ import CustomTransformControls from './transform-controls'
 interface SceneContentProps {
   room: Room
   furniture: Furniture[]
-  selectedItem: number | null
-  onSelectItem: (id: number | null) => void
+  selectedItem: string | null
+  onSelectItem: (id: string | null) => void
   onUpdateTransform: (update: TransformUpdate) => void
   transformMode: 'translate' | 'rotate' | 'scale'
 }

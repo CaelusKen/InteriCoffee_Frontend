@@ -68,11 +68,11 @@ const fetchProducts = async (): Promise<
 export default function RoomEditor() {
   const [floors, updateFloors, undo, redo] = useUndoRedo<Floor[]>([
     {
-      id: 1,
+      id: "1",
       name: "Ground Floor",
       rooms: [
         {
-          id: 1,
+          id: "1",
           name: "Main Room",
           width: 8,
           length: 10,
@@ -82,19 +82,20 @@ export default function RoomEditor() {
       ],
     },
   ]);
-  const [selectedFloor, setSelectedFloor] = useState<number>(1);
-  const [selectedRoom, setSelectedRoom] = useState<number>(1);
-  const [selectedItem, setSelectedItem] = useState<number | null>(null);
+  const [selectedFloor, setSelectedFloor] = useState<string>('1');
+  const [selectedRoom, setSelectedRoom] = useState<string>("1");
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [transformMode, setTransformMode] = useState<
     "translate" | "rotate" | "scale"
   >("translate");
   const [isRoomDialogOpen, setIsRoomDialogOpen] = useState(false);
   const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
+  const [pinnedFurniture, setPinnedFurniture] = useState<RoomEditorTypes.Furniture[]>([]);
   const router = useRouter();
 
   const getCurrentRoom = useCallback(() => {
     const floor = floors.find((f) => f.id === selectedFloor);
-    return floor?.rooms?.find((r) => r.id === selectedRoom);
+    return floor?.rooms?.find((r) => r.id === selectedRoom.toString());
   }, [floors, selectedFloor, selectedRoom]);
 
   const getCurrentFurniture = useCallback(() => {
@@ -127,7 +128,7 @@ export default function RoomEditor() {
 
   const addFurniture = (model: string, category: ProductCategory["id"][]) => {
     const newItem: RoomEditorTypes.Furniture = {
-      id: Date.now(),
+      id: Date.now().toString(),
       name: `Furniture ${getCurrentFurniture().length + 1}`,
       model: model,
       position: [0, 0, 0],
@@ -142,7 +143,7 @@ export default function RoomEditor() {
           ? {
               ...floor,
               rooms: floor.rooms?.map((room) =>
-                room.id === selectedRoom
+                room.id === selectedRoom.toString()
                   ? { ...room, furniture: [...room.furniture, newItem] }
                   : room
               ),
@@ -159,11 +160,11 @@ export default function RoomEditor() {
           ? {
               ...floor,
               rooms: floor.rooms?.map((room) =>
-                room.id === selectedRoom
+                room.id === selectedRoom.toString()
                   ? {
                       ...room,
                       furniture: room.furniture.map((item) =>
-                        item.id === id
+                        item.id === id.toString()
                           ? {
                               ...item,
                               [type]:
@@ -186,18 +187,18 @@ export default function RoomEditor() {
     );
   };
 
-  const toggleVisibility = (id: number) => {
+  const toggleVisibility = (id: string) => {
     updateFloors(
       floors.map((floor) =>
         floor.id === selectedFloor
           ? {
               ...floor,
               rooms: floor.rooms?.map((room) =>
-                room.id === selectedRoom
+                room.id === selectedRoom.toString()
                   ? {
                       ...room,
                       furniture: room.furniture.map((item) =>
-                        item.id === id
+                        item.id === id.toString()
                           ? { ...item, visible: !item.visible }
                           : item
                       ),
@@ -210,34 +211,34 @@ export default function RoomEditor() {
     );
   };
 
-  const handleSelectItem = (id: number | null) => {
+  const handleSelectItem = (id: string | null) => {
     setSelectedItem(id);
   };
 
-  const duplicateItem = (id: number) => {
+  const duplicateItem = (id: string) => {
     updateFloors(
       floors.map((floor) =>
         floor.id === selectedFloor
           ? {
               ...floor,
               rooms: floor.rooms?.map((room) =>
-                room.id === selectedRoom
+                room.id === selectedRoom.toString()
                   ? {
                       ...room,
                       furniture: [
                         ...room.furniture,
                         {
-                          ...room.furniture.find((item) => item.id === id)!,
-                          id: Date.now(),
+                          ...room.furniture.find((item) => item.id === id.toString())!,
+                          id: Date.now().toLocaleString(),
                           name: `${
-                            room.furniture.find((item) => item.id === id)!.name
+                            room.furniture.find((item) => item.id === id.toString())!.name
                           } (Copy)`,
                           position: [
-                            room.furniture.find((item) => item.id === id)!
+                            room.furniture.find((item) => item.id === id.toString())!
                               .position[0] + 0.5,
-                            room.furniture.find((item) => item.id === id)!
+                            room.furniture.find((item) => item.id === id.toString())!
                               .position[1],
-                            room.furniture.find((item) => item.id === id)!
+                            room.furniture.find((item) => item.id === id.toString())!
                               .position[2] + 0.5,
                           ],
                         },
@@ -251,18 +252,18 @@ export default function RoomEditor() {
     );
   };
 
-  const deleteItem = (id: number) => {
+  const deleteItem = (id: string) => {
     updateFloors(
       floors.map((floor) =>
         floor.id === selectedFloor
           ? {
               ...floor,
               rooms: floor.rooms?.map((room) =>
-                room.id === selectedRoom
+                room.id === selectedRoom.toString()
                   ? {
                       ...room,
                       furniture: room.furniture.filter(
-                        (item) => item.id !== id
+                        (item) => item.id.toString() !== id.toString()
                       ),
                     }
                   : room
@@ -283,7 +284,7 @@ export default function RoomEditor() {
           ? {
               ...floor,
               rooms: floor.rooms?.map((room) =>
-                room.id === selectedRoom ? { ...room, furniture: [] } : room
+                room.id === selectedRoom.toString() ? { ...room, furniture: [] } : room
               ),
             }
           : floor
@@ -325,19 +326,19 @@ export default function RoomEditor() {
       // Convert frontend template back to RoomEditor types
       const roomEditorTemplate: RoomEditorTypes.Design = {
         id: frontendTemplate.id,
-        createdAt: frontendTemplate.createdDate.toISOString(),
-        updatedAt: frontendTemplate.updateDate.toISOString(),
+        createdAt: frontendTemplate.createdDate,
+        updatedAt: frontendTemplate.updateDate,
         floors: frontendTemplate.floors.map((floor) => ({
           name: floor.name,
           rooms:
             floor.rooms?.map((room, index) => ({
-              id: index,
+              id: index.toString(),
               name: room.name,
               width: room.width,
               length: room.length,
               height: room.height,
               furniture: room.furnitures.map((furniture) => ({
-                id: parseInt(furniture.id),
+                id: furniture.id,
                 name: furniture.name,
                 model: furniture.model,
                 position: furniture.position as [number, number, number],
@@ -349,19 +350,19 @@ export default function RoomEditor() {
             ),
             })) || [],
         })),
-        type: frontendTemplate.type as "Template" | "Design",
+        type: frontendTemplate.type as "Template" | "Sketch",
       };
 
-      if (roomEditorTemplate.type === "Template") {
+      if (roomEditorTemplate.type === "Sketch") {
         // Pin the furniture items featured in the template
         const pinnedFurniture = products
           .filter((product) =>
-            frontendTemplate.floors[0]?.rooms?.[0]?.furnitures.some(
+            roomEditorTemplate.floors[0]?.rooms?.[0]?.furniture.some(
               (f) => f.id === product.id
             )
           )
           .map((product) => ({
-            id: Date.now() + Math.random(),
+            id: product.id,
             name: product.name,
             model: product.modelTextureUrl,
             position: [0, 0, 0] as [number, number, number],
@@ -373,11 +374,11 @@ export default function RoomEditor() {
 
         updateFloors([
           {
-            id: 1,
+            id: "1",
             name: "Ground Floor",
             rooms: [
               {
-                id: 1,
+                id: "1",
                 name: "Main Room",
                 width: 8,
                 length: 10,
@@ -405,7 +406,7 @@ export default function RoomEditor() {
           ? {
               ...floor,
               rooms: floor.rooms?.map((room) =>
-                room.id === selectedRoom
+                room.id === selectedRoom.toString()
                   ? {
                       ...room,
                       ...newRoom,
@@ -444,7 +445,7 @@ export default function RoomEditor() {
               rooms: [
                 ...(floor.rooms || []),
                 {
-                  id: Date.now(),
+                  id: Date.now().toLocaleString(),
                   name: `Room ${(floor.rooms?.length || 0) + 1}`,
                   width: 5,
                   length: 5,
@@ -458,18 +459,18 @@ export default function RoomEditor() {
     );
   };
 
-  const renameItem = (id: number, newName: string) => {
+  const renameItem = (id: string, newName: string) => {
     updateFloors(
       floors.map((floor) =>
         floor.id === selectedFloor
           ? {
               ...floor,
               rooms: floor.rooms?.map((room) =>
-                room.id === selectedRoom
+                room.id === selectedRoom.toString()
                   ? {
                       ...room,
                       furniture: room.furniture.map((item) =>
-                        item.id === id ? { ...item, name: newName } : item
+                        item.id === id.toString() ? { ...item, name: newName } : item
                       ),
                     }
                   : room
@@ -507,13 +508,14 @@ export default function RoomEditor() {
         onAddFloor={addFloor}
         onAddRoom={addRoom}
         templates={templates}
+        pinnedFurniture={pinnedFurniture}
       />
       <div className="flex-1 flex">
         <div className="w-64 bg-background border-r">
           <FloorSelector
             floors={floors}
             selectedFloor={selectedFloor}
-            selectedRoom={selectedRoom}
+            selectedRoom={selectedRoom.toString()}
             onSelectFloor={setSelectedFloor}
             onSelectRoom={setSelectedRoom}
           />
@@ -536,7 +538,7 @@ export default function RoomEditor() {
                     width: 0,
                     length: 0,
                     height: 0,
-                    id: 0,
+                    id: "0",
                     name: "",
                     furniture: [],
                   }
@@ -606,7 +608,7 @@ export default function RoomEditor() {
             width: 0,
             length: 0,
             height: 0,
-            id: 0,
+            id: "0",
             name: "",
             furniture: [],
           }

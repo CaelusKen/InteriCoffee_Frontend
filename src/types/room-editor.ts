@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 
 export interface Furniture {
-    id: number;
+    id: string;
     name: string;
     model: string;
     position: [number, number, number];
@@ -27,7 +27,7 @@ export interface FurnitureWithRef extends Furniture {
 }
 
 export interface Room {
-    id?: number;
+    id?: string;
     name: string;
     width: number;
     length: number;
@@ -36,7 +36,7 @@ export interface Room {
 }
 
 export interface Floor {
-    id?: number | string;
+    id?: string | number;
     name: string;
     rooms?: Room[];
 }
@@ -59,7 +59,7 @@ export interface MenuItem {
   }
 
 export interface TransformUpdate {
-    id: number;
+    id: string;
     type: 'position' | 'rotation' | 'scale';
     value: [number, number, number];
 }
@@ -82,8 +82,8 @@ export interface Design {
     id: string
     username?: string;
     role?: string;
-    createdAt: string
-    updatedAt: string
+    createdAt: Date
+    updatedAt: Date
     floors: Floor[]
-    type: 'Template' | 'Design'
+    type: 'Template' | 'Sketch'
   }
