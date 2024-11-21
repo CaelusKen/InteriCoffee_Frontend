@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CalendarDays, Mail, Phone, MessageSquare, ShoppingBag, Pencil } from "lucide-react"
+import { CalendarDays, Mail, Phone, MessageSquare, ShoppingBag, Pencil, Component, MessageSquareText } from "lucide-react"
 import { ApiResponse, PaginatedResponse } from "@/types/api"
 import { Account, Order } from "@/types/frontend/entities"
 import { api } from "@/service/api"
@@ -117,29 +117,6 @@ export default function CustomerProfilePage() {
           </Card>
         </div>
         <div className="md:w-2/3">
-          {/* <Card>
-            <CardHeader>
-              <CardTitle>Recent Activities</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {customer.recentActivities.map((activity, index) => (
-                  <div key={index} className="flex items-center space-x-4">
-                    <Badge variant="secondary" className="p-2">
-                      {getActivityIcon(activity.type)}
-                    </Badge>
-                    <div>
-                      <p className="text-sm font-medium">{activity.content}</p>
-                      <p className="text-sm text-muted-foreground">
-                        <CalendarDays className="inline mr-1 h-3 w-3" />
-                        {activity.date}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card> */}
           <Card>
             <CardHeader>
               <div className="flex justify-between">
@@ -177,12 +154,30 @@ export default function CustomerProfilePage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         <Card>
           <CardHeader>
-            Recent Designs
+            <div className="flex justify-between">
+              <p>Recent Designs</p>
+              <div className="flex gap-4">
+                <Button>View all designs</Button>
+                <Button className="bg-success-700 dark:bg-success-600 hover:bg-success-600 dark:hover:bg-success-700">
+                  <Component size={24} />
+                  Create design
+                </Button>
+              </div>
+            </div>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader>
-            Recent Chat
+            <div className="flex justify-between">
+              <p>Recent Chat</p>
+              <div className="flex gap-4">
+                <Button>View all chats</Button>
+                <Button className="bg-success-700 dark:bg-success-600 hover:bg-success-600 dark:hover:bg-success-700">
+                  <MessageSquareText size={24}/>
+                  Start chatting
+                </Button>
+              </div>
+            </div>
           </CardHeader>
         </Card>
       </div>
