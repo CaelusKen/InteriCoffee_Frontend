@@ -27,7 +27,7 @@ export interface FurnitureWithRef extends Furniture {
 }
 
 export interface Room {
-    id: number;
+    id?: number;
     name: string;
     width: number;
     length: number;
@@ -36,7 +36,7 @@ export interface Room {
 }
 
 export interface Floor {
-    id: number | string;
+    id?: number | string;
     name: string;
     rooms?: Room[];
 }

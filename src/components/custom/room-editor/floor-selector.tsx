@@ -39,7 +39,7 @@ export default function FloorSelector({
                     variant={selectedRoom  === room.id ? "default" : "outline"}
                     size="sm"
                     className="w-full justify-start"
-                    onClick={() => onSelectRoom(room.id)}
+                    onClick={() => onSelectRoom(room.id as number)}
                   >
                     {room.name}
                   </Button>

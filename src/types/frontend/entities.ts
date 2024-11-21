@@ -55,13 +55,12 @@ export interface Floor {
 }
 
 export interface Room {
-    _id:              string;
     name:             string;
     width:            number;
     height:           number;
     length:           number;
     furnitures:       Furniture[];
-    "non-furnitures": Furniture[];
+    nonFurnitures?:    Furniture[];
 }
 
 export interface Furniture {
