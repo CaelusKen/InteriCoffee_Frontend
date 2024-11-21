@@ -10,7 +10,7 @@ import LoadingPage from '@/components/custom/loading/loading'
 import { useRouter } from 'next/navigation'
 
 const fetchTemplates = async() : Promise<ApiResponse<PaginatedResponse<Template>>> => {
-  return api.getPaginated('templates')
+  return api.getPaginated<Template>('templates')
 }
 
 export default function TemplateGallery() {
