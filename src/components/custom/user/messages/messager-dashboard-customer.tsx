@@ -40,7 +40,7 @@ export default function MessengerDashboard() {
     })
 
     const account = accountQuery.data?.data ? mapBackendToFrontend<Account>(accountQuery.data.data, 'account') : null
-    const chatSessions = chatSessionQuery.data?.data?.items.filter((chatSession) => chatSession.customerId === account?.merchantId) ?? []
+    const chatSessions = chatSessionQuery.data?.data?.items.filter((chatSession) => chatSession.customerId === account?.id) ?? []
 
     const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null)
     const [newMessage, setNewMessage] = useState('')
@@ -62,7 +62,7 @@ export default function MessengerDashboard() {
     return (
         <div className="container mx-auto p-10 h-screen flex flex-col bg-[#F5E6D3]">
             <h1 className="text-3xl font-bold mb-4 text-[#4A3728] flex items-center">
-                <Coffee className="mr-2" /> Coffee Chat - Merchant Edition
+                <Coffee className="mr-2" /> Coffee Chat
             </h1>
             
             <div className="flex-grow flex overflow-hidden">

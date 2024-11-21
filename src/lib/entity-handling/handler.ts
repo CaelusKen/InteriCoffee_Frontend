@@ -362,6 +362,10 @@ function normalizeEntityType(entityType: string): string {
         categorie: 'category',
     };
 
+    if (entityType.toLowerCase() === 'chatsession' || entityType.toLowerCase() === 'chat-session') {
+        return 'chatSession';
+    }
+
     // Split the string into words
     const words = entityType.split(/[-\s]+/);
 

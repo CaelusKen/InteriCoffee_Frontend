@@ -100,10 +100,6 @@ export default function TemplateCard({
                 <Bookmark className="w-4 h-4 mr-2" />
                 <span className="whitespace-nowrap">Save To Collection</span>
               </Button>
-              <Button variant="secondary" size="sm" className="w-full sm:w-auto" onClick={() => router.push(`/templates/${template.id}`)}>
-                <Eye className="w-4 h-4 mr-2" />
-                <span className="whitespace-nowrap">View Details</span>
-              </Button>
             </>
           )
         }
