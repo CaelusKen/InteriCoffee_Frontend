@@ -54,7 +54,6 @@ export interface BackendFloor {
 }
 
 export interface BackendRoom {
-    _id:              string;
     name:             string;
     width:            number;
     height:           number;

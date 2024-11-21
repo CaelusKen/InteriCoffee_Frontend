@@ -8,20 +8,28 @@ import { Account, ChatSession } from '@/types/frontend/entities'
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import React, { useState } from 'react'
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, Send, Coffee } from 'lucide-react'
+import { Search, Send, Coffee, MoreVertical } from 'lucide-react'
 
 const fetchAccountByEmail = async(email: string) : Promise<ApiResponse<Account>> => {
     return api.get<Account>(`accounts/${email}/info`)
 }
 
+const fetchAccountById = async(id: string, accessToken: string) : Promise<ApiResponse<Account>> => {
+  return api.getById<Account>(`accounts`, id, accessToken)
+}
+
 const fetchChatSessions = async(accessToken: string): Promise<ApiResponse<PaginatedResponse<ChatSession>>> => {
     return api.getPaginated<ChatSession>(`chat-sessions`, undefined, accessToken)
-}   
+}
+
+const fetchChatSessionByMerchantId = async(merchantId: string, accessToken: string): Promise<ApiResponse<ChatSession[]>> => {
+    return api.get<ChatSession[]>(`chat-sessions/merchant/${ merchantId }`, undefined , accessToken)
+  }
 
 export default function MessengerDashboard() {
     const { data: session } = useSession()
@@ -33,14 +41,27 @@ export default function MessengerDashboard() {
         enabled: !!session?.user?.email,
     })
 
+    
+    const account = accountQuery.data?.data ? mapBackendToFrontend<Account>(accountQuery.data.data, 'account') : null
     const chatSessionQuery = useQuery({
         queryKey: ['chatSessions'],
-        queryFn: () => fetchChatSessions(accessToken ?? ''),
+        queryFn: () => fetchChatSessionByMerchantId(account?.merchantId ?? '', accessToken ?? ''),
         enabled: !!accessToken,
     })
 
-    const account = accountQuery.data?.data ? mapBackendToFrontend<Account>(accountQuery.data.data, 'account') : null
-    const chatSessions = chatSessionQuery.data?.data?.items.filter((chatSession) => chatSession.customerId === account?.merchantId) ?? []
+    const formatDate = (date: Date | string ) => {
+      const d = new Date(date)
+      return d instanceof Date && !isNaN(d.getTime()) ? d.toLocaleString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit', 
+        minute: '2-digit'
+      }) : "Invalid Date"
+    }
+
+    //This is a list of chat sessions
+    const chatSessions: Array<ChatSession> = chatSessionQuery.data?.data ?? []
 
     const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null)
     const [newMessage, setNewMessage] = useState('')
@@ -93,10 +114,10 @@ export default function MessengerDashboard() {
                               >
                                 <div className="flex items-center space-x-2">
                                   <Avatar className="w-10 h-10 border-2 border-[#8B5E3C]">
-                                    <AvatarFallback>{session.id.slice(-2)}</AvatarFallback>
+                                    <AvatarFallback>{session.id?.slice(-2) || "MC"}</AvatarFallback>
                                   </Avatar>
                                   <div>
-                                    <p className="font-semibold text-[#4A3728]">Session {session.id.slice(-4)}</p>
+                                    <p className="font-semibold text-[#4A3728]">Session Chat</p>
                                     <p className="text-sm text-[#6F4E37] truncate">
                                       {session.messages[session.messages.length - 1]?.message || 'No messages'}
                                     </p>
@@ -119,6 +140,25 @@ export default function MessengerDashboard() {
 
                 {/* Main Chat Area */}
                 <Card className="flex-grow overflow-hidden flex flex-col bg-[#F5E6D3] border-[#8B5E3C]">
+                    {selectedSession && (
+                        <CardHeader className="p-4 border-b border-[#8B5E3C] flex flex-row items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                                <Avatar className="w-10 h-10 border-2 border-[#8B5E3C]">
+                                    <AvatarFallback>{selectedSession.id?.slice(-2) || "MC"}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <p className="font-semibold text-[#4A3728]">Session Chat</p>
+                                    <p className="text-sm text-[#6F4E37]">
+                                        {selectedSession.messages.length} messages
+                                    </p>
+                                </div>
+                            </div>
+                            <Button variant="ghost" size="icon" className="text-[#8B5E3C] hover:text-[#6F4E37] hover:bg-[#E6D2BA]">
+                                <MoreVertical className="h-5 w-5" />
+                                <span className="sr-only">More options</span>
+                            </Button>
+                        </CardHeader>
+                    )}
                     <CardContent className="p-4 flex-grow flex flex-col">
                       {chatSessions.length > 0 ? (
                         selectedSession ? (
@@ -128,9 +168,6 @@ export default function MessengerDashboard() {
                                 <div key={index} className={`mb-4 flex ${message.sender === account?.userName ? 'justify-end' : 'justify-start'}`}>
                                   <div className={`max-w-[70%] ${message.sender === account?.userName ? 'bg-[#8B5E3C] text-white' : 'bg-[#D2B48C] text-[#4A3728]'} rounded-lg p-3 relative`}>
                                     <p>{message.message}</p>
-                                    <span className="text-xs opacity-70 block mt-1">
-                                      {new Date(message.timeStamp).toLocaleString()}
-                                    </span>
                                     <div 
                                       className={`absolute bottom-0 ${message.sender === account?.userName ? '-right-2 border-l-[#8B5E3C]' : '-left-2 border-r-[#D2B48C]'} w-4 h-4 border-8 border-t-transparent border-b-transparent`}
                                     ></div>
@@ -147,6 +184,7 @@ export default function MessengerDashboard() {
                               />
                               <Button onClick={handleSendMessage} className="bg-[#8B5E3C] hover:bg-[#6F4E37]">
                                 <Send className="w-4 h-4" />
+                                <span className="sr-only">Send message</span>
                               </Button>
                             </div>
                           </>

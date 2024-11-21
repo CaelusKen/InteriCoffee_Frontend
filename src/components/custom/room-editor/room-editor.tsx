@@ -328,11 +328,10 @@ export default function RoomEditor() {
         createdAt: frontendTemplate.createdDate.toISOString(),
         updatedAt: frontendTemplate.updateDate.toISOString(),
         floors: frontendTemplate.floors.map((floor) => ({
-          id: parseInt(floor.id),
           name: floor.name,
           rooms:
-            floor.rooms?.map((room) => ({
-              id: parseInt(room._id),
+            floor.rooms?.map((room, index) => ({
+              id: index,
               name: room.name,
               width: room.width,
               length: room.length,
@@ -346,7 +345,8 @@ export default function RoomEditor() {
                 scale: furniture.scale as [number, number, number],
                 visible: furniture.visible,
                 category: furniture.category || [],
-              })),
+              }),
+            ),
             })) || [],
         })),
         type: frontendTemplate.type as "Template" | "Design",

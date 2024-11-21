@@ -105,13 +105,12 @@ export function mapBackendRoomToFrontend(backendRoom: BackEndTypes.BackendRoom):
     }
 
     return {
-        _id: backendRoom._id,
         name: backendRoom.name,
         width: backendRoom.width,
         height: backendRoom.height,
         length: backendRoom.length,
         furnitures: backendRoom.furnitures.map(mapBackendFurnitureToFrontend),
-        "non-furnitures": backendRoom["non-furnitures"].map(mapBackendFurnitureToFrontend),
+        nonFurnitures: backendRoom["non-furnitures"].map(mapBackendFurnitureToFrontend),
     };
 }
 
