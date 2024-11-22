@@ -25,6 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { useRouter } from "next/navigation"
 
 interface Activity {
   type: "message" | "purchase" | "design"
@@ -50,6 +51,8 @@ export default function CustomerProfilePage() {
   const [pageSize, setPageSize] = useState(10)
 
   const { data: session } = useSession()
+
+  const router = useRouter()
   
   const accountQuery = useQuery({
     queryKey: ['account', session?.user.email],
@@ -65,8 +68,6 @@ export default function CustomerProfilePage() {
   const account = accountQuery.data?.data
 
   const orders = ordersQuery.data?.data?.items ?? []
-
-  console.log(orders)
 
   const accountOrders = orders
     .filter((order) => order.accountId === account?.id)
@@ -93,6 +94,14 @@ export default function CustomerProfilePage() {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>Profile</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button className="bg-warning-500 hover:bg-warning-600">Edit profile</Button>
+                  <Button 
+                    onClick={() => router.push(`/customer/profile/merchant-registration`)}
+                    className="bg-success-700 dark:bg-success-600 hover:bg-success-600 dark:hover:bg-success-700">
+                    Register as Merchant
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>

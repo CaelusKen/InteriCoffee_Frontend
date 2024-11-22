@@ -15,6 +15,8 @@ interface SceneContentProps {
   onSelectItem: (id: string | null) => void
   onUpdateTransform: (update: TransformUpdate) => void
   transformMode: 'translate' | 'rotate' | 'scale'
+  environment: string
+  onEnvironmentChange: (newEnvironment: string) => void
 }
 
 export default function SceneContent({
@@ -24,6 +26,8 @@ export default function SceneContent({
   onSelectItem,
   onUpdateTransform,
   transformMode,
+  environment,
+  onEnvironmentChange,
 }: SceneContentProps) {
   const { scene, gl } = useThree()
   const [selectedObject, setSelectedObject] = useState<THREE.Object3D | null>(null)
@@ -109,7 +113,7 @@ export default function SceneContent({
       <spotLight position={[0, 10, 0]} angle={0.3} penumbra={1} intensity={1} castShadow />
       <OrbitControls makeDefault />
       <Grid infiniteGrid />
-      <Environment preset="sunset" />
+      <Environment preset={environment as any} />
       <Sky />
       <Stats className="!absolute !bottom-2 !right-2 !left-auto !top-auto" />
     </>

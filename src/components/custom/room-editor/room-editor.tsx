@@ -66,7 +66,7 @@ const fetchProducts = async (): Promise<
 };
 
 export default function RoomEditor() {
-  const [floors, updateFloors, undo, redo] = useUndoRedo<Floor[]>([
+  const [floors, updateFloors, undo, redo, canUndo, canRedo] = useUndoRedo<Floor[]>([
     {
       id: "1",
       name: "Ground Floor",
@@ -85,13 +85,20 @@ export default function RoomEditor() {
   const [selectedFloor, setSelectedFloor] = useState<string>('1');
   const [selectedRoom, setSelectedRoom] = useState<string>("1");
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [environment, setEnvironment] = useState<string>('sunset');
   const [transformMode, setTransformMode] = useState<
     "translate" | "rotate" | "scale"
   >("translate");
   const [isRoomDialogOpen, setIsRoomDialogOpen] = useState(false);
   const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
+  const [isWarningDialogOpen, setIsWarningDialogOpen] = useState(true);
   const [pinnedFurniture, setPinnedFurniture] = useState<RoomEditorTypes.Furniture[]>([]);
   const router = useRouter();
+
+  useEffect(() => {
+    // Show the warning dialog when the component mounts
+    setIsWarningDialogOpen(true);
+  }, []);
 
   const getCurrentRoom = useCallback(() => {
     const floor = floors.find((f) => f.id === selectedFloor);
@@ -294,10 +301,38 @@ export default function RoomEditor() {
     setIsClearDialogOpen(false);
   };
 
+  const handleEnvironmentChange = (newEnvironment: string) => {
+    setEnvironment(newEnvironment);
+  };
+
+  const handleRenameFloor = (floorId: string, newName: string) => {
+    updateFloors(
+      floors.map((floor) =>
+        floor.id === floorId ? { ...floor, name: newName } : floor
+      )
+    );
+  };
+
+  const handleRenameRoom = (floorId: string, roomId: string, newName: string) => {
+    updateFloors(
+      floors.map((floor) =>
+        floor.id === floorId
+          ? {
+              ...floor,
+              rooms: floor.rooms?.map((room) =>
+                room.id === roomId ? { ...room, name: newName } : room
+              ),
+            }
+          : floor
+      )
+    );
+  };
+
   const saveCustomerDesign = async () => {
     const designState = { floors };
     try {
-      await api.post<APIDesign>("designs", designState);
+      const response = await api.post<APIDesign>("designs", designState);
+      console.log("Saved customer design:", response.data);
       alert("Design saved for customer!");
     } catch (error) {
       console.error("Error saving customer design:", error);
@@ -308,7 +343,8 @@ export default function RoomEditor() {
   const saveMerchantTemplate = async () => {
     const templateState = { floors };
     try {
-      await api.post("templates", templateState);
+      const response = await api.post("templates", templateState);
+      console.log("Saved merchant template:", response.data);
       alert("Template saved successfully!");
     } catch (error) {
       console.error("Error saving merchant template:", error);
@@ -500,6 +536,8 @@ export default function RoomEditor() {
         setTransformMode={setTransformMode}
         onUndo={undo}
         onRedo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
         onSaveCustomer={saveCustomerDesign}
         onSaveMerchant={saveMerchantTemplate}
         onLoad={loadTemplate}
@@ -518,6 +556,8 @@ export default function RoomEditor() {
             selectedRoom={selectedRoom.toString()}
             onSelectFloor={setSelectedFloor}
             onSelectRoom={setSelectedRoom}
+            onRenameFloor={handleRenameFloor}
+            onRenameRoom={handleRenameRoom}
           />
           <Hierarchy
             furniture={getCurrentFurniture()}
@@ -530,7 +570,7 @@ export default function RoomEditor() {
           />
         </div>
         <div className="flex-1">
-          <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
+        <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
             <Suspense fallback={null}>
               <SceneContent
                 room={
@@ -548,6 +588,8 @@ export default function RoomEditor() {
                 onSelectItem={handleSelectItem}
                 onUpdateTransform={updateTransform}
                 transformMode={transformMode}
+                environment={environment}
+                onEnvironmentChange={handleEnvironmentChange}
               />
             </Suspense>
           </Canvas>
@@ -583,7 +625,7 @@ export default function RoomEditor() {
                 </div>
                 <div>
                   <Label>Environment</Label>
-                  <Select>
+                  <Select onValueChange={handleEnvironmentChange} value={environment}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select environment" />
                     </SelectTrigger>
@@ -627,6 +669,21 @@ export default function RoomEditor() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={clearAllFurniture}>
               Clear All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={isWarningDialogOpen} onOpenChange={setIsWarningDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Beta Version Warning</AlertDialogTitle>
+            <AlertDialogDescription>
+              This is a beta version of the Room-editor. Many features are meant to be upgraded and enhanced in the future. Please visit our Github to raise issues or provide feedback.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setIsWarningDialogOpen(false)}>
+              Understood
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
