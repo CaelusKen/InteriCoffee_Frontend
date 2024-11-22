@@ -20,13 +20,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { useAccessToken } from '@/hooks/use-access-token'
 
 const fetchStyleById = async(id: string) : Promise<ApiResponse<Style>> => {
   return api.getById<Style>('styles', id)
 }
 
-const deleteTemplate = async(id: string) : Promise<ApiResponse<Style>> => {
-  return api.delete<Style>(`styles/${id}`)
+const deleteTemplate = async(id: string, accessToken : string) : Promise<ApiResponse<Template>> => {
+  return api.delete<Template>(`templates/${id}`, accessToken)
 }
 
 export default function ConsultantTemplateCard(data: Template) {
@@ -35,6 +36,8 @@ export default function ConsultantTemplateCard(data: Template) {
   const [styleName, setStyleName] = useState<string | null>('')
   const [isLoading, setIsLoading] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+
+  const accessToken = useAccessToken()
   
   const { toast } = useToast()
   const router = useRouter()
@@ -68,7 +71,7 @@ export default function ConsultantTemplateCard(data: Template) {
     setShowDeleteDialog(false)
     setIsLoading(true)
     try {
-      const res = await deleteTemplate(data.id)
+      const res = await deleteTemplate(data.id, accessToken ?? '')
       if (res.status === 200) {
         toast({
           title: 'Delete Template Successfully',
