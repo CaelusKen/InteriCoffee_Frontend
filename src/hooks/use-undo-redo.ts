@@ -1,33 +1,34 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 
 export function useUndoRedo<T>(initialState: T) {
   const [state, setState] = useState<T>(initialState)
-  const [undoStack, setUndoStack] = useState<T[]>([])
-  const [redoStack, setRedoStack] = useState<T[]>([])
+  const undoStack = useRef<T[]>([])
+  const redoStack = useRef<T[]>([])
 
   const undo = useCallback(() => {
-    if (undoStack.length > 0) {
-      const prevState = undoStack[undoStack.length - 1]
-      setUndoStack(undoStack.slice(0, -1))
-      setRedoStack([state, ...redoStack])
+    if (undoStack.current.length > 0) {
+      const prevState = undoStack.current.pop()!
+      redoStack.current.push(state)
       setState(prevState)
     }
-  }, [state, undoStack, redoStack])
+  }, [state])
 
   const redo = useCallback(() => {
-    if (redoStack.length > 0) {
-      const nextState = redoStack[0]
-      setRedoStack(redoStack.slice(1))
-      setUndoStack([...undoStack, state])
+    if (redoStack.current.length > 0) {
+      const nextState = redoStack.current.pop()!
+      undoStack.current.push(state)
       setState(nextState)
     }
-  }, [state, undoStack, redoStack])
+  }, [state])
 
   const update = useCallback((newState: T) => {
-    setUndoStack([...undoStack, state])
-    setRedoStack([])
+    undoStack.current.push(state)
+    redoStack.current = []
     setState(newState)
-  }, [state, undoStack])
+  }, [state])
 
-  return [state, update, undo, redo] as const
+  const canUndo = undoStack.current.length > 0
+  const canRedo = redoStack.current.length > 0
+
+  return [state, update, undo, redo, canUndo, canRedo] as const
 }

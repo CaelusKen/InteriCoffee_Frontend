@@ -39,6 +39,8 @@ interface ToolbarProps {
   setTransformMode: (mode: "translate" | "rotate" | "scale") => void
   onUndo: () => void
   onRedo: () => void
+  canUndo: boolean
+  canRedo: boolean
   onSaveCustomer: () => void
   onSaveMerchant: () => void
   onLoad: (templateId: string) => void
@@ -72,6 +74,8 @@ export default function Toolbar({
   setTransformMode,
   onUndo,
   onRedo,
+  canUndo,
+  canRedo,
   onSaveCustomer,
   onSaveMerchant,
   onLoad,
@@ -232,19 +236,11 @@ export default function Toolbar({
         </Button>
       </div>
       <div className="space-x-2 flex flex-wrap items-center">
-        <Button
-          onClick={onUndo}
-          size="icon"
-          className="hover:bg-primary-600 hover:text-white"
-        >
-          <Undo className="w-4 h-4" />
+        <Button variant="outline" size="icon" onClick={onUndo} disabled={!canUndo}>
+          <Undo className="h-4 w-4" />
         </Button>
-        <Button
-          onClick={onRedo}
-          size="icon"
-          className="hover:bg-primary-600 hover:text-white"
-        >
-          <Redo className="w-4 h-4" />
+        <Button variant="outline" size="icon" onClick={onRedo} disabled={!canRedo}>
+          <Redo className="h-4 w-4" />
         </Button>
         {session?.user.role === "CUSTOMER" && (
           <Button
@@ -329,11 +325,6 @@ export default function Toolbar({
                   onClick={() => onAddFurniture(item.model, item.category)}
                   className="p-2 h-auto flex flex-col items-center justify-start hover:bg-secondary-400"
                 >
-                  <img
-                    src={item.model}
-                    alt={item.name}
-                    className="w-12 h-12 object-cover mb-1 rounded-md"
-                  />
                   <span className="text-xs text-center">{item.name}</span>
                 </Button>
               ))}
