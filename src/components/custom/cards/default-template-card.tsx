@@ -11,13 +11,14 @@ import { useEffect, useState } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
+import { useAccessToken } from "@/hooks/use-access-token"
 
-const fetchStyleNameById = async(id: string) : Promise<ApiResponse<Style>> => {
-  return api.getById<Style>('styles', id)
+const fetchStyleNameById = async(id: string, accessToken: string) : Promise<ApiResponse<Style>> => {
+  return api.getById<Style>('styles', id, accessToken)
 }
 
-const fetchMerchantById = async(id: string): Promise<ApiResponse<Merchant>> => {
-  return api.getById('merchants', id)
+const fetchMerchantById = async(id: string, accessToken: string): Promise<ApiResponse<Merchant>> => {
+  return api.getById('merchants', id, accessToken)
 }
 
 interface TemplateCardProps {
@@ -29,6 +30,8 @@ export default function TemplateCard({
   template,
   onSave,
 }: TemplateCardProps) {
+  const accessToken = useAccessToken()
+
   const [styleName, setStyleName] = useState<string | null>(null)
 
   const [merchant, setMerchant] = useState<string | null>(null)
@@ -38,7 +41,7 @@ export default function TemplateCard({
   const { data: session } = useSession()
 
   const getMerchantById = (id: string) => {
-    fetchMerchantById(id).then((res) => {
+    fetchMerchantById(id, accessToken ?? '').then((res) => {
       if(res.status === 200) {
         setMerchant(res.data.name)
       }
@@ -48,7 +51,7 @@ export default function TemplateCard({
   }
 
   useEffect(() => {
-     fetchStyleNameById(template.styleId).then((res) => {
+     fetchStyleNameById(template.styleId, accessToken ?? '').then((res) => {
         setStyleName(res.data.name)
      }).catch((err) => {
         toast({

@@ -46,19 +46,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
+import { useAccessToken } from "@/hooks/use-access-token"
 
-const fetchProducts = async (
-  page = 1,
-  pageSize = 20
-): Promise<ApiResponse<PaginatedResponse<Product>>> => {
-  return api.getPaginated<Product>("products", { page, pageSize })
+const fetchProducts = async (accessToken: string): Promise<ApiResponse<PaginatedResponse<Product>>> => {
+  return api.getPaginated<Product>("products", undefined, accessToken)
 }
 
-const fetchCategory = async(
-  page = 1,
-  pageSize = 10
-) : Promise<ApiResponse<PaginatedResponse<ProductCategory>>> => {
-  return api.getPaginated<ProductCategory>('product-categories', { page, pageSize })
+const fetchCategory = async(accessToken: string) : Promise<ApiResponse<PaginatedResponse<ProductCategory>>> => {
+  return api.getPaginated<ProductCategory>('product-categories', undefined, accessToken)
 }
 
 const deleteProduct = async (id: string): Promise<ApiResponse<Product>> => {
@@ -76,14 +71,16 @@ export default function MerchantProductsTable() {
 
   const router = useRouter()
 
+  const accessToken = useAccessToken()
+
   const productsQuery = useQuery({
     queryKey: ["products", page],
-    queryFn: () => fetchProducts(page),
+    queryFn: () => fetchProducts(accessToken ?? ''),
   })
 
   const productCategoriesQuery = useQuery({
     queryKey: ["product-categories", page],
-    queryFn: () => fetchCategory(page)
+    queryFn: () => fetchCategory(accessToken ?? '')
   })
 
   const deleteProductMutation = useMutation({

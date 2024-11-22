@@ -11,15 +11,18 @@ import { ArrowLeft } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { mapBackendToFrontend } from '@/lib/entity-handling/handler'
 import StyleFormBase, { StyleFormData } from './style-form-base'
+import { useAccessToken } from '@/hooks/use-access-token'
 
 const CreateStyleForm = () => {
   const router = useRouter()
   const { toast } = useToast()
 
+  const accessToken = useAccessToken()
+
   const createProductCategoryMutation = useMutation({
      mutationFn: (formData: StyleFormData) => {
       const mappedData = mapFrontendToBackend(formData)
-      return api.post<Style>('styles', mappedData)
+      return api.post<Style>('styles', mappedData, accessToken ?? '')
      },
   })
 

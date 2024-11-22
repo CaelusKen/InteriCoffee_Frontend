@@ -11,32 +11,35 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { FileUpload } from '../../merchant/products/file-upload'
 import { SingleSelectBadge } from './create-template/single-select-badge'
+import { useAccessToken } from '@/hooks/use-access-token'
 
 interface ConsultantEditTemplate {
   id: string
 }
 
-const fetchTemplateById = async(id: string) : Promise<ApiResponse<Template>> => {
-  return api.getById<Template>('templates', id)
+const fetchTemplateById = async(id: string, accessToken: string) : Promise<ApiResponse<Template>> => {
+  return api.getById<Template>('templates', id, accessToken)
 }
 
-const fetchStyles = async(): Promise<ApiResponse<PaginatedResponse<Style>>> => {
-  return api.getPaginated<Style>('styles')
+const fetchStyles = async(accessToken: string): Promise<ApiResponse<PaginatedResponse<Style>>> => {
+  return api.getPaginated<Style>('styles', undefined, accessToken)
 }
 
 const ConsultantEditTemplate = ({id} : ConsultantEditTemplate) => {
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null)
 
+  const accessToken = useAccessToken()
+
   const stylesQuery = useQuery({
     queryKey: ['styles'],
-    queryFn: fetchStyles,
+    queryFn: () => fetchStyles(accessToken ?? ''),
     refetchInterval: 60 * 1000,
     enabled: true
   })
   
   const templateQuery = useQuery({
     queryKey: ['templates', { id }],
-    queryFn: () => fetchTemplateById(id),
+    queryFn: () => fetchTemplateById(id, accessToken ?? ''),
     refetchInterval: 60 * 1000,
     enabled: !!id
   })

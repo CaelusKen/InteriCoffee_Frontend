@@ -9,14 +9,17 @@ import { useToast } from "@/hooks/use-toast"
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import ProductCategoryFormBase, { ProductCategoryFormData } from './product-category-form-base'
+import { useAccessToken } from '@/hooks/use-access-token'
 
 const CreateProductCategory = () => {
   const router = useRouter()
 
+  const accessToken = useAccessToken()
+
   const createProductCategoryMutation = useMutation({
      mutationFn: (formData: ProductCategoryFormData) => {
       const mappedData = mapFrontendToBackend(formData)
-      return api.post<ProductCategory>('product-categories', mappedData)
+      return api.post<ProductCategory>('product-categories', mappedData, accessToken ?? '')
      },
   })
 

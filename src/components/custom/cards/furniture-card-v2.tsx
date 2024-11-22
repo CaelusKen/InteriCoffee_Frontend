@@ -1,9 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState, useRef, useEffect, Suspense } from "react";
 import Slider from "react-slick";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   OrbitControls,
   useGLTF,
@@ -12,11 +11,10 @@ import {
   Environment,
 } from "@react-three/drei";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import * as THREE from "three";
-import { Bookmark, ShoppingCart, Eye } from "lucide-react";
+import { Bookmark, ShoppingCart, Eye } from 'lucide-react';
 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -40,7 +38,6 @@ interface ProductProps {
 function Model({ url }: { url: string }) {
   const { scene } = useGLTF(url);
   const { camera, size } = useThree();
-  
 
   useEffect(() => {
     const box = new THREE.Box3().setFromObject(scene);
@@ -79,11 +76,9 @@ export default function FurnitureProductCard({
 }: ProductProps) {
   const [showModel, setShowModel] = useState(false);
   const sliderRef = useRef<Slider>(null);
-  const { addItem } = useCart()
-  const { toast } = useToast()
-
-  const { data: session } = useSession()
-
+  const { addItem } = useCart();
+  const { toast } = useToast();
+  const { data: session } = useSession();
   const router = useRouter();
 
   const sliderSettings = {
@@ -105,7 +100,6 @@ export default function FurnitureProductCard({
   }, [showModel]);
 
   const handleSaveToCollection = () => {
-    // Implement save to collection functionality
     console.log("Saved to collection:", id);
   };
 
@@ -134,8 +128,7 @@ export default function FurnitureProductCard({
   };
 
   const handleViewDetails = () => {
-    router.push(`/furnitures/${id}`)
-    console.log("Viewing details for:", id);
+    router.push(`/furnitures/${id}`);
   };
 
   return (
@@ -147,7 +140,7 @@ export default function FurnitureProductCard({
           onMouseLeave={() => setShowModel(false)}
         >
           <AnimatePresence>
-            {!showModel && (
+            {!showModel && images && images.length > 0 && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -160,7 +153,7 @@ export default function FurnitureProductCard({
                     <div key={index} className="relative aspect-square">
                       <img
                         src={image}
-                        alt={"Product Image"}
+                        alt={`Product Image ${index + 1}`}
                         className="w-full h-full object-cover"
                         loading="lazy"
                       />
@@ -181,22 +174,25 @@ export default function FurnitureProductCard({
               >
                 <Suspense fallback={<LoadingPage />}>
                   <Canvas>
-                    <PerspectiveCamera makeDefault fov={50} />
+                    <PerspectiveCamera makeDefault position={[0, 0, 5]} fov={50} />
                     <ambientLight intensity={0.5} />
-                    <spotLight
-                      position={[10, 10, 10]}
-                      angle={0.15}
-                      penumbra={1}
+                    <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+                    <Center>
+                      <Model url={modelUrl} />
+                    </Center>
+                    <OrbitControls 
+                      enableZoom={false}
+                      enablePan={false}
+                      minPolarAngle={Math.PI / 4}
+                      maxPolarAngle={Math.PI / 1.5}
                     />
-                    <Model url={modelUrl} />
-                    <OrbitControls enableZoom={false} />
                     <Environment preset="apartment" background blur={0.5} />
                   </Canvas>
                 </Suspense>
               </motion.div>
             )}
           </AnimatePresence>
-          { session?.user.role === "CUSTOMER" && (
+          {session?.user?.role === "CUSTOMER" && (
             <Button
               variant="secondary"
               size="icon"
@@ -215,7 +211,9 @@ export default function FurnitureProductCard({
             <h3 className="text-[16px] font-semibold leading-none">{name}</h3>
             <MerchantInfo merchantId={merchant} />
           </div>
-          <div className="text-lg font-bold">{price.toLocaleString("vi-VN", { style:'currency', currency: 'VND' })}</div>
+          <div className="text-lg font-bold">
+            {price.toLocaleString("vi-VN", { style: 'currency', currency: 'VND' })}
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-2 w-full">
           <Button
@@ -235,3 +233,4 @@ export default function FurnitureProductCard({
     </Card>
   );
 }
+

@@ -8,6 +8,7 @@ import { Account, Product } from "@/types/frontend/entities"
 import { useToast } from "@/hooks/use-toast"
 import { ProductFormBase, ProductFormData } from './product-form-base'
 import { useSession } from 'next-auth/react'
+import { useAccessToken } from '@/hooks/use-access-token'
 
 interface UpdateProductProps {
   productId: string
@@ -17,26 +18,28 @@ export default function UpdateProduct({ productId }: UpdateProductProps) {
   const router = useRouter()
   const { toast } = useToast()
 
+  const accessToken = useAccessToken()
+
   const { data: session, status: sessionStatus } = useSession()
 
   const { data: accountInfo } = useQuery({
     queryKey: ['account', session?.user?.email],
     queryFn: async () => {
       if (!session?.user?.email) throw new Error('No email found in session')
-      return api.get<Account>(`accounts/${encodeURIComponent(session.user.email)}/info`)
+      return api.get<Account>(`accounts/${encodeURIComponent(session.user.email)}/info`, undefined, accessToken ?? '')
     },
     enabled: !!session?.user?.email,
   })
 
   const productQuery = useQuery({
     queryKey: ["product", productId],
-    queryFn: () => api.getById<Product>(`products`, productId),
+    queryFn: () => api.getById<Product>(`products`, productId, accessToken ?? ''),
   })
 
   const updateProductMutation = useMutation({
     mutationFn: (formData: ProductFormData) => {
       const mappedData = mapFrontendToBackend(formData)
-      return api.patch<Product>(`products/${productId}`, mappedData)
+      return api.patch<Product>(`products/${productId}`, mappedData, undefined, accessToken ?? '')
     },
     onSuccess: (data) => {
       toast({

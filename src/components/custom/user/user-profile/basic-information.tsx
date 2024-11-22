@@ -26,6 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useRouter } from "next/navigation"
+import { useAccessToken } from "@/hooks/use-access-token"
 
 interface Activity {
   type: "message" | "purchase" | "design"
@@ -41,8 +42,8 @@ const fetchAccount = async (email: string): Promise<ApiResponse<Account>> => {
   }
 }
 
-const fetchOrders = async (): Promise<ApiResponse<PaginatedResponse<Order>>> => {
-  return await api.getPaginated<Order>('orders')
+const fetchOrders = async (accessToken: string): Promise<ApiResponse<PaginatedResponse<Order>>> => {
+  return await api.getPaginated<Order>('orders', undefined, accessToken)
 }
 
 
@@ -53,6 +54,8 @@ export default function CustomerProfilePage() {
   const { data: session } = useSession()
 
   const router = useRouter()
+
+  const accessToken = useAccessToken()
   
   const accountQuery = useQuery({
     queryKey: ['account', session?.user.email],
@@ -62,7 +65,7 @@ export default function CustomerProfilePage() {
 
   const ordersQuery = useQuery({
     queryKey: ['orders'],
-    queryFn: () => fetchOrders()
+    queryFn: () => fetchOrders(accessToken ?? '')
   })
 
   const account = accountQuery.data?.data

@@ -46,12 +46,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
+import { useAccessToken } from "@/hooks/use-access-token"
 
-const fetchProducts = async (
-  page = 1,
-  pageSize = 20
-): Promise<ApiResponse<PaginatedResponse<Product>>> => {
-  return api.getPaginated<Product>("products", { page, pageSize })
+const fetchProducts = async (accessToken: string): Promise<ApiResponse<PaginatedResponse<Product>>> => {
+  return api.getPaginated<Product>("products", undefined, accessToken)
 }
 
 const fetchMerchants = async (): Promise<ApiResponse<PaginatedResponse<Merchant>>> => {
@@ -80,9 +78,11 @@ export default function ManagerProductsTable() {
 
   const router = useRouter()
 
+  const accessToken = useAccessToken()
+
   const productsQuery = useQuery({
-    queryKey: ["products", page],
-    queryFn: () => fetchProducts(page),
+    queryKey: ["products"],
+    queryFn: () => fetchProducts(accessToken ?? ''),
   })
 
   const productCategoriesQuery = useQuery({

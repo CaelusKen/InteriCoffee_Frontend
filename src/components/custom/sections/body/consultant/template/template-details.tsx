@@ -15,23 +15,26 @@ import { ApiResponse } from '@/types/api'
 import { Product, Template } from '@/types/frontend/entities'
 import { api } from '@/service/api'
 import { useQuery } from '@tanstack/react-query'
+import { useAccessToken } from '@/hooks/use-access-token'
 
 interface TemplateProps {
   id: string,
 }
 
-const fetchTemplateById = async(id: string) : Promise<ApiResponse<Template>> => {
-  return api.getById<Template>('templates', id)
+const fetchTemplateById = async(id: string, accessToken: string) : Promise<ApiResponse<Template>> => {
+  return api.getById<Template>('templates', id, accessToken)
 }
 
-const fetchProductById = async(id: string) : Promise<ApiResponse<Product>> => {
-  return api.getById<Product>('products', id)
+const fetchProductById = async(id: string, accessToken: string) : Promise<ApiResponse<Product>> => {
+  return api.getById<Product>('products', id, accessToken)
 }
 
 export function ProductCard({ productId, quantity }: { productId: string, quantity: number }) {
+  const accessToken = useAccessToken()
+  
   const productQuery = useQuery({
     queryKey: ['product', productId],
-    queryFn: () => fetchProductById(productId),
+    queryFn: () => fetchProductById(productId, accessToken ?? ''),
   })
 
   const product = productQuery.data?.data
@@ -57,12 +60,14 @@ export function ProductCard({ productId, quantity }: { productId: string, quanti
 }
 
 export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
+  const accessToken = useAccessToken()
+
   const [isFullscreen, setIsFullscreen] = useState(false)
   const router = useRouter()
   
   const templateQuery = useQuery({
     queryKey: ['template', id],
-    queryFn: () => fetchTemplateById(id),
+    queryFn: () => fetchTemplateById(id, accessToken ?? ''),
   })
 
   const template = templateQuery.data?.data

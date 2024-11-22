@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { CheckCircle } from 'lucide-react'
 
+interface TransactionProps {
+  orderId: string
+}
+
 export default function TransactionSuccess() {
   const location = useLocation()
   const navigate = useNavigate()

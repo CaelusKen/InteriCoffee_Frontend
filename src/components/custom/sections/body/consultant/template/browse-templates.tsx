@@ -15,68 +15,19 @@ import { useSession } from 'next-auth/react'
 import { mapBackendToFrontend } from '@/lib/entity-handling/handler'
 import LoadingPage from '@/components/custom/loading/loading'
 import { motion } from 'framer-motion'
+import { useAccessToken } from '@/hooks/use-access-token'
 
-//Dummy data
-// const dummyData = [
-//   {
-//     name: "Modern Living Room",
-//     description: "A sleek and contemporary living room design",
-//     imageUrl: "/placeholder.svg?height=200&width=300",
-//     featuredProducts: ["Sofa", "Coffee Table", "Floor Lamp"],
-//     style: "Contemporary",
-//     customCategories: ["Minimalist", "Urban"],
-//     colorPalette: ["#F5E6D3", "#A8C69F", "#3D405B", "#81B29A"],
-//     usage: "Perfect for open-concept apartments and modern homes",
-//     viewCount: 1234,
-//     isSketch: false
-//   },
-//   {
-//     name: "Cozy Bedroom",
-//     description: "A warm and inviting bedroom design",
-//     imageUrl: "/placeholder.svg?height=200&width=300",
-//     featuredProducts: ["Bed", "Nightstand", "Reading Lamp"],
-//     style: "Scandinavian",
-//     customCategories: ["Hygge", "Minimalist"],
-//     colorPalette: ["#E8D5C4", "#7C9885", "#414535", "#A67F5D"],
-//     usage: "Ideal for creating a relaxing and comfortable sleeping space",
-//     viewCount: 987,
-//     isSketch: false
-//   },
-//   {
-//     name: "Industrial Kitchen",
-//     description: "A bold and functional kitchen design",
-//     imageUrl: "/placeholder.svg?height=200&width=300",
-//     featuredProducts: ["Island", "Bar Stools", "Pendant Lights"],
-//     style: "Industrial",
-//     customCategories: ["Modern", "Urban"],
-//     colorPalette: ["#D5D5D5", "#2B2B2B", "#E0A800", "#575757"],
-//     usage: "Great for loft apartments and open-plan living spaces",
-//     viewCount: 1567,
-//     isSketch: false
-//   },
-//   {
-//     name: "Rustic Dining Room Sketch",
-//     description: "A warm and inviting dining room concept",
-//     imageUrl: "/placeholder.svg?height=200&width=300",
-//     featuredProducts: ["Dining Table", "Chairs", "Chandelier"],
-//     style: "Rustic",
-//     customCategories: ["Farmhouse", "Traditional"],
-//     colorPalette: [],
-//     usage: "",
-//     viewCount: 456,
-//     isSketch: true
-//   }
-// ]
-
-const fetchTemplates = ({pageNo = 1, pageSize = 10}) : Promise<ApiResponse<PaginatedResponse<Template>>> => {
-  return api.getPaginated<Template>('templates', { pageNo, pageSize })
+const fetchTemplates = ({pageNo = 1, pageSize = 10}, accessToken: string) : Promise<ApiResponse<PaginatedResponse<Template>>> => {
+  return api.getPaginated<Template>('templates', { pageNo, pageSize }, accessToken)
 }
 
-const fetchAccountByEmail = async(email: string): Promise<ApiResponse<Account>> => {
-  return api.get<Account>(`accounts/${email}/info`)
+const fetchAccountByEmail = async(email: string, accessToken: string): Promise<ApiResponse<Account>> => {
+  return api.get<Account>(`accounts/${email}/info`, undefined, accessToken)
 }
 
 const ConsultantBrowseTemplatePage = () => {
+  const accessToken = useAccessToken()
+
   const [pageNo, setPageNo] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
 
@@ -88,14 +39,14 @@ const ConsultantBrowseTemplatePage = () => {
   
   const templatesQuery = useQuery({
     queryKey: ['templates'],
-    queryFn: () => fetchTemplates({pageNo, pageSize})
+    queryFn: () => fetchTemplates({pageNo, pageSize}, accessToken ?? '')
   })
 
   const templatesList = templatesQuery.data?.data.items ?? []
 
   useEffect(() => {
     if (session?.user?.email) {
-      fetchAccountByEmail(session.user.email)
+      fetchAccountByEmail(session.user.email, accessToken ?? '')
         .then((res) => {
           const mappedAccount = mapBackendToFrontend<Account>(res.data, 'account')
           setAccount(mappedAccount)

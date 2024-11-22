@@ -18,12 +18,10 @@ import {
   } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
+import { useAccessToken } from "@/hooks/use-access-token"
 
-const fetchProducts = async (
-    page = 1,
-    pageSize = 10
-): Promise<ApiResponse<PaginatedResponse<SaleCampaign>>> => {
-    return api.getPaginated<SaleCampaign>("sale-campaigns", { page, pageSize })
+const fetchProducts = async (accessToken: string): Promise<ApiResponse<PaginatedResponse<SaleCampaign>>> => {
+    return api.getPaginated<SaleCampaign>("sale-campaigns", undefined, accessToken)
 }
 
 export default function MerchantSaleCampaignsTable() {
@@ -31,9 +29,11 @@ export default function MerchantSaleCampaignsTable() {
 
     const router = useRouter();
 
+    const accessToken = useAccessToken()
+
     const campaignsQuery = useQuery({
         queryKey: ["sale-campaigns", page],
-        queryFn: () => fetchProducts(page),
+        queryFn: () => fetchProducts(accessToken ?? ''),
     })
 
     const saleCampaigns = campaignsQuery.data?.data?.items ?? []
