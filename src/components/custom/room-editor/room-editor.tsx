@@ -44,6 +44,9 @@ import {
   APIDesign,
 } from "@/types/frontend/entities";
 import { useQuery } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
+import { mapBackendToFrontend } from "@/lib/entity-handling/handler";
+import { useAccessToken } from "@/hooks/use-access-token";
 
 const ROOM_SCALE_FACTOR = 10;
 
@@ -65,7 +68,13 @@ const fetchProducts = async (): Promise<
   return api.getPaginated<Product>("products");
 };
 
+// const fetchAccountByEmail = async (email: string, accessToken: string): Promise<ApiResponse<FrontEndTypes.Account>> => {
+//   return api.get<FrontEndTypes.Account>(`accounts/${email}/info`, undefined, accessToken);
+// };
+
 export default function RoomEditor() {
+  // const accessToken = useAccessToken()
+
   const [floors, updateFloors, undo, redo, canUndo, canRedo] = useUndoRedo<Floor[]>([
     {
       id: "1",
@@ -95,10 +104,23 @@ export default function RoomEditor() {
   const [pinnedFurniture, setPinnedFurniture] = useState<RoomEditorTypes.Furniture[]>([]);
   const router = useRouter();
 
+  // const { data: session } = useSession()
+
   useEffect(() => {
     // Show the warning dialog when the component mounts
     setIsWarningDialogOpen(true);
   }, []);
+
+  // const accountQuery = useQuery({
+  //   queryKey: ['account', session?.user?.email],
+  //   queryFn: () => fetchAccountByEmail(session?.user?.email ?? '', accessToken ?? ''),
+  //   enabled:!!session?.user?.email,
+  // })
+
+  // const mappedAccount = mapBackendToFrontend<FrontEndTypes.Account>(accountQuery.data?.data, 'account')
+
+  // const account = mappedAccount
+  
 
   const getCurrentRoom = useCallback(() => {
     const floor = floors.find((f) => f.id === selectedFloor);
@@ -330,9 +352,10 @@ export default function RoomEditor() {
 
   const saveCustomerDesign = async () => {
     const designState = { floors };
+    
     try {
-      const response = await api.post<APIDesign>("designs", designState);
-      console.log("Saved customer design:", response.data);
+      // const response = await api.post<APIDesign>("designs", designState);
+      console.log("Saved customer design:", designState);
       alert("Design saved for customer!");
     } catch (error) {
       console.error("Error saving customer design:", error);
