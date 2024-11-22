@@ -11,10 +11,13 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { mapBackendToFrontend } from '@/lib/entity-handling/handler'
+import { useAccessToken } from '@/hooks/use-access-token'
 
 export default function CreateProduct() {
   const router = useRouter()
   const { toast } = useToast()
+
+  const accessToken = useAccessToken()
 
   const { data: session, status: sessionStatus } = useSession();
   
@@ -22,7 +25,7 @@ export default function CreateProduct() {
     queryKey: ['account', session?.user?.email],
     queryFn: async () => {
       if (!session?.user?.email) throw new Error('No email found in session')
-      const response = await api.get(`accounts/${encodeURIComponent(session.user.email)}/info`)
+      const response = await api.get(`accounts/${encodeURIComponent(session.user.email)}/info`, undefined, accessToken ?? '')
       return mapBackendToFrontend<Account>(response.data, 'account')
     },
     enabled: !!session?.user?.email,
@@ -31,7 +34,7 @@ export default function CreateProduct() {
   const createProductMutation = useMutation({
     mutationFn: (formData: ProductFormData) => {
       const mappedData = mapFrontendToBackend(formData)
-      return api.post<Product>('products', mappedData)
+      return api.post<Product>('products', mappedData, accessToken ?? '')
     },
     onError: (error) => {
       console.error('Error creating product:', error)

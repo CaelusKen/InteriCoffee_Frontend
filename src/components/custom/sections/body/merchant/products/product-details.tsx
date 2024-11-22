@@ -20,16 +20,14 @@ import {
 import LoadingPage from '@/components/custom/loading/loading'
 import { Model } from './model'
 import { MerchantInfo } from './merchant-info'
+import { useAccessToken } from '@/hooks/use-access-token'
 
-const fetchProduct = async (id: string): Promise<ApiResponse<Product>> => {
-  return api.getById<Product>(`products`, id)
+const fetchProduct = async (id: string, accessToken: string): Promise<ApiResponse<Product>> => {
+  return api.getById<Product>(`products`, id, accessToken)
 }
 
-const fetchCategory = async(
-  page = 1,
-  pageSize = 10
-) : Promise<ApiResponse<PaginatedResponse<ProductCategory>>> => {
-  return api.getPaginated<ProductCategory>('product-categories', { page, pageSize })
+const fetchCategory = async(accessToken: string) : Promise<ApiResponse<PaginatedResponse<ProductCategory>>> => {
+  return api.getPaginated<ProductCategory>('product-categories', undefined, accessToken)
 }
 
 interface ProductDetailsProps {
@@ -37,15 +35,17 @@ interface ProductDetailsProps {
 }
 
 export default function ProductDetails({ productId }: ProductDetailsProps) {
+  const accessToken = useAccessToken()
+
   const productQuery = useQuery({
     queryKey: ["product", productId],
-    queryFn: () => fetchProduct(productId),
+    queryFn: () => fetchProduct(productId, accessToken ?? ''),
     enabled: !!productId,
   })
 
   const productCategoriesQuery = useQuery({
     queryKey: ["product-categories"],
-    queryFn: () => fetchCategory(1)
+    queryFn: () => fetchCategory(accessToken ?? '')
   })
 
   if (productQuery.isLoading) {

@@ -45,16 +45,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
+import { useAccessToken } from '@/hooks/use-access-token'
 
-const fetchCategory = async(
-    page = 1,
-    pageSize = 10
-  ) : Promise<ApiResponse<PaginatedResponse<ProductCategory>>> => {
-    return api.getPaginated<ProductCategory>('product-categories', { page, pageSize })
+const fetchCategory = async(accessToken: string) : Promise<ApiResponse<PaginatedResponse<ProductCategory>>> => {
+    return api.getPaginated<ProductCategory>('product-categories', undefined, accessToken)
 }
 
-const deleteCategory = async(id: string) : Promise<ApiResponse<ProductCategory>> => {
-    return api.delete<ProductCategory>(`product-categories/${id}`)
+const deleteCategory = async(id: string, accessToken: string) : Promise<ApiResponse<ProductCategory>> => {
+    return api.delete<ProductCategory>(`product-categories/${id}`, accessToken)
 }
 
 export default function MerchantProductCategoryTable() {
@@ -68,13 +66,15 @@ export default function MerchantProductCategoryTable() {
   
     const router = useRouter()
 
+    const accessToken = useAccessToken()
+
     const productCategoriesQuery = useQuery({
-        queryKey: ['product-categories', page],
-        queryFn: () => fetchCategory(page)
+        queryKey: ['product-categories'],
+        queryFn: () => fetchCategory(accessToken ?? '')
     })
 
     const deleteProductCategoryMutation = useMutation({
-        mutationFn: deleteCategory,
+        mutationFn: (id: string) => deleteCategory( id, accessToken ?? ''),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["product-categories"] })
             setSelectedProductCategoryId(null)

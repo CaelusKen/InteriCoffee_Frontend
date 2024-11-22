@@ -19,6 +19,7 @@ import { useRouter } from 'next/navigation'
 import { CheckCircle, Loader2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { mapBackendToFrontend } from '@/lib/entity-handling/handler'
+import { useAccessToken } from '@/hooks/use-access-token'
 
 export interface ProductFormData {
   name: string
@@ -43,15 +44,14 @@ interface ProductFormBaseProps {
   submitButtonText: string
 }
 
-const fetchProductCategories = async (
-  page = 1,
-  pageSize = 100
-): Promise<ApiResponse<PaginatedResponse<ProductCategory>>> => {
-  return api.getPaginated<ProductCategory>("product-categories", { page, pageSize })
+const fetchProductCategories = async (accessToken: string): Promise<ApiResponse<PaginatedResponse<ProductCategory>>> => {
+  return api.getPaginated<ProductCategory>("product-categories", undefined, accessToken)
 }
 
 export function ProductFormBase({ initialData, onSubmit, submitButtonText }: ProductFormBaseProps) {
   const { data: session, status: sessionStatus } = useSession();
+
+  const accessToken = useAccessToken();
   
   const { data: accountInfo, isLoading, error } = useQuery({
     queryKey: ['account', session?.user?.email],
@@ -87,7 +87,7 @@ export function ProductFormBase({ initialData, onSubmit, submitButtonText }: Pro
 
   const productCategoriesQuery = useQuery({
     queryKey: ["productCategories"],
-    queryFn: () => fetchProductCategories(),
+    queryFn: () => fetchProductCategories(accessToken ?? ''),
   })
 
   useEffect(() => {

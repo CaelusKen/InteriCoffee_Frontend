@@ -43,21 +43,21 @@ import {
 import { MoreHorizontal, ArrowUpDown } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { useAccessToken } from "@/hooks/use-access-token"
 
 const deleteStyle = async (id: string): Promise<ApiResponse<Style>> => {
   return api.delete<Style>(`styles/${id}`)
 }
 
-const fetchStyles = async (
-  page = 1,
-  pageSize = 10
-): Promise<ApiResponse<PaginatedResponse<Style>>> => {
-  return api.getPaginated<Style>("styles", { page, pageSize })
+const fetchStyles = async (accessToken: string): Promise<ApiResponse<PaginatedResponse<Style>>> => {
+  return api.getPaginated<Style>("styles", undefined, accessToken)
 }
 
 export default function MerchantStylesTable() {
   const [page, setPage] = useState(1)
   const [sorting, setSorting] = useState<SortingState>([])
+
+  const accessToken = useAccessToken()
 
   const [selectedStyleId, setSelectedStyleId] = useState<string | null>(null)
 
@@ -68,7 +68,7 @@ export default function MerchantStylesTable() {
 
   const stylesQuery = useQuery({
     queryKey: ["styles", page],
-    queryFn: () => fetchStyles(page),
+    queryFn: () => fetchStyles(accessToken ?? ''),
   })
 
   const styles = stylesQuery.data?.data?.items ?? []

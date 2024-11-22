@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast"
 import ProductCategoryFormBase, { ProductCategoryFormData } from './product-category-form-base'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
+import { useAccessToken } from '@/hooks/use-access-token'
 
 interface UpdateProductCategoryProps {
   categoryId: string
@@ -18,15 +19,17 @@ export default function UpdateProductCategoryForm({ categoryId }: UpdateProductC
   const router = useRouter()
   const { toast } = useToast()
 
+  const accessToken = useAccessToken();
+
   const productCategoryQuery = useQuery({
     queryKey: ["productCategory", categoryId],
-    queryFn: () => api.getById<ProductCategory>(`product-categories`, categoryId),
+    queryFn: () => api.getById<ProductCategory>(`product-categories`, categoryId, accessToken ?? ''),
   })
 
   const updateProductCategoryMutation = useMutation({
     mutationFn: (formData: ProductCategoryFormData) => {
       const mappedData = mapFrontendToBackend(formData)
-      return api.patch<ProductCategory>(`product-categories/${categoryId}`, mappedData)
+      return api.patch<ProductCategory>(`product-categories/${categoryId}`, mappedData, undefined, accessToken ?? '')
     },
     onSuccess: (data) => {
       toast({

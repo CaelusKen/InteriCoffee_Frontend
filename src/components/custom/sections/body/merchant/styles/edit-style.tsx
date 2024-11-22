@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast"
 import StyleFormBase, { StyleFormData } from './style-form-base'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
+import { useAccessToken } from '@/hooks/use-access-token'
 
 interface UpdateStyleProps {
   styleId: string
@@ -18,15 +19,17 @@ export default function UpdateStyleForm({ styleId }: UpdateStyleProps) {
   const router = useRouter()
   const { toast } = useToast()
 
+  const accessToken = useAccessToken()
+
   const styleQuery = useQuery({
     queryKey: ["style", styleId],
-    queryFn: () => api.getById<Style>(`styles`, styleId),
+    queryFn: () => api.getById<Style>(`styles`, styleId, accessToken ?? ''),
   })
 
   const updateStyleMutation = useMutation({
     mutationFn: (formData: StyleFormData) => {
       const mappedData = mapFrontendToBackend(formData)
-      return api.patch<Style>(`styles/${styleId}`, mappedData)
+      return api.patch<Style>(`styles/${styleId}`, mappedData, undefined, accessToken ?? '')
     },
     onSuccess: (data) => {
       toast({

@@ -40,19 +40,18 @@ export default function BrowseFurnitures() {
     queryFn: () => fetchProducts(),
   });
 
-  const products = productsQuery.data?.data.items ?? [];
-  
   //For searching (only for product name)
   const filteredProducts = useMemo(() => {
+    const products = productsQuery.data?.data.items ?? [];
     return products.filter(product => 
       product.name.toLowerCase().includes(searchQuery.toLowerCase())
     )
-  }, [products, searchQuery])
+  }, [productsQuery.data?.data.items, searchQuery]);
 
   //For Paginnation
   const total = filteredProducts.length ?? 0;
   const totalPages = Math.ceil(total / pageSize); //Calculate total pages needed
-  const paginatedProducts = products.slice(
+  const paginatedProducts = filteredProducts.slice(
     (page - 1) * pageSize,
     page * pageSize
   );
@@ -137,14 +136,14 @@ export default function BrowseFurnitures() {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
             {paginatedProducts.map((product) => (
-              <FurnitureProductCard
+              <FurnitureProductCard 
                 key={product.id}
                 name={product.name}
-                images={product.images.normalImages}
+                images={product.images.normalImages as string[]}
+                modelUrl={product.modelTextureUrl}
                 price={product.truePrice}
                 id={product.id}
                 merchant={product.merchantId}
-                modelUrl={product.modelTextureUrl}
               />
             ))}
           </div>

@@ -7,29 +7,47 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Package, Search } from "lucide-react"
+import { ApiResponse, PaginatedResponse } from "@/types/api"
+import { Account, Order } from "@/types/frontend/entities"
+import { api } from "@/service/api"
+import { useAccessToken } from "@/hooks/use-access-token"
+import { useQuery } from "@tanstack/react-query"
+import { useSession } from "next-auth/react"
 
-interface Order {
-  id: string
-  customer: string
-  status: "Processing" | "Shipped" | "Delivered" | "Cancelled"
-  estimatedDelivery: string
+const fetchOrders = async(accessToken: string) : Promise<ApiResponse<PaginatedResponse<Order>>> => {
+  return api.getPaginated<Order>(`orders`, undefined, accessToken)
 }
 
-const recentOrders: Order[] = [
-  { id: "ORD001", customer: "Alice Johnson", status: "Processing", estimatedDelivery: "2023-05-25" },
-  { id: "ORD002", customer: "Bob Smith", status: "Shipped", estimatedDelivery: "2023-05-23" },
-  { id: "ORD003", customer: "Charlie Brown", status: "Delivered", estimatedDelivery: "2023-05-20" },
-  { id: "ORD004", customer: "Diana Prince", status: "Processing", estimatedDelivery: "2023-05-26" },
-  { id: "ORD005", customer: "Ethan Hunt", status: "Cancelled", estimatedDelivery: "2023-05-22" },
-]
+const fetchAccountByEmail = async(email: string, accessToken: string) : Promise<ApiResponse<Account>> => {
+  return api.get<Account>(`accounts/${email}/info`, undefined, accessToken)
+}
 
 export default function OrderTrackingTable() {
   const [searchTerm, setSearchTerm] = useState("")
 
-  const filteredOrders = recentOrders.filter(
+  const { data: session } = useSession()
+
+  const accessToken = useAccessToken()
+
+  const recentOrdersQuery = useQuery({
+    queryKey: ["orders"],
+    queryFn: () => fetchOrders(accessToken ?? ''),
+  })
+
+  const accountQuery = useQuery({
+    queryKey: ["accountByEmail", session?.user.email],
+    queryFn: () => fetchAccountByEmail(session?.user.email ?? '', accessToken?? ''),
+    enabled:!!accessToken,
+  })
+
+  const account = accountQuery.data?.data
+
+  const recentOrders = recentOrdersQuery.data?.data.items?.filter((order) => order.accountId === account?.id)
+
+  const filteredOrders = recentOrders?.filter(
     (order) =>
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.toLowerCase().includes(searchTerm.toLowerCase())
+      order.status.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const getStatusColor = (status: Order["status"]) => {
@@ -74,23 +92,23 @@ export default function OrderTrackingTable() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[100px]">Order ID</TableHead>
-              <TableHead>Merchant</TableHead>
+              <TableHead>Ordered Date</TableHead>
+              <TableHead>Total</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Estimated Delivery</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredOrders.map((order) => (
+            {filteredOrders?.map((order) => (
               <TableRow key={order.id}>
                 <TableCell className="font-medium">{order.id}</TableCell>
-                <TableCell>{order.customer}</TableCell>
+                <TableCell>{order.orderDate.toLocaleDateString()}</TableCell>
+                <TableCell>{order.totalAmount}</TableCell>
                 <TableCell>
                   <Badge variant="secondary" className={`${getStatusColor(order.status)} text-white`}>
                     {order.status}
                   </Badge>
                 </TableCell>
-                <TableCell>{order.estimatedDelivery}</TableCell>
                 <TableCell className="text-right">
                   <Button variant="outline" size="sm">
                     <Package className="mr-2 h-4 w-4" />

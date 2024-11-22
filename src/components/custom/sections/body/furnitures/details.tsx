@@ -30,23 +30,18 @@ import { Label } from "@/components/ui/label";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import Autoplay from "embla-carousel-autoplay"
 import { useRouter } from "next/navigation";
+import { useAccessToken } from "@/hooks/use-access-token";
 
 interface ProductDetailsProps {
   productId: string;
 }
 
-const fetchProductById = async (id: string): Promise<ApiResponse<Product>> => {
-  return api.getById(`products`, id);
+const fetchProductById = async (id: string, accessToken: string): Promise<ApiResponse<Product>> => {
+  return api.getById(`products`, id, accessToken);
 };
 
-const fetchCategory = async (
-  page = 1,
-  pageSize = 10
-): Promise<ApiResponse<PaginatedResponse<ProductCategory>>> => {
-  return api.getPaginated<ProductCategory>("product-categories", {
-    page,
-    pageSize,
-  });
+const fetchCategory = async (accessToken : string): Promise<ApiResponse<PaginatedResponse<ProductCategory>>> => {
+  return api.getPaginated<ProductCategory>("product-categories", undefined, accessToken);
 };
 
 function Model({ url }: { url: string }) {
@@ -85,6 +80,8 @@ interface ProductProps {
 }
 
 const FurnitureDetailsSection: React.FC<ProductProps> = ({ id }) => {
+  const accessToken = useAccessToken()
+
   const [showModel, setShowModel] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
 
@@ -96,13 +93,13 @@ const FurnitureDetailsSection: React.FC<ProductProps> = ({ id }) => {
 
   const productQuery = useQuery({
     queryKey: ["product", id],
-    queryFn: () => fetchProductById(id),
+    queryFn: () => fetchProductById(id, accessToken ?? ''),
     enabled: !!id,
   });
 
   const productCategoriesQuery = useQuery({
     queryKey: ["product-categories"],
-    queryFn: () => fetchCategory(1),
+    queryFn: () => fetchCategory(accessToken ?? ''),
   });
 
   const product = productQuery.data?.data;

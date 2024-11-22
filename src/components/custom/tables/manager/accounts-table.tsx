@@ -30,14 +30,12 @@ export const fetchAccounts = async (
   return api.getPaginated<Account>("accounts", { page, pageSize }, accessToken);
 };
 
-const updateAccount = async (
-  account: Account
-): Promise<ApiResponse<Account>> => {
-  return api.patch<Account>(`accounts/${account.id}`, account);
+const updateAccount = async (account: Account, accessToken: string): Promise<ApiResponse<Account>> => {
+  return api.patch<Account>(`accounts/${account.id}`, account, undefined, accessToken);
 };
 
-const deleteAccount = async (id: string): Promise<ApiResponse<Account>> => {
-  return api.delete<Account>(`accounts/${id}`);
+const deleteAccount = async (id: string, accessToken: string): Promise<ApiResponse<Account>> => {
+  return api.delete<Account>(`accounts/${id}`, accessToken);
 };
 
 export default function AccountsTable() {
