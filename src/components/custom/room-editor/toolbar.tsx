@@ -135,6 +135,16 @@ export default function Toolbar({
     return merchant?.name || ''
   }, [merchants])
 
+  const handleSaveClick = useCallback(() => {
+    if (session?.user.role === "CUSTOMER") {
+      onSaveCustomer()
+    } else if (session?.user.role === "CONSULTANT") {
+      onSaveMerchant()
+    } else {
+      router.push("/login")
+    }
+  }, [session, onSaveCustomer, onSaveMerchant, router])
+
   const renderCategoryMenu = (categories: ProductCategory[]) => {
     return categories.map((category) => (
       <DropdownMenuSub key={category.id}>
@@ -180,7 +190,7 @@ export default function Toolbar({
   return (
     <div className="flex flex-wrap justify-between items-center p-2 dark:bg-gray-800 border-b">
       <div className="space-x-2 mb-2 sm:mb-0 flex flex-wrap items-center gap-2">
-      <DropdownMenu>
+        <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" /> Add Furniture
@@ -242,30 +252,14 @@ export default function Toolbar({
         <Button variant="outline" size="icon" onClick={onRedo} disabled={!canRedo}>
           <Redo className="h-4 w-4" />
         </Button>
-        {session?.user.role === "CUSTOMER" && (
-          <Button
-            onClick={onSaveCustomer}
-            className="hover:bg-primary-600 hover:text-white"
-          >
-            Save Design
-          </Button>
-        )}
-        {session?.user.role === "CONSULTANT" && (
-          <Button
-            onClick={onSaveMerchant}
-            className="hover:bg-primary-600 hover:text-white"
-          >
-            Save as Template
-          </Button>
-        )}
-        {!session && (
-          <Button
-            onClick={() => router.push("/login")}
-            className="hover:bg-primary-600 hover:text-white"
-          >
-            Login to Save
-          </Button>
-        )}
+        <Button
+          onClick={handleSaveClick}
+          className="hover:bg-primary-600 hover:text-white"
+        >
+          <Save className="mr-2 h-4 w-4" />
+          {session?.user.role === "CUSTOMER" ? "Save Design" : 
+           session?.user.role === "CONSULTANT" ? "Save Template" : "Login to Save"}
+        </Button>
         <Button
           onClick={handleLoadClick}
           size="icon"
@@ -335,4 +329,3 @@ export default function Toolbar({
     </div>
   )
 }
-

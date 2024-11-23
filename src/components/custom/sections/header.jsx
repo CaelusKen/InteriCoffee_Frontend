@@ -113,7 +113,7 @@ const Header = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button variant={'ghost'} onClick={() => router.push('/simulation')}>
+            <Button variant={'ghost'} onClick={() => router.push('/simulation/setup')}>
               <Layers size={24}/>
               <p>Simulate</p>
             </Button>
