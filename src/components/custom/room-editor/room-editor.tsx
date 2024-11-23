@@ -71,6 +71,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "next-auth/react";
 import { useAccessToken } from "@/hooks/use-access-token";
+import { mapBackendAccountToFrontend, mapBackendToFrontend } from "@/lib/entity-handling/handler";
 
 const ROOM_SCALE_FACTOR = 10;
 
@@ -98,11 +99,13 @@ const fetchProducts = async (): Promise<
   return api.getPaginated<Product>("products");
 };
 
-const fetchAccountByEmail = async (
-  email: string
-): Promise<ApiResponse<FrontEndTypes.Account>> => {
-  return api.get<FrontEndTypes.Account>(`accounts/${email}/info`);
-};
+const fetchAccountByEmail = async (email: string): Promise<ApiResponse<FrontEndTypes.Account>> => {
+  const response = await api.get(`accounts/${email}/info`)
+  return {
+    ...response,
+    data: mapBackendToFrontend<FrontEndTypes.Account>(response.data, 'account')
+  }
+}
 
 export default function RoomEditor() {
   const [floors, updateFloors, undo, redo, canUndo, canRedo] = useUndoRedo<
@@ -153,13 +156,12 @@ export default function RoomEditor() {
 
   //This is for getting the account information
   const accountQuery = useQuery({
-    queryKey: ["account", session?.user?.email],
-    queryFn: () => api.get<FrontEndTypes.Account>(`accounts/${session?.user?.email}/info`),
-    enabled: !!session?.user?.email,
-  });
+    queryKey: ['account', session?.user.email],
+    queryFn: () => fetchAccountByEmail(session?.user?.email || ''),
+    enabled: !!session?.user?.email
+  })
 
   // This for the style selection
-  const [style, setStyle] = useState<FrontEndTypes.Style>();
   const stylesQuery = useQuery({
     queryKey: ["styles"],
     queryFn: fetchStyles,
@@ -469,6 +471,7 @@ export default function RoomEditor() {
     }
   };
 
+
   const handleSaveCustomer = useCallback(() => {
     handleSaveClick("design");
   }, []);
@@ -492,7 +495,9 @@ export default function RoomEditor() {
       return;
     }
 
-    const accountId = accountQuery.data.data.id;
+    const accountId = {
+      "_id": accountQuery.data.data.id
+    }
 
     const saveData = {
       name: saveName,
@@ -522,17 +527,33 @@ export default function RoomEditor() {
           "non-furnitures": [] // Add this field if you have non-furniture items
         }))
       })),
-      products: [], // You might want to add a way to track product quantities
-      "account-id": accountId,
+      products: (() => {
+        const productMap = new Map();
+    
+        floors.forEach(floor => {
+          floor?.rooms?.forEach(room => {
+            room.furniture.forEach(furniture => {
+              const matchingProducts = products.filter(product => product.modelTextureUrl === furniture.model);
+              matchingProducts.forEach(product => {
+                if (productMap.has(product.id)) {
+                  productMap.set(product.id, productMap.get(product.id) + 1);
+                } else {
+                  productMap.set(product.id, 1);
+                }
+              });
+            });
+          });
+        });
+    
+        return Array.from(productMap, ([_id, quantity]) => ({ _id, quantity }));
+      })(),
+      "account-id": accountId._id,
       "template-id": "",
       "style-id": selectedStyleId,
       categories: customCategories
     };
-    
-    // Here you would typically send saveData to your API
-    console.log("Saving to server:", saveData);
 
-    await api.post("designs", saveData, accessToken ?? '').then((res) => {
+    await api.post("designs", saveData, accessToken ?? '').then(() => {
       // Clear local storage after successful save
       clearStorage();
       setIsSaveDialogOpen(false);
