@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, Suspense, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  Suspense,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import { Canvas } from "@react-three/fiber";
 import * as RoomEditorTypes from "@/types/room-editor";
 import * as FrontEndTypes from "@/types/frontend/entities";
@@ -33,6 +39,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useHotkeys } from "react-hotkeys-hook";
 import { api } from "@/service/api";
@@ -44,8 +60,16 @@ import {
   APIDesign,
 } from "@/types/frontend/entities";
 import { useQuery } from "@tanstack/react-query";
+import {
+  saveToStorage,
+  getFromStorage,
+  clearStorage,
+  isStorageExpired,
+  getLastSavedTime,
+} from "@/lib/storage";
+import { useToast } from "@/hooks/use-toast";
+import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "next-auth/react";
-import { mapBackendToFrontend } from "@/lib/entity-handling/handler";
 import { useAccessToken } from "@/hooks/use-access-token";
 
 const ROOM_SCALE_FACTOR = 10;
@@ -62,20 +86,28 @@ const fetchTemplates = async (): Promise<
   return api.getPaginated<Template>("templates");
 };
 
+const fetchStyles = async (): Promise<
+  ApiResponse<PaginatedResponse<FrontEndTypes.Style>>
+> => {
+  return api.getPaginated<FrontEndTypes.Style>("styles");
+};
+
 const fetchProducts = async (): Promise<
   ApiResponse<PaginatedResponse<Product>>
 > => {
   return api.getPaginated<Product>("products");
 };
 
-// const fetchAccountByEmail = async (email: string, accessToken: string): Promise<ApiResponse<FrontEndTypes.Account>> => {
-//   return api.get<FrontEndTypes.Account>(`accounts/${email}/info`, undefined, accessToken);
-// };
+const fetchAccountByEmail = async (
+  email: string
+): Promise<ApiResponse<FrontEndTypes.Account>> => {
+  return api.get<FrontEndTypes.Account>(`accounts/${email}/info`);
+};
 
 export default function RoomEditor() {
-  // const accessToken = useAccessToken()
-
-  const [floors, updateFloors, undo, redo, canUndo, canRedo] = useUndoRedo<Floor[]>([
+  const [floors, updateFloors, undo, redo, canUndo, canRedo] = useUndoRedo<
+    Floor[]
+  >([
     {
       id: "1",
       name: "Ground Floor",
@@ -91,36 +123,99 @@ export default function RoomEditor() {
       ],
     },
   ]);
-  const [selectedFloor, setSelectedFloor] = useState<string>('1');
+  const [selectedFloor, setSelectedFloor] = useState<string>("1");
   const [selectedRoom, setSelectedRoom] = useState<string>("1");
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
-  const [environment, setEnvironment] = useState<string>('sunset');
+  const [environment, setEnvironment] = useState<string>("sunset");
   const [transformMode, setTransformMode] = useState<
     "translate" | "rotate" | "scale"
   >("translate");
   const [isRoomDialogOpen, setIsRoomDialogOpen] = useState(false);
   const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
   const [isWarningDialogOpen, setIsWarningDialogOpen] = useState(true);
-  const [pinnedFurniture, setPinnedFurniture] = useState<RoomEditorTypes.Furniture[]>([]);
-  const router = useRouter();
+  const [pinnedFurniture, setPinnedFurniture] = useState<
+    RoomEditorTypes.Furniture[]
+  >([]);
 
-  // const { data: session } = useSession()
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  const [saveType, setSaveType] = useState<"design" | "template" | null>(null);
+  const [saveName, setSaveName] = useState("");
+  const [saveDescription, setSaveDescription] = useState("");
+  const [customCategories, setCustomCategories] = useState<string[]>([]);
+  const [newCategory, setNewCategory] = useState("");
+  const [selectedStyleId, setSelectedStyleId] = useState("");
+  const { toast } = useToast();
+
+  const { data: session } = useSession();
+
+  const accessToken = useAccessToken()
+
+  //This is for getting the account information
+  const accountQuery = useQuery({
+    queryKey: ["account", session?.user?.email],
+    queryFn: () => api.get<FrontEndTypes.Account>(`accounts/${session?.user?.email}/info`),
+    enabled: !!session?.user?.email,
+  });
+
+  // This for the style selection
+  const [style, setStyle] = useState<FrontEndTypes.Style>();
+  const stylesQuery = useQuery({
+    queryKey: ["styles"],
+    queryFn: fetchStyles,
+  });
+
+  const styles = stylesQuery.data?.data.items ?? [];
+
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const router = useRouter();
 
   useEffect(() => {
     // Show the warning dialog when the component mounts
     setIsWarningDialogOpen(true);
   }, []);
 
-  // const accountQuery = useQuery({
-  //   queryKey: ['account', session?.user?.email],
-  //   queryFn: () => fetchAccountByEmail(session?.user?.email ?? '', accessToken ?? ''),
-  //   enabled:!!session?.user?.email,
-  // })
+  useEffect(() => {
+    // Load state from localStorage when component mounts
+    const storedState = getFromStorage<Floor[]>();
+    if (storedState && !isStorageExpired()) {
+      updateFloors(storedState);
+      const lastSavedTime = getLastSavedTime();
+      if (lastSavedTime) {
+        setLastSaved(new Date(lastSavedTime));
+      }
+    }
+  }, []);
 
-  // const mappedAccount = mapBackendToFrontend<FrontEndTypes.Account>(accountQuery.data?.data, 'account')
+  const saveChanges = useCallback(() => {
+    saveToStorage(floors);
+    const now = new Date();
+    setLastSaved(now);
+    toast({
+      title: "Changes Saved",
+      description: `Your changes were saved at ${now.toLocaleTimeString()}`,
+    });
+  }, [floors, toast]);
 
-  // const account = mappedAccount
-  
+  useEffect(() => {
+    // Clear any existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Set a new timeout
+    saveTimeoutRef.current = setTimeout(() => {
+      saveChanges();
+    }, 5000); // 5 seconds delay
+
+    // Cleanup function
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [floors, saveChanges]);
 
   const getCurrentRoom = useCallback(() => {
     const floor = floors.find((f) => f.id === selectedFloor);
@@ -182,7 +277,11 @@ export default function RoomEditor() {
     );
   };
 
-  const updateTransform = ({ id, type, value }: RoomEditorTypes.TransformUpdate) => {
+  const updateTransform = ({
+    id,
+    type,
+    value,
+  }: RoomEditorTypes.TransformUpdate) => {
     updateFloors(
       floors.map((floor) =>
         floor.id === selectedFloor
@@ -257,18 +356,25 @@ export default function RoomEditor() {
                       furniture: [
                         ...room.furniture,
                         {
-                          ...room.furniture.find((item) => item.id === id.toString())!,
+                          ...room.furniture.find(
+                            (item) => item.id === id.toString()
+                          )!,
                           id: Date.now().toLocaleString(),
                           name: `${
-                            room.furniture.find((item) => item.id === id.toString())!.name
+                            room.furniture.find(
+                              (item) => item.id === id.toString()
+                            )!.name
                           } (Copy)`,
                           position: [
-                            room.furniture.find((item) => item.id === id.toString())!
-                              .position[0] + 0.5,
-                            room.furniture.find((item) => item.id === id.toString())!
-                              .position[1],
-                            room.furniture.find((item) => item.id === id.toString())!
-                              .position[2] + 0.5,
+                            room.furniture.find(
+                              (item) => item.id === id.toString()
+                            )!.position[0] + 0.5,
+                            room.furniture.find(
+                              (item) => item.id === id.toString()
+                            )!.position[1],
+                            room.furniture.find(
+                              (item) => item.id === id.toString()
+                            )!.position[2] + 0.5,
                           ],
                         },
                       ],
@@ -313,7 +419,9 @@ export default function RoomEditor() {
           ? {
               ...floor,
               rooms: floor.rooms?.map((room) =>
-                room.id === selectedRoom.toString() ? { ...room, furniture: [] } : room
+                room.id === selectedRoom.toString()
+                  ? { ...room, furniture: [] }
+                  : room
               ),
             }
           : floor
@@ -335,7 +443,11 @@ export default function RoomEditor() {
     );
   };
 
-  const handleRenameRoom = (floorId: string, roomId: string, newName: string) => {
+  const handleRenameRoom = (
+    floorId: string,
+    roomId: string,
+    newName: string
+  ) => {
     updateFloors(
       floors.map((floor) =>
         floor.id === floorId
@@ -350,29 +462,92 @@ export default function RoomEditor() {
     );
   };
 
-  const saveCustomerDesign = async () => {
-    const designState = { floors };
-    
-    try {
-      // const response = await api.post<APIDesign>("designs", designState);
-      console.log("Saved customer design:", designState);
-      alert("Design saved for customer!");
-    } catch (error) {
-      console.error("Error saving customer design:", error);
-      alert("Failed to save design. Please try again.");
+  const handleAddCustomCategory = () => {
+    if (newCategory && !customCategories.includes(newCategory)) {
+      setCustomCategories([...customCategories, newCategory]);
+      setNewCategory("");
     }
   };
 
-  const saveMerchantTemplate = async () => {
-    const templateState = { floors };
-    try {
-      const response = await api.post("templates", templateState);
-      console.log("Saved merchant template:", response.data);
-      alert("Template saved successfully!");
-    } catch (error) {
-      console.error("Error saving merchant template:", error);
-      alert("Failed to save template. Please try again.");
+  const handleSaveCustomer = useCallback(() => {
+    handleSaveClick("design");
+  }, []);
+
+  const handleSaveMerchant = useCallback(() => {
+    handleSaveClick("template");
+  }, []);
+
+  const handleSaveClick = (type: "design" | "template") => {
+    setSaveType(type);
+    setIsSaveDialogOpen(true);
+  };
+
+  const handleSaveConfirm = async () => {
+    if (!accountQuery.data) {
+      toast({
+        title: "Error",
+        description: "Unable to fetch account information. Please try again.",
+        variant: "destructive",
+      });
+      return;
     }
+
+    const accountId = accountQuery.data.data.id;
+
+    const saveData = {
+      name: saveName,
+      description: saveDescription,
+      status: "DRAFT", // You might want to add a status field to your form
+      image: "", // You might want to add an image upload feature
+      type: saveType?.toUpperCase(),
+      floors: floors.map(floor => ({
+        _id: floor.id,
+        name: floor.name,
+        "design-template-id": "", // You might want to add this field if necessary
+        rooms: floor?.rooms?.map(room => ({
+          name: room.name,
+          width: room.width,
+          height: room.height,
+          length: room.length,
+          furnitures: room.furniture.map(furniture => ({
+            _id: furniture.id,
+            name: furniture.name,
+            model: furniture.model,
+            position: furniture.position,
+            rotation: furniture.rotation,
+            scale: furniture.scale,
+            visible: furniture.visible,
+            category: furniture.category
+          })),
+          "non-furnitures": [] // Add this field if you have non-furniture items
+        }))
+      })),
+      products: [], // You might want to add a way to track product quantities
+      "account-id": accountId,
+      "template-id": "",
+      "style-id": selectedStyleId,
+      categories: customCategories
+    };
+    
+    // Here you would typically send saveData to your API
+    console.log("Saving to server:", saveData);
+
+    await api.post("designs", saveData, accessToken ?? '').then((res) => {
+      // Clear local storage after successful save
+      clearStorage();
+      setIsSaveDialogOpen(false);
+      toast({
+        title: `${saveType === "design" ? "Design" : "Template"} Saved`,
+        description: `Your ${saveType} has been saved to the server.`,
+      });
+    }).catch((err) => {
+      console.error(`Error saving ${saveType}:`, err);
+      toast({
+        title: "Save Failed",
+        description: `Failed to save ${saveType}. Please try again.`,
+        variant: "destructive",
+      });
+    })
   };
 
   const loadTemplate = async (templateId: string) => {
@@ -405,8 +580,7 @@ export default function RoomEditor() {
                 scale: furniture.scale as [number, number, number],
                 visible: furniture.visible,
                 category: furniture.category || [],
-              }),
-            ),
+              })),
             })) || [],
         })),
         type: frontendTemplate.type as "Template" | "Sketch",
@@ -529,7 +703,9 @@ export default function RoomEditor() {
                   ? {
                       ...room,
                       furniture: room.furniture.map((item) =>
-                        item.id === id.toString() ? { ...item, name: newName } : item
+                        item.id === id.toString()
+                          ? { ...item, name: newName }
+                          : item
                       ),
                     }
                   : room
@@ -561,8 +737,8 @@ export default function RoomEditor() {
         onRedo={redo}
         canUndo={canUndo}
         canRedo={canRedo}
-        onSaveCustomer={saveCustomerDesign}
-        onSaveMerchant={saveMerchantTemplate}
+        onSaveCustomer={handleSaveCustomer}
+        onSaveMerchant={handleSaveMerchant}
         onLoad={loadTemplate}
         onOpenRoomDialog={() => setIsRoomDialogOpen(true)}
         onClearAll={() => setIsClearDialogOpen(true)}
@@ -593,7 +769,7 @@ export default function RoomEditor() {
           />
         </div>
         <div className="flex-1">
-        <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
+          <Canvas camera={{ position: [0, 5, 10], fov: 50 }}>
             <Suspense fallback={null}>
               <SceneContent
                 room={
@@ -648,7 +824,10 @@ export default function RoomEditor() {
                 </div>
                 <div>
                   <Label>Environment</Label>
-                  <Select onValueChange={handleEnvironmentChange} value={environment}>
+                  <Select
+                    onValueChange={handleEnvironmentChange}
+                    value={environment}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select environment" />
                     </SelectTrigger>
@@ -696,12 +875,17 @@ export default function RoomEditor() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <AlertDialog open={isWarningDialogOpen} onOpenChange={setIsWarningDialogOpen}>
+      <AlertDialog
+        open={isWarningDialogOpen}
+        onOpenChange={setIsWarningDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Beta Version Warning</AlertDialogTitle>
             <AlertDialogDescription>
-              This is a beta version of the Room-editor. Many features are meant to be upgraded and enhanced in the future. Please visit our Github to raise issues or provide feedback.
+              This is a beta version of the Room-editor. Many features are meant
+              to be upgraded and enhanced in the future. Please visit our Github
+              to raise issues or provide feedback.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -711,6 +895,91 @@ export default function RoomEditor() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Save {saveType === "design" ? "Design" : "Template"}
+            </DialogTitle>
+            <DialogDescription>
+              Enter the details for your {saveType}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={saveName}
+                onChange={(e) => setSaveName(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="description" className="text-right">
+                Description
+              </Label>
+              <Textarea
+                id="description"
+                value={saveDescription}
+                onChange={(e) => setSaveDescription(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="style" className="text-right">
+                Style
+              </Label>
+              <Select
+                onValueChange={setSelectedStyleId}
+                value={selectedStyleId}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select style" />
+                </SelectTrigger>
+                <SelectContent>
+                  {styles.map((style) => (
+                    <SelectItem key={style.id} value={style.id}>
+                      {style.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="newCategory" className="text-right">
+                Add Category
+              </Label>
+              <Input
+                id="newCategory"
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                className="col-span-2"
+              />
+              <Button onClick={handleAddCustomCategory}>Add</Button>
+            </div>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label className="text-right">Categories</Label>
+              <div className="col-span-3 flex flex-wrap gap-2">
+                {customCategories.map((category, index) => (
+                  <div
+                    key={index}
+                    className="bg-secondary text-secondary-foreground px-2 py-1 rounded"
+                  >
+                    {category}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleSaveConfirm}>Save</Button>
+            <Button variant={'outline'} onClick={() => setIsSaveDialogOpen(false)}>Cancel</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
