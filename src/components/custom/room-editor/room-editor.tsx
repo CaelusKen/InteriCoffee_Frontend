@@ -99,14 +99,6 @@ const fetchProducts = async (): Promise<
   return api.getPaginated<Product>("products");
 };
 
-const fetchAccountByEmail = async (email: string): Promise<ApiResponse<FrontEndTypes.Account>> => {
-  const response = await api.get(`accounts/${email}/info`)
-  return {
-    ...response,
-    data: mapBackendToFrontend<FrontEndTypes.Account>(response.data, 'account')
-  }
-}
-
 export default function RoomEditor() {
   const [floors, updateFloors, undo, redo, canUndo, canRedo] = useUndoRedo<
     Floor[]
@@ -154,12 +146,6 @@ export default function RoomEditor() {
 
   const accessToken = useAccessToken()
 
-  //This is for getting the account information
-  const accountQuery = useQuery({
-    queryKey: ['account', session?.user.email],
-    queryFn: () => fetchAccountByEmail(session?.user?.email || ''),
-    enabled: !!session?.user?.email
-  })
 
   // This for the style selection
   const stylesQuery = useQuery({
@@ -254,8 +240,8 @@ export default function RoomEditor() {
 
   const addFurniture = (model: string, category: ProductCategory["id"][]) => {
     const newItem: RoomEditorTypes.Furniture = {
-      id: Date.now().toString(),
-      name: `Furniture ${getCurrentFurniture().length + 1}`,
+      id: `${products.find(p => p.modelTextureUrl === model)?.id}${getCurrentFurniture().length + 1}`,
+      name: `${products.find(p => p.modelTextureUrl === model)?.name} ${getCurrentFurniture().length + 1}`,
       model: model,
       position: [0, 0, 0],
       rotation: [0, 0, 0],
@@ -486,17 +472,18 @@ export default function RoomEditor() {
   };
 
   const handleSaveConfirm = async () => {
-    if (!accountQuery.data) {
+    const accountId = await api.get<FrontEndTypes.Account>(`accounts/${session?.user.email}/info`).then((res) => {
+      const account = mapBackendToFrontend<FrontEndTypes.Account>(res.data, 'account')
+      return account.id;
+    })
+    
+    if (!accountId) {
       toast({
         title: "Error",
         description: "Unable to fetch account information. Please try again.",
         variant: "destructive",
       });
       return;
-    }
-
-    const accountId = {
-      "_id": accountQuery.data.data.id
     }
 
     const saveData = {
@@ -547,7 +534,7 @@ export default function RoomEditor() {
     
         return Array.from(productMap, ([_id, quantity]) => ({ _id, quantity }));
       })(),
-      "account-id": accountId._id,
+      "account-id": accountId,
       "template-id": "",
       "style-id": selectedStyleId,
       categories: customCategories
@@ -561,6 +548,7 @@ export default function RoomEditor() {
         title: `${saveType === "design" ? "Design" : "Template"} Saved`,
         description: `Your ${saveType} has been saved to the server.`,
       });
+      router.push("/customer")
     }).catch((err) => {
       console.error(`Error saving ${saveType}:`, err);
       toast({
