@@ -44,6 +44,7 @@ export interface APIDesign {
     accountId:      Account["id"];
     templateId:     Template["id"];
     styleId:        Style["id"];
+    image?:         string;
 }
 
 export interface Floor {

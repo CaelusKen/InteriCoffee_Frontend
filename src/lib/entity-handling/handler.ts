@@ -79,10 +79,13 @@ export function mapBackendDesignToFrontend(backendDesign: BackEndTypes.BackendDe
         updateDate: new Date(backendDesign["updated-date"]),
         status: backendDesign.status,
         type: backendDesign.type,
-        floors: backendDesign.floors.map(mapBackendFloorToFrontend),
+        floors: Array.isArray(backendDesign.floors) 
+            ? backendDesign.floors.map(mapBackendFloorToFrontend)
+            : [],
         accountId: backendDesign["account-id"],
         templateId: backendDesign["template-id"],
         styleId: backendDesign["style-id"],
+        image: backendDesign.image,
     };
 }
 

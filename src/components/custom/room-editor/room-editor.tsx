@@ -121,7 +121,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
           width: 8,
           length: 10,
           height: 3,
-          furniture: [],
+          furnitures: [],
         },
       ],
     },
@@ -225,7 +225,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
   }, [floors, selectedFloor, selectedRoom]);
 
   const getCurrentFurniture = useCallback(() => {
-    return getCurrentRoom()?.furniture || [];
+    return getCurrentRoom()?.furnitures || [];
   }, [getCurrentRoom]);
 
   const calculateRoomScaleFactor = (room: RoomEditorTypes.Room) => {
@@ -275,7 +275,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
               ...floor,
               rooms: floor.rooms?.map((room) =>
                 room.id === selectedRoom.toString()
-                  ? { ...room, furniture: [...room.furniture, newItem] }
+                  ? { ...room, furniture: [...room.furnitures, newItem] }
                   : room
               ),
             }
@@ -298,7 +298,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
                 room.id === selectedRoom.toString()
                   ? {
                       ...room,
-                      furniture: room.furniture.map((item) =>
+                      furniture: room.furnitures.map((item) =>
                         item.id === id.toString()
                           ? {
                               ...item,
@@ -332,7 +332,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
                 room.id === selectedRoom.toString()
                   ? {
                       ...room,
-                      furniture: room.furniture.map((item) =>
+                      furniture: room.furnitures.map((item) =>
                         item.id === id.toString()
                           ? { ...item, visible: !item.visible }
                           : item
@@ -361,25 +361,25 @@ export default function RoomEditor({ id }: RoomEditorProps) {
                   ? {
                       ...room,
                       furniture: [
-                        ...room.furniture,
+                        ...room.furnitures,
                         {
-                          ...room.furniture.find(
+                          ...room.furnitures.find(
                             (item) => item.id === id.toString()
                           )!,
                           id: Date.now().toLocaleString(),
                           name: `${
-                            room.furniture.find(
+                            room.furnitures.find(
                               (item) => item.id === id.toString()
                             )!.name
                           } (Copy)`,
                           position: [
-                            room.furniture.find(
+                            room.furnitures.find(
                               (item) => item.id === id.toString()
                             )!.position[0] + 0.5,
-                            room.furniture.find(
+                            room.furnitures.find(
                               (item) => item.id === id.toString()
                             )!.position[1],
-                            room.furniture.find(
+                            room.furnitures.find(
                               (item) => item.id === id.toString()
                             )!.position[2] + 0.5,
                           ],
@@ -404,7 +404,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
                 room.id === selectedRoom.toString()
                   ? {
                       ...room,
-                      furniture: room.furniture.filter(
+                      furniture: room.furnitures.filter(
                         (item) => item.id.toString() !== id.toString()
                       ),
                     }
@@ -529,7 +529,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
           width: room.width,
           height: room.height,
           length: room.length,
-          furnitures: room.furniture.map(furniture => ({
+          furnitures: room.furnitures.map(furniture => ({
             _id: furniture.id,
             name: furniture.name,
             model: furniture.model,
@@ -547,7 +547,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
     
         floors.forEach(floor => {
           floor?.rooms?.forEach(room => {
-            room.furniture.forEach(furniture => {
+            room.furnitures.forEach(furniture => {
               const matchingProducts = products.filter(product => product.modelTextureUrl === furniture.model);
               matchingProducts.forEach(product => {
                 if (productMap.has(product.id)) {
@@ -625,7 +625,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
             width: room.width,
             length: room.length,
             height: room.height,
-            furniture: room.furnitures.map((furniture) => ({
+            furnitures: room.furnitures.map((furniture) => ({
               id: furniture.id,
               name: furniture.name,
               model: furniture.model,
@@ -681,7 +681,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
             width: room.width,
             length: room.length,
             height: room.height,
-            furniture: room.furnitures.map((furniture) => ({
+            furnitures: room.furnitures.map((furniture) => ({
               id: furniture.id,
               name: furniture.name,
               model: furniture.model,
@@ -725,7 +725,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
                 width: 8,
                 length: 10,
                 height: 3,
-                furniture: pinnedFurniture,
+                furnitures: pinnedFurniture,
               },
             ],
           },
@@ -770,7 +770,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
             width: room.width,
             length: room.length,
             height: room.height,
-            furniture: room.furnitures.map((furniture) => ({
+            furnitures: room.furnitures.map((furniture) => ({
               id: furniture.id,
               name: furniture.name,
               model: furniture.model,
@@ -814,7 +814,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
               width: room.width,
               length: room.length,
               height: room.height,
-              furniture: room.furnitures.map((furniture) => ({
+              furnitures: room.furnitures.map((furniture) => ({
                 id: furniture.id,
                 name: furniture.name,
                 model: furniture.model,
@@ -852,7 +852,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
                   width: 8,
                   length: 10,
                   height: 3,
-                  furniture: pinnedFurniture,
+                  furnitures: pinnedFurniture,
                 },
               ],
             },
@@ -889,7 +889,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
                   ? {
                       ...room,
                       ...newRoom,
-                      furniture: room.furniture.map((item) => ({
+                      furniture: room.furnitures.map((item) => ({
                         ...item,
                         scale: item.scale.map(
                           (s) =>
@@ -929,7 +929,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
                   width: 5,
                   length: 5,
                   height: 3,
-                  furniture: [],
+                  furnitures: [],
                 },
               ],
             }
@@ -948,7 +948,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
                 room.id === selectedRoom.toString()
                   ? {
                       ...room,
-                      furniture: room.furniture.map((item) =>
+                      furniture: room.furnitures.map((item) =>
                         item.id === id.toString()
                           ? { ...item, name: newName }
                           : item
@@ -1029,7 +1029,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
                     height: 0,
                     id: "0",
                     name: "",
-                    furniture: [],
+                    furnitures: [],
                   }
                 }
                 furniture={getCurrentFurniture().filter((item) => item.visible)}
@@ -1104,7 +1104,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
             height: 0,
             id: "0",
             name: "",
-            furniture: [],
+            furnitures: [],
           }
         }
       />
