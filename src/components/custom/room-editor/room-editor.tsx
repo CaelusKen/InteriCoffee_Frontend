@@ -476,7 +476,6 @@ export default function RoomEditor({ id }: RoomEditorProps) {
     }
   };
 
-
   const handleSaveCustomer = useCallback(() => {
     handleSaveClick("design");
   }, []);
@@ -505,87 +504,123 @@ export default function RoomEditor({ id }: RoomEditorProps) {
       return;
     }
 
-    if (!saveName || !designImage) {
+    if (!saveName) {
       toast({
         title: "Error",
-        description: "Please provide a name and image for the design.",
+        description: "Please provide a name for the design.",
         variant: "destructive",
       })
       return
     }
 
-    const saveData = {
-      name: saveName,
-      description: saveDescription,
-      status: "DRAFT", // You might want to add a status field to your form
-      image: designImageUrl,
-      type: saveType?.toUpperCase(),
-      floors: floors.map(floor => ({
-        _id: floor.id,
-        name: floor.name,
-        "design-template-id": searchParams.get('templateId') || '',
-        rooms: floor?.rooms?.map(room => ({
-          name: room.name,
-          width: room.width,
-          height: room.height,
-          length: room.length,
-          furnitures: room.furnitures.map(furniture => ({
-            _id: furniture.id,
-            name: furniture.name,
-            model: furniture.model,
-            position: furniture.position,
-            rotation: furniture.rotation,
-            scale: furniture.scale,
-            visible: furniture.visible,
-            category: furniture.category
-          })),
-          "non-furnitures": [] // Add this field if you have non-furniture items
-        }))
-      })),
-      products: (() => {
-        const productMap = new Map();
-    
-        floors.forEach(floor => {
-          floor?.rooms?.forEach(room => {
-            room.furnitures.forEach(furniture => {
-              const matchingProducts = products.filter(product => product.modelTextureUrl === furniture.model);
-              matchingProducts.forEach(product => {
-                if (productMap.has(product.id)) {
-                  productMap.set(product.id, productMap.get(product.id) + 1);
-                } else {
-                  productMap.set(product.id, 1);
-                }
-              });
-            });
-          });
-        });
-    
-        return Array.from(productMap, ([_id, quantity]) => ({ _id, quantity }));
-      })(),
-      "account-id": accountId,
-      "template-id": "",
-      "style-id": selectedStyleId,
-      categories: customCategories
-    };
+    try {
+      let existingDesign: FrontEndTypes.APIDesign | null = null;
+      
+      if (searchParams.get("designId")) {
+        const response = await api.get<FrontEndTypes.APIDesign>(`designs/${searchParams.get("designId")}`, undefined, accessToken ?? '')
+        existingDesign = mapBackendToFrontend<FrontEndTypes.APIDesign>(response.data, 'design')
+      }
 
-    await api.post("designs", saveData, accessToken ?? '').then(() => {
+      const saveData = {
+        name: saveName,
+        description: saveDescription || existingDesign?.description || '',
+        status: "DRAFT",
+        image: designImageUrl || existingDesign?.image || '',
+        type: saveType?.toUpperCase() || existingDesign?.type || '',
+        floors: floors.map(floor => ({
+          _id: floor.id,
+          name: floor.name,
+          "design-template-id": searchParams.get('templateId') ||  '',
+          rooms: floor?.rooms?.map(room => ({
+            name: room.name,
+            width: room.width,
+            height: room.height,
+            length: room.length,
+            furnitures: room.furnitures.map(furniture => ({
+              _id: furniture.id,
+              name: furniture.name,
+              model: furniture.model,
+              position: furniture.position,
+              rotation: furniture.rotation,
+              scale: furniture.scale,
+              visible: furniture.visible,
+              category: furniture.category
+            })),
+            "non-furnitures": existingDesign?.floors.find(f => f.id === floor.id)?.rooms.find(r => r.name === room.name)?.nonFurnitures || []
+          }))
+        })),
+        products: (() => {
+          const productMap = new Map()
+      
+          floors.forEach(floor => {
+            floor?.rooms?.forEach(room => {
+              room.furnitures.forEach(furniture => {
+                const matchingProducts = products.filter(product => product.modelTextureUrl === furniture.model)
+                matchingProducts.forEach(product => {
+                  if (productMap.has(product.id)) {
+                    productMap.set(product.id, productMap.get(product.id) + 1)
+                  } else {
+                    productMap.set(product.id, 1)
+                  }
+                })
+              })
+            })
+          })
+      
+          return Array.from(productMap, ([_id, quantity]) => ({ _id, quantity }))
+        })(),
+        "account-id": accountId,
+        "template-id": existingDesign?.templateId || '',
+        "style-id": selectedStyleId || existingDesign?.styleId || '',
+        categories: customCategories.length > 0 ? customCategories :  []
+      }
+
+      if (searchParams.get("designId")) {
+        // Update existing design
+        const patchData: Partial<typeof saveData> = {}
+        
+        for (const [key, value] of Object.entries(saveData)) {
+          if (JSON.stringify(existingDesign?.[key as keyof FrontEndTypes.APIDesign]) !== JSON.stringify(value)) {
+            patchData[key as keyof typeof saveData] = value as any
+          }
+        }
+
+        // Only send the PATCH request if there are changes
+        if (Object.keys(patchData).length > 0) {
+          await api.patch(`designs/${searchParams.get("designId")}`, patchData, undefined, accessToken ?? '')
+          toast({
+            title: `${saveType === "design" ? "Design" : "Template"} Updated`,
+            description: `Your ${saveType} has been updated on the server.`,
+          });
+        } else {
+          toast({
+            title: "No Changes",
+            description: "No changes were detected. The design was not updated.",
+          });
+        }
+      } else {
+        // Create new design
+        await api.post("designs", saveData, accessToken ?? '')
+        toast({
+          title: `${saveType === "design" ? "Design" : "Template"} Saved`,
+          description: `Your ${saveType} has been saved to the server.`,
+        });
+      }
+
       // Clear local storage after successful save
       clearStorage();
       setIsSaveDialogOpen(false);
-      toast({
-        title: `${saveType === "design" ? "Design" : "Template"} Saved`,
-        description: `Your ${saveType} has been saved to the server.`,
-      });
       router.push("/customer")
-    }).catch((err) => {
+    } catch (err) {
       console.error(`Error saving ${saveType}:`, err);
       toast({
         title: "Save Failed",
         description: `Failed to save ${saveType}. Please try again.`,
         variant: "destructive",
       });
-    })
+    }
   };
+
 
   const loadDesignOrTemplate = useCallback(async () => {
     const templateId = searchParams.get('templateId')
@@ -1225,7 +1260,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
           </div>
           <DialogFooter>
             <Button onClick={handleSaveConfirm}>Save</Button>
-            <Button variant={'outline'} onClick={() => setIsSaveDialogOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setIsSaveDialogOpen(false)}>Cancel</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
