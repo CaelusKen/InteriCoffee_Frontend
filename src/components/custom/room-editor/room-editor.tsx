@@ -10,6 +10,7 @@ import React, {
 import { Canvas } from "@react-three/fiber";
 import * as RoomEditorTypes from "@/types/room-editor";
 import * as FrontEndTypes from "@/types/frontend/entities";
+import * as BackendTypes from "@/types/backend/entities";
 import { Floor } from "@/types/room-editor";
 import { useUndoRedo } from "@/hooks/use-undo-redo";
 import Toolbar from "./toolbar";
@@ -49,7 +50,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useHotkeys } from "react-hotkeys-hook";
 import { api } from "@/service/api";
 import { ApiResponse, PaginatedResponse } from "@/types/api";
@@ -72,6 +73,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "next-auth/react";
 import { useAccessToken } from "@/hooks/use-access-token";
 import { mapBackendAccountToFrontend, mapBackendToFrontend } from "@/lib/entity-handling/handler";
+import { storage } from '@/service/firebase'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { FileUpload } from "../sections/body/merchant/products/file-upload";
 
 const ROOM_SCALE_FACTOR = 10;
 
@@ -99,7 +103,11 @@ const fetchProducts = async (): Promise<
   return api.getPaginated<Product>("products");
 };
 
-export default function RoomEditor() {
+interface RoomEditorProps {
+  id?: string
+}
+
+export default function RoomEditor({ id }: RoomEditorProps) {
   const [floors, updateFloors, undo, redo, canUndo, canRedo] = useUndoRedo<
     Floor[]
   >([
@@ -125,6 +133,8 @@ export default function RoomEditor() {
   const [transformMode, setTransformMode] = useState<
     "translate" | "rotate" | "scale"
   >("translate");
+  const [designImage, setDesignImage] = useState<File | null>(null)
+  const [designImageUrl, setDesignImageUrl] = useState<string>('')
   const [isRoomDialogOpen, setIsRoomDialogOpen] = useState(false);
   const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
   const [isWarningDialogOpen, setIsWarningDialogOpen] = useState(true);
@@ -133,6 +143,7 @@ export default function RoomEditor() {
   >([]);
 
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [designId, setDesignId] = useState<string | null>(null)
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [saveType, setSaveType] = useState<"design" | "template" | null>(null);
   const [saveName, setSaveName] = useState("");
@@ -141,6 +152,9 @@ export default function RoomEditor() {
   const [newCategory, setNewCategory] = useState("");
   const [selectedStyleId, setSelectedStyleId] = useState("");
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const searchParams = useSearchParams()
 
   const { data: session } = useSession();
 
@@ -237,6 +251,11 @@ export default function RoomEditor() {
   const categories = categoriesData?.data.items ?? [];
   const templates = templatesData?.data.items ?? [];
   const products = productsData?.data.items ?? [];
+
+  const handleImageUpload = (file: File, downloadURL: string) => {
+    setDesignImage(file)
+    setDesignImageUrl(downloadURL)
+  }
 
   const addFurniture = (model: string, category: ProductCategory["id"][]) => {
     const newItem: RoomEditorTypes.Furniture = {
@@ -486,16 +505,25 @@ export default function RoomEditor() {
       return;
     }
 
+    if (!saveName || !designImage) {
+      toast({
+        title: "Error",
+        description: "Please provide a name and image for the design.",
+        variant: "destructive",
+      })
+      return
+    }
+
     const saveData = {
       name: saveName,
       description: saveDescription,
       status: "DRAFT", // You might want to add a status field to your form
-      image: "", // You might want to add an image upload feature
+      image: designImageUrl,
       type: saveType?.toUpperCase(),
       floors: floors.map(floor => ({
         _id: floor.id,
         name: floor.name,
-        "design-template-id": "", // You might want to add this field if necessary
+        "design-template-id": searchParams.get('templateId'),
         rooms: floor?.rooms?.map(room => ({
           name: room.name,
           width: room.width,
@@ -559,49 +587,121 @@ export default function RoomEditor() {
     })
   };
 
+  const loadDesignOrTemplate = useCallback(async () => {
+    const templateId = searchParams.get('templateId')
+    const loadDesignId = searchParams.get('designId')
+
+    if (loadDesignId) {
+      await loadDesign(loadDesignId)
+    } else if (templateId) {
+      await loadTemplate(templateId)
+    }
+
+    setIsLoading(false)
+  }, [searchParams])
+
+  useEffect(() => {
+    loadDesignOrTemplate()
+  }, [loadDesignOrTemplate])
+
+  const loadDesign = async (designId: string) => {
+    try {
+      const response = await api.get<FrontEndTypes.APIDesign>(`designs/${designId}`, undefined, accessToken ?? '')
+      const frontendDesign = mapBackendToFrontend<FrontEndTypes.APIDesign>(response.data, 'design')
+
+      console.log('Loaded design:', frontendDesign)
+
+      const roomEditorDesign: RoomEditorTypes.Design = {
+        id: frontendDesign.id,
+        createdAt: frontendDesign.createdDate,
+        updatedAt: frontendDesign.updateDate,
+        type: "Sketch",
+        floors: frontendDesign.floors.map((floor) => ({
+          id: floor.id,
+          name: floor.name,
+          rooms: floor.rooms.map((room) => ({
+            id: room.name,
+            name: room.name,
+            width: room.width,
+            length: room.length,
+            height: room.height,
+            furniture: room.furnitures.map((furniture) => ({
+              id: furniture.id,
+              name: furniture.name,
+              model: furniture.model,
+              position: furniture.position as [number, number, number],
+              rotation: furniture.rotation as [number, number, number],
+              scale: furniture.scale as [number, number, number],
+              visible: furniture.visible,
+              category: furniture.category || [],
+            })),
+          })),
+        })),
+      }
+
+      updateFloors(roomEditorDesign.floors)
+      setDesignId(designId)
+      toast({
+        title: "Design loaded successfully",
+        description: `Loaded design: ${frontendDesign.name}`,
+      })
+    } catch (error) {
+      console.error("Error loading design:", error)
+      toast({
+        title: "Error loading design",
+        description: "Failed to load the design. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const loadTemplate = async (templateId: string) => {
     try {
-      const response = await api.get<FrontEndTypes.APIDesign>(
-        `templates/${templateId}`
-      );
-      const frontendTemplate = response.data;
-
-      // Convert frontend template back to RoomEditor types
+      const response = await api.get<BackendTypes.BackendTemplate>(`templates/${templateId}`);
+      const backendTemplate = response.data;
+  
+      console.log('Fetched template:', backendTemplate);
+  
+      const frontendTemplate = mapBackendToFrontend<FrontEndTypes.Template>(backendTemplate, 'template');
+  
+      console.log('Converted template:', frontendTemplate);
+  
+      // Convert frontend template to RoomEditor types
       const roomEditorTemplate: RoomEditorTypes.Design = {
         id: frontendTemplate.id,
         createdAt: frontendTemplate.createdDate,
-        updatedAt: frontendTemplate.updateDate,
-        floors: frontendTemplate.floors.map((floor) => ({
-          name: floor.name,
-          rooms:
-            floor.rooms?.map((room, index) => ({
-              id: index.toString(),
-              name: room.name,
-              width: room.width,
-              length: room.length,
-              height: room.height,
-              furniture: room.furnitures.map((furniture) => ({
-                id: furniture.id,
-                name: furniture.name,
-                model: furniture.model,
-                position: furniture.position as [number, number, number],
-                rotation: furniture.rotation as [number, number, number],
-                scale: furniture.scale as [number, number, number],
-                visible: furniture.visible,
-                category: furniture.category || [],
-              })),
-            })) || [],
-        })),
+        updatedAt: frontendTemplate.updatedDate,
         type: frontendTemplate.type as "Template" | "Sketch",
+        floors: frontendTemplate.floors.map((floor) => ({
+          id: floor.id,
+          name: floor.name,
+          rooms: floor.rooms.map((room) => ({
+            id: room.name, // Using room name as id since room doesn't have an id in the frontend type
+            name: room.name,
+            width: room.width,
+            length: room.length,
+            height: room.height,
+            furniture: room.furnitures.map((furniture) => ({
+              id: furniture.id,
+              name: furniture.name,
+              model: furniture.model,
+              position: furniture.position as [number, number, number],
+              rotation: furniture.rotation as [number, number, number],
+              scale: furniture.scale as [number, number, number],
+              visible: furniture.visible,
+              category: furniture.category || [],
+            })),
+          })),
+        })),
       };
-
+  
+      console.log('RoomEditor template:', roomEditorTemplate);
+  
       if (roomEditorTemplate.type === "Sketch") {
         // Pin the furniture items featured in the template
         const pinnedFurniture = products
           .filter((product) =>
-            roomEditorTemplate.floors[0]?.rooms?.[0]?.furniture.some(
-              (f) => f.id === product.id
-            )
+            frontendTemplate.products.some((templateProduct) => templateProduct.id === product.id)
           )
           .map((product) => ({
             id: product.id,
@@ -613,7 +713,7 @@ export default function RoomEditor() {
             visible: true,
             category: product.categoryIds,
           }));
-
+  
         updateFloors([
           {
             id: "1",
@@ -634,12 +734,149 @@ export default function RoomEditor() {
         // Load the template as before
         updateFloors(roomEditorTemplate.floors);
       }
+  
+      console.log('Floors updated:', floors);
       alert("Template loaded successfully!");
     } catch (error) {
       console.error("Error loading template:", error);
       alert("Failed to load template. Please try again.");
     }
   };
+
+  const loadContent = useCallback(async () => {
+    if (!id) {
+      setIsLoading(false)
+      return
+    }
+
+    try {
+      // First, try to load as a design
+      const designResponse = await api.getById<FrontEndTypes.APIDesign>(`designs`, id, accessToken ?? '')
+      const frontendDesign = mapBackendToFrontend<FrontEndTypes.APIDesign>(designResponse.data, 'design')
+
+      console.log('Loaded design:', frontendDesign)
+
+      const roomEditorDesign: RoomEditorTypes.Design = {
+        id: frontendDesign.id,
+        createdAt: frontendDesign.createdDate,
+        updatedAt: frontendDesign.updateDate,
+        type: "Sketch",
+        floors: frontendDesign.floors.map((floor) => ({
+          id: floor.id,
+          name: floor.name,
+          rooms: floor.rooms.map((room) => ({
+            id: room.name,
+            name: room.name,
+            width: room.width,
+            length: room.length,
+            height: room.height,
+            furniture: room.furnitures.map((furniture) => ({
+              id: furniture.id,
+              name: furniture.name,
+              model: furniture.model,
+              position: furniture.position as [number, number, number],
+              rotation: furniture.rotation as [number, number, number],
+              scale: furniture.scale as [number, number, number],
+              visible: furniture.visible,
+              category: furniture.category || [],
+            })),
+          })),
+        })),
+      }
+
+      updateFloors(roomEditorDesign.floors)
+      setDesignId(frontendDesign.id)
+      toast({
+        title: "Design loaded successfully",
+        description: `Loaded design: ${frontendDesign.name}`,
+      })
+    } catch (designError) {
+      console.error("Error loading design:", designError)
+      
+      try {
+        // If it's not a design, try to load as a template
+        const templateResponse = await api.getById<FrontEndTypes.Template>(`templates`, id, accessToken ?? '')
+        const frontendTemplate = mapBackendToFrontend<FrontEndTypes.Template>(templateResponse.data, 'template')
+
+        console.log('Loaded template:', frontendTemplate)
+
+        const roomEditorTemplate: RoomEditorTypes.Design = {
+          id: frontendTemplate.id,
+          createdAt: frontendTemplate.createdDate,
+          updatedAt: frontendTemplate.updatedDate,
+          type: frontendTemplate.type as "Template" | "Sketch",
+          floors: frontendTemplate.floors.map((floor) => ({
+            id: floor.id,
+            name: floor.name,
+            rooms: floor.rooms.map((room) => ({
+              id: room.name,
+              name: room.name,
+              width: room.width,
+              length: room.length,
+              height: room.height,
+              furniture: room.furnitures.map((furniture) => ({
+                id: furniture.id,
+                name: furniture.name,
+                model: furniture.model,
+                position: furniture.position as [number, number, number],
+                rotation: furniture.rotation as [number, number, number],
+                scale: furniture.scale as [number, number, number],
+                visible: furniture.visible,
+                category: furniture.category || [],
+              })),
+            })),
+          })),
+        }
+
+        if (roomEditorTemplate.type === "Sketch") {
+          // Handle sketch type template
+          const pinnedFurniture = frontendTemplate.products.map((product) => ({
+            id: product.id,
+            name: product.id, // You might want to fetch the actual product name
+            model: '', // You might want to fetch the actual model URL
+            position: [0, 0, 0] as [number, number, number],
+            rotation: [0, 0, 0] as [number, number, number],
+            scale: [1, 1, 1] as [number, number, number],
+            visible: true,
+            category: [],
+          }))
+
+          updateFloors([
+            {
+              id: "1",
+              name: "Ground Floor",
+              rooms: [
+                {
+                  id: "1",
+                  name: "Main Room",
+                  width: 8,
+                  length: 10,
+                  height: 3,
+                  furniture: pinnedFurniture,
+                },
+              ],
+            },
+          ])
+        } else {
+          updateFloors(roomEditorTemplate.floors)
+        }
+
+        toast({
+          title: "Template loaded successfully",
+          description: `Loaded template: ${frontendTemplate.name}`,
+        })
+      } catch (templateError) {
+        console.error("Error loading template:", templateError)
+        toast({
+          title: "Error loading content",
+          description: "Failed to load the design or template. Please try again.",
+          variant: "destructive",
+        })
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }, [id, accessToken, toast, updateFloors])
 
   const handleRoomChange = (newRoom: RoomEditorTypes.Room) => {
     updateFloors(
@@ -724,6 +961,10 @@ export default function RoomEditor() {
       )
     );
   };
+
+  useEffect(() => {
+    loadContent()
+  }, [loadContent])
 
   // Keyboard shortcuts
   useHotkeys("ctrl+z", undo, [undo]);
@@ -982,6 +1223,11 @@ export default function RoomEditor() {
                 ))}
               </div>
             </div>
+            <FileUpload
+              label="Design Image"
+              accept="image/*"
+              onChange={handleImageUpload}
+            />
           </div>
           <DialogFooter>
             <Button onClick={handleSaveConfirm}>Save</Button>

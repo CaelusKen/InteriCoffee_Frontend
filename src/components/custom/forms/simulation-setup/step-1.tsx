@@ -53,15 +53,16 @@ const SimulationSetupForm = () => {
       setStep(2)
     } else if (startOption === "scratch") {
       router.push("/simulation")
+    } else if (startOption === "load") {
+      // Add logic to load existing design
+      const designId = "your-design-id" // Replace with actual design ID
+      router.push(`/simulation?designId=${designId}`)
     }
   }
 
   const handleTemplateSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (selectedTemplate) {
-      console.log(`Selected template: ${selectedTemplate}`)
-      console.log(`Sketch product IDs: ${sketchProductIds}`)
-      // Here you would typically store sketchProductIds in a state management solution or local storage
       router.push(`/simulation?templateId=${selectedTemplate}`)
     }
   }
