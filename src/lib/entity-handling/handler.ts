@@ -86,6 +86,10 @@ export function mapBackendDesignToFrontend(backendDesign: BackEndTypes.BackendDe
         templateId: backendDesign["template-id"],
         styleId: backendDesign["style-id"],
         image: backendDesign.image,
+        products: backendDesign.products?.map(product => ({
+            id: product["_id"],
+            quantity: product.quantity,
+        })),
     };
 }
 

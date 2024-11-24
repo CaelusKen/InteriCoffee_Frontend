@@ -275,7 +275,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
               ...floor,
               rooms: floor.rooms?.map((room) =>
                 room.id === selectedRoom.toString()
-                  ? { ...room, furniture: [...room.furnitures, newItem] }
+                  ? { ...room, furnitures: [...room.furnitures, newItem] }
                   : room
               ),
             }
@@ -298,7 +298,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
                 room.id === selectedRoom.toString()
                   ? {
                       ...room,
-                      furniture: room.furnitures.map((item) =>
+                      furnitures: room.furnitures.map((item) =>
                         item.id === id.toString()
                           ? {
                               ...item,
@@ -332,7 +332,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
                 room.id === selectedRoom.toString()
                   ? {
                       ...room,
-                      furniture: room.furnitures.map((item) =>
+                      furnitures: room.furnitures.map((item) =>
                         item.id === id.toString()
                           ? { ...item, visible: !item.visible }
                           : item
@@ -360,7 +360,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
                 room.id === selectedRoom.toString()
                   ? {
                       ...room,
-                      furniture: [
+                      furnitures: [
                         ...room.furnitures,
                         {
                           ...room.furnitures.find(
@@ -404,7 +404,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
                 room.id === selectedRoom.toString()
                   ? {
                       ...room,
-                      furniture: room.furnitures.filter(
+                      furnitures: room.furnitures.filter(
                         (item) => item.id.toString() !== id.toString()
                       ),
                     }
@@ -427,7 +427,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
               ...floor,
               rooms: floor.rooms?.map((room) =>
                 room.id === selectedRoom.toString()
-                  ? { ...room, furniture: [] }
+                  ? { ...room, furnitures: [] }
                   : room
               ),
             }
@@ -523,7 +523,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
       floors: floors.map(floor => ({
         _id: floor.id,
         name: floor.name,
-        "design-template-id": searchParams.get('templateId'),
+        "design-template-id": searchParams.get('templateId') || '',
         rooms: floor?.rooms?.map(room => ({
           name: room.name,
           width: room.width,
@@ -609,8 +609,6 @@ export default function RoomEditor({ id }: RoomEditorProps) {
       const response = await api.get<FrontEndTypes.APIDesign>(`designs/${designId}`, undefined, accessToken ?? '')
       const frontendDesign = mapBackendToFrontend<FrontEndTypes.APIDesign>(response.data, 'design')
 
-      console.log('Loaded design:', frontendDesign)
-
       const roomEditorDesign: RoomEditorTypes.Design = {
         id: frontendDesign.id,
         createdAt: frontendDesign.createdDate,
@@ -660,11 +658,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
       const response = await api.get<BackendTypes.BackendTemplate>(`templates/${templateId}`);
       const backendTemplate = response.data;
   
-      console.log('Fetched template:', backendTemplate);
-  
       const frontendTemplate = mapBackendToFrontend<FrontEndTypes.Template>(backendTemplate, 'template');
-  
-      console.log('Converted template:', frontendTemplate);
   
       // Convert frontend template to RoomEditor types
       const roomEditorTemplate: RoomEditorTypes.Design = {
@@ -889,7 +883,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
                   ? {
                       ...room,
                       ...newRoom,
-                      furniture: room.furnitures.map((item) => ({
+                      furnitures: room.furnitures.map((item) => ({
                         ...item,
                         scale: item.scale.map(
                           (s) =>
@@ -948,7 +942,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
                 room.id === selectedRoom.toString()
                   ? {
                       ...room,
-                      furniture: room.furnitures.map((item) =>
+                      furnitures: room.furnitures.map((item) =>
                         item.id === id.toString()
                           ? { ...item, name: newName }
                           : item

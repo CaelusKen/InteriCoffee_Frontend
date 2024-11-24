@@ -45,6 +45,10 @@ export interface APIDesign {
     templateId:     Template["id"];
     styleId:        Style["id"];
     image?:         string;
+    products?:{
+        id:         Product["id"],
+        quantity:   number
+    }[]
 }
 
 export interface Floor {
