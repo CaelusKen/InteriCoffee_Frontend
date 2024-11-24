@@ -32,7 +32,8 @@ export interface Room {
     width: number;
     length: number;
     height: number;
-    furniture: Furniture[];
+    furnitures: Furniture[];
+    nonFurnitures?: Furniture[];
 }
 
 export interface Floor {
