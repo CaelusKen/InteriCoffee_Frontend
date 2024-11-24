@@ -61,8 +61,9 @@ const Header = () => {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           className='text-xl sm:text-2xl font-bold'
+          onClick={() => router.push('/')}
         >
-          Logo
+          InteriCoffee
         </motion.h1>
     
         <nav className='hidden lg:block'>

@@ -44,7 +44,11 @@ export interface BackendDesign {
     "account-id":   string;
     "template-id":  string;
     "style-id":     string;
-    image:          string
+    image:          string;
+    products?: {
+        "_id":      string;
+        quantity:   number;
+    }[]
 }
 
 export interface BackendFloor {

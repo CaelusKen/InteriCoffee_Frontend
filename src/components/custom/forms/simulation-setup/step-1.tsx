@@ -86,7 +86,7 @@ const SimulationSetupForm = () => {
   }, [selectedTemplate, templates])
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="w-full h-screen my-auto mx-auto p-4">
       {step === 1 && (
         <Card className="w-full max-w-md mx-auto">
           <CardHeader>
