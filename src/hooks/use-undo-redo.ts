@@ -25,15 +25,10 @@ export function useUndoRedo<T>(initialState: T) {
     undoStack.current.push(state)
     redoStack.current = []
     setState(newState)
-    console.log('State updated:', newState)
   }, [state])
 
   const canUndo = undoStack.current.length > 0
   const canRedo = redoStack.current.length > 0
-
-  useEffect(() => {
-    console.log('Current state:', state)
-  }, [state])
 
   return [state, update, undo, redo, canUndo, canRedo] as const
 }

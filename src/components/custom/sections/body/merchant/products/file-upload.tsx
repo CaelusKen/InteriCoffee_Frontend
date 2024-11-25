@@ -8,13 +8,14 @@ import { Canvas } from '@react-three/fiber'
 import { useGLTF, OrbitControls } from '@react-three/drei'
 import { storage } from '@/service/firebase'
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
+import { Button } from "@/components/ui/button"
 
 type SingleFileUploadProps = {
   label: string
   accept: string
   onChange: (file: File, downloadURL: string) => void
   multiple?: false
-  preview?: string
+  currentImageUrl?: string
 }
 
 type MultipleFileUploadProps = {
@@ -22,7 +23,6 @@ type MultipleFileUploadProps = {
   accept: string
   onChange: (files: File[], downloadURLs: string[]) => void
   multiple: true
-  preview?: string[]
 }
 
 type FileUploadProps = SingleFileUploadProps | MultipleFileUploadProps
@@ -39,23 +39,23 @@ function Model({ url }: { url: string }) {
 }
 
 export function FileUpload(props: FileUploadProps) {
-  const { label, accept, onChange, multiple, preview } = props
+  const { label, accept, onChange, multiple } = props
   const [previewFiles, setPreviewFiles] = useState<PreviewFile[]>([])
   const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
-    if (preview) {
-      setPreviewFiles(
-        Array.isArray(preview)
-          ? preview.map(url => ({ url, type: '3d', file: null }))
-          : [{ url: preview, type: '3d', file: null }]
-      )
+    if (!multiple && 'currentImageUrl' in props && props.currentImageUrl) {
+      setPreviewFiles([{ url: props.currentImageUrl, type: 'image', file: null }])
     }
 
     return () => {
-      previewFiles.forEach(file => URL.revokeObjectURL(file.url))
+      previewFiles.forEach(file => {
+        if (file.url.startsWith('blob:')) {
+          URL.revokeObjectURL(file.url)
+        }
+      })
     }
-  }, [preview])
+  }, [multiple, props])
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files
@@ -68,66 +68,54 @@ export function FileUpload(props: FileUploadProps) {
       file
     }))
 
-    if (multiple) {
-      setPreviewFiles(prevFiles => [...prevFiles, ...newPreviewFiles])
-    } else {
-      setPreviewFiles([newPreviewFiles[0]])
-    }
-
-    // Upload files to Firebase
-    const uploadedURLs = await uploadFilesToFirebase(files)
-
-    if (multiple) {
-      onChange(files, uploadedURLs)
-    } else {
-      onChange(files[0], uploadedURLs[0])
-    }
-  }
-
-  const uploadFilesToFirebase = async (files: File[]): Promise<string[]> => {
     setUploading(true)
     try {
-      const uploads = files.map(async (file) => {
-        const storageRef = ref(storage, `template-images/${Date.now()}-${file.name}`)
-        const uploadTask = uploadBytesResumable(storageRef, file)
+      const uploadedURLs = await uploadFilesToFirebase(files)
 
-        return new Promise<string>((resolve, reject) => {
-          uploadTask.on(
-            'state_changed',
-            null,
-            (error) => reject(error),
-            async () => {
-              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref)
-              resolve(downloadURL)
-            }
-          )
-        })
-      })
-
-      const uploadedURLs = await Promise.all(uploads)
-      console.log('Uploaded files URLs:', uploadedURLs)
-
-      // Update previews with Firebase URLs
-      setPreviewFiles((prev) =>
-        prev.map((preview, i) => ({
-          ...preview,
-          url: uploadedURLs[i] || preview.url,
-        }))
-      )
-
-      return uploadedURLs
+      if (multiple) {
+        setPreviewFiles(prevFiles => [...prevFiles, ...newPreviewFiles])
+        ;(onChange as MultipleFileUploadProps['onChange'])(files, uploadedURLs)
+      } else {
+        setPreviewFiles([newPreviewFiles[0]])
+        ;(onChange as SingleFileUploadProps['onChange'])(files[0], uploadedURLs[0])
+      }
     } catch (error) {
       console.error('Error uploading files:', error)
-      return []
     } finally {
       setUploading(false)
     }
   }
 
+  const uploadFilesToFirebase = async (files: File[]): Promise<string[]> => {
+    const uploads = files.map(async (file) => {
+      const storageRef = ref(storage, `design-images/${Date.now()}-${file.name}`)
+      const uploadTask = uploadBytesResumable(storageRef, file)
+
+      return new Promise<string>((resolve, reject) => {
+        uploadTask.on(
+          'state_changed',
+          null,
+          (error) => reject(error),
+          async () => {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref)
+            resolve(downloadURL)
+          }
+        )
+      })
+    })
+
+    return Promise.all(uploads)
+  }
+
   const handleRemoveFile = (index: number) => {
     setPreviewFiles(prevFiles => prevFiles.filter((_, i) => i !== index))
     if (multiple) {
-      onChange(previewFiles.filter((_, i) => i !== index).map(file => file.file as File), [])
+      (onChange as MultipleFileUploadProps['onChange'])(
+        previewFiles.filter((_, i) => i !== index).map(file => file.file as File),
+        previewFiles.filter((_, i) => i !== index).map(file => file.url)
+      )
+    } else {
+      (onChange as SingleFileUploadProps['onChange'])(new File([], ''), '')
     }
   }
 
@@ -138,12 +126,14 @@ export function FileUpload(props: FileUploadProps) {
       <div className="mt-4 grid grid-cols-3 gap-2 overflow-y-auto max-h-48">
         {previewFiles.map((file, index) => (
           <div key={index} className="relative w-[240px] h-[160px] border rounded-md overflow-hidden">
-            <button
+            <Button
               onClick={() => handleRemoveFile(index)}
-              className="absolute top-1 right-1 z-10 bg-red-500 text-white text-xs w-6 h-6 rounded-full"
+              variant="destructive"
+              size="sm"
+              className="absolute top-1 right-1 z-10"
             >
-              &times;
-            </button>
+              Remove
+            </Button>
             {file.type === 'image' ? (
               <Image
                 src={file.url}
@@ -169,19 +159,17 @@ export function FileUpload(props: FileUploadProps) {
 
   return (
     <div className="space-y-2">
-      <div className="w-1/2">
+      <div className="grid w-full max-w-sm items-center gap-1.5">
         <Label htmlFor={label}>{label}</Label>
         <Input
           id={label}
-          name={label}
           type="file"
           accept={accept}
           onChange={handleFileChange}
           multiple={multiple}
-          className="p-2 text-sm border-gray-300 rounded-md"
         />
       </div>
-      {uploading && <p>Uploading...</p>}
+      {uploading && <p className="text-sm text-muted-foreground">Uploading...</p>}
       {renderPreview()}
     </div>
   )

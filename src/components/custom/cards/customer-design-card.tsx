@@ -46,14 +46,10 @@ const CustomerDesignCard = ({ design }: CustomerDesignCardProps) => {
           </Link>
         </Button>
         <Button variant="default" size="sm" asChild>
-          <Link href={`/designs/${design.id}/edit`}>
+          <Link href={`/simulation?designId=${design.id}`}>
             <Edit2 className="w-4 h-4 mr-2" />
             Edit
           </Link>
-        </Button>
-        <Button variant="destructive" size="sm" onClick={() => console.log('Delete design', design.id)}>
-            <Trash2 className="w-4 h-4" />
-            Delete
         </Button>
       </CardFooter>
     </Card>
