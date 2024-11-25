@@ -76,6 +76,8 @@ import { mapBackendAccountToFrontend, mapBackendToFrontend } from "@/lib/entity-
 import { storage } from '@/service/firebase'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { FileUpload } from "../sections/body/merchant/products/file-upload";
+import { SaveDialog } from "./save-dialog";
+import { useContentLoader } from "@/hooks/use-content-loader";
 
 const ROOM_SCALE_FACTOR = 10;
 
@@ -108,6 +110,7 @@ interface RoomEditorProps {
 }
 
 export default function RoomEditor({ id }: RoomEditorProps) {
+  const searchParams = useSearchParams()
   const [floors, updateFloors, undo, redo, canUndo, canRedo] = useUndoRedo<
     Floor[]
   >([
@@ -143,31 +146,45 @@ export default function RoomEditor({ id }: RoomEditorProps) {
   >([]);
 
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [designId, setDesignId] = useState<string | null>(null)
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [saveType, setSaveType] = useState<"design" | "template" | null>(null);
-  const [saveName, setSaveName] = useState("");
-  const [saveDescription, setSaveDescription] = useState("");
   const [customCategories, setCustomCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState("");
-  const [selectedStyleId, setSelectedStyleId] = useState("");
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(true)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const searchParams = useSearchParams()
-
-  const { data: session } = useSession();
-
-  const accessToken = useAccessToken()
-
-
-  // This for the style selection
   const stylesQuery = useQuery({
     queryKey: ["styles"],
     queryFn: fetchStyles,
   });
+  const { data: categoriesData } = useQuery({
+    queryKey: ["product-categories"],
+    queryFn: fetchProductCategories,
+  });
 
+  const { data: templatesData } = useQuery({
+    queryKey: ["templates"],
+    queryFn: fetchTemplates,
+  });
+
+  const { data: productsData } = useQuery({
+    queryKey: ["products"],
+    queryFn: fetchProducts,
+  });
+
+  const categories = categoriesData?.data.items ?? [];
+  const templates = templatesData?.data.items ?? [];
+  const products = productsData?.data.items ?? [];
   const styles = stylesQuery.data?.data.items ?? [];
+
+  const { isLoading, designId, loadContent, loadTemplate } = useContentLoader(updateFloors, products);
+
+  useEffect(() => {
+    loadContent();
+  }, [loadContent]);
+
+  const { data: session } = useSession();
+
+  const accessToken = useAccessToken()
 
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -232,30 +249,6 @@ export default function RoomEditor({ id }: RoomEditorProps) {
     const maxDimension = Math.max(room.width, room.length, room.height);
     return ROOM_SCALE_FACTOR / maxDimension;
   };
-
-  const { data: categoriesData } = useQuery({
-    queryKey: ["product-categories"],
-    queryFn: fetchProductCategories,
-  });
-
-  const { data: templatesData } = useQuery({
-    queryKey: ["templates"],
-    queryFn: fetchTemplates,
-  });
-
-  const { data: productsData } = useQuery({
-    queryKey: ["products"],
-    queryFn: fetchProducts,
-  });
-
-  const categories = categoriesData?.data.items ?? [];
-  const templates = templatesData?.data.items ?? [];
-  const products = productsData?.data.items ?? [];
-
-  const handleImageUpload = (file: File, downloadURL: string) => {
-    setDesignImage(file)
-    setDesignImageUrl(downloadURL)
-  }
 
   const addFurniture = (model: string, category: ProductCategory["id"][]) => {
     const newItem: RoomEditorTypes.Furniture = {
@@ -469,13 +462,6 @@ export default function RoomEditor({ id }: RoomEditorProps) {
     );
   };
 
-  const handleAddCustomCategory = () => {
-    if (newCategory && !customCategories.includes(newCategory)) {
-      setCustomCategories([...customCategories, newCategory]);
-      setNewCategory("");
-    }
-  };
-
   const handleSaveCustomer = useCallback(() => {
     handleSaveClick("design");
   }, []);
@@ -488,424 +474,6 @@ export default function RoomEditor({ id }: RoomEditorProps) {
     setSaveType(type);
     setIsSaveDialogOpen(true);
   };
-
-  const handleSaveConfirm = async () => {
-    const accountId = await api.get<FrontEndTypes.Account>(`accounts/${session?.user.email}/info`).then((res) => {
-      const account = mapBackendToFrontend<FrontEndTypes.Account>(res.data, 'account')
-      return account.id;
-    })
-    
-    if (!accountId) {
-      toast({
-        title: "Error",
-        description: "Unable to fetch account information. Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!saveName) {
-      toast({
-        title: "Error",
-        description: "Please provide a name for the design.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    try {
-      let existingDesign: FrontEndTypes.APIDesign | null = null;
-      
-      if (searchParams.get("designId")) {
-        const response = await api.get<FrontEndTypes.APIDesign>(`designs/${searchParams.get("designId")}`, undefined, accessToken ?? '')
-        existingDesign = mapBackendToFrontend<FrontEndTypes.APIDesign>(response.data, 'design')
-      }
-
-      const saveData = {
-        name: saveName,
-        description: saveDescription || existingDesign?.description || '',
-        status: "DRAFT",
-        image: designImageUrl || existingDesign?.image || '',
-        type: saveType?.toUpperCase() || existingDesign?.type || '',
-        floors: floors.map(floor => ({
-          _id: floor.id,
-          name: floor.name,
-          "design-template-id": searchParams.get('templateId') ||  '',
-          rooms: floor?.rooms?.map(room => ({
-            name: room.name,
-            width: room.width,
-            height: room.height,
-            length: room.length,
-            furnitures: room.furnitures.map(furniture => ({
-              _id: furniture.id,
-              name: furniture.name,
-              model: furniture.model,
-              position: furniture.position,
-              rotation: furniture.rotation,
-              scale: furniture.scale,
-              visible: furniture.visible,
-              category: furniture.category
-            })),
-            "non-furnitures": existingDesign?.floors.find(f => f.id === floor.id)?.rooms.find(r => r.name === room.name)?.nonFurnitures || []
-          }))
-        })),
-        products: (() => {
-          const productMap = new Map()
-      
-          floors.forEach(floor => {
-            floor?.rooms?.forEach(room => {
-              room.furnitures.forEach(furniture => {
-                const matchingProducts = products.filter(product => product.modelTextureUrl === furniture.model)
-                matchingProducts.forEach(product => {
-                  if (productMap.has(product.id)) {
-                    productMap.set(product.id, productMap.get(product.id) + 1)
-                  } else {
-                    productMap.set(product.id, 1)
-                  }
-                })
-              })
-            })
-          })
-      
-          return Array.from(productMap, ([_id, quantity]) => ({ _id, quantity }))
-        })(),
-        "account-id": accountId,
-        "template-id": existingDesign?.templateId || '',
-        "style-id": selectedStyleId || existingDesign?.styleId || '',
-        categories: customCategories.length > 0 ? customCategories :  []
-      }
-
-      if (searchParams.get("designId")) {
-        // Update existing design
-        const patchData: Partial<typeof saveData> = {}
-        
-        for (const [key, value] of Object.entries(saveData)) {
-          if (JSON.stringify(existingDesign?.[key as keyof FrontEndTypes.APIDesign]) !== JSON.stringify(value)) {
-            patchData[key as keyof typeof saveData] = value as any
-          }
-        }
-
-        // Only send the PATCH request if there are changes
-        if (Object.keys(patchData).length > 0) {
-          await api.patch(`designs/${searchParams.get("designId")}`, patchData, undefined, accessToken ?? '')
-          toast({
-            title: `${saveType === "design" ? "Design" : "Template"} Updated`,
-            description: `Your ${saveType} has been updated on the server.`,
-          });
-        } else {
-          toast({
-            title: "No Changes",
-            description: "No changes were detected. The design was not updated.",
-          });
-        }
-      } else {
-        // Create new design
-        await api.post("designs", saveData, accessToken ?? '')
-        toast({
-          title: `${saveType === "design" ? "Design" : "Template"} Saved`,
-          description: `Your ${saveType} has been saved to the server.`,
-        });
-      }
-
-      // Clear local storage after successful save
-      clearStorage();
-      setIsSaveDialogOpen(false);
-      router.push("/customer")
-    } catch (err) {
-      console.error(`Error saving ${saveType}:`, err);
-      toast({
-        title: "Save Failed",
-        description: `Failed to save ${saveType}. Please try again.`,
-        variant: "destructive",
-      });
-    }
-  };
-
-
-  const loadDesignOrTemplate = useCallback(async () => {
-    const templateId = searchParams.get('templateId')
-    const loadDesignId = searchParams.get('designId')
-
-    if (loadDesignId) {
-      await loadDesign(loadDesignId)
-    } else if (templateId) {
-      await loadTemplate(templateId)
-    }
-
-    setIsLoading(false)
-  }, [searchParams])
-
-  useEffect(() => {
-    loadDesignOrTemplate()
-  }, [loadDesignOrTemplate])
-
-  const loadDesign = async (designId: string) => {
-    try {
-      const response = await api.get<FrontEndTypes.APIDesign>(`designs/${designId}`, undefined, accessToken ?? '')
-      const frontendDesign = mapBackendToFrontend<FrontEndTypes.APIDesign>(response.data, 'design')
-
-      const roomEditorDesign: RoomEditorTypes.Design = {
-        id: frontendDesign.id,
-        createdAt: frontendDesign.createdDate,
-        updatedAt: frontendDesign.updateDate,
-        type: "Sketch",
-        floors: frontendDesign.floors.map((floor) => ({
-          id: floor.id,
-          name: floor.name,
-          rooms: floor.rooms.map((room) => ({
-            id: room.name,
-            name: room.name,
-            width: room.width,
-            length: room.length,
-            height: room.height,
-            furnitures: room.furnitures.map((furniture) => ({
-              id: furniture.id,
-              name: furniture.name,
-              model: furniture.model,
-              position: furniture.position as [number, number, number],
-              rotation: furniture.rotation as [number, number, number],
-              scale: furniture.scale as [number, number, number],
-              visible: furniture.visible,
-              category: furniture.category || [],
-            })),
-          })),
-        })),
-      }
-
-      updateFloors(roomEditorDesign.floors)
-      setDesignId(designId)
-      toast({
-        title: "Design loaded successfully",
-        description: `Loaded design: ${frontendDesign.name}`,
-      })
-    } catch (error) {
-      console.error("Error loading design:", error)
-      toast({
-        title: "Error loading design",
-        description: "Failed to load the design. Please try again.",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const loadTemplate = async (templateId: string) => {
-    try {
-      const response = await api.get<BackendTypes.BackendTemplate>(`templates/${templateId}`);
-      const backendTemplate = response.data;
-  
-      const frontendTemplate = mapBackendToFrontend<FrontEndTypes.Template>(backendTemplate, 'template');
-  
-      // Convert frontend template to RoomEditor types
-      const roomEditorTemplate: RoomEditorTypes.Design = {
-        id: frontendTemplate.id,
-        createdAt: frontendTemplate.createdDate,
-        updatedAt: frontendTemplate.updatedDate,
-        type: frontendTemplate.type as "Template" | "Sketch",
-        floors: frontendTemplate.floors.map((floor) => ({
-          id: floor.id,
-          name: floor.name,
-          rooms: floor.rooms.map((room) => ({
-            id: room.name, // Using room name as id since room doesn't have an id in the frontend type
-            name: room.name,
-            width: room.width,
-            length: room.length,
-            height: room.height,
-            furnitures: room.furnitures.map((furniture) => ({
-              id: furniture.id,
-              name: furniture.name,
-              model: furniture.model,
-              position: furniture.position as [number, number, number],
-              rotation: furniture.rotation as [number, number, number],
-              scale: furniture.scale as [number, number, number],
-              visible: furniture.visible,
-              category: furniture.category || [],
-            })),
-          })),
-        })),
-      };
-  
-      console.log('RoomEditor template:', roomEditorTemplate);
-  
-      if (roomEditorTemplate.type === "Sketch") {
-        // Pin the furniture items featured in the template
-        const pinnedFurniture = products
-          .filter((product) =>
-            frontendTemplate.products.some((templateProduct) => templateProduct.id === product.id)
-          )
-          .map((product) => ({
-            id: product.id,
-            name: product.name,
-            model: product.modelTextureUrl,
-            position: [0, 0, 0] as [number, number, number],
-            rotation: [0, 0, 0] as [number, number, number],
-            scale: [1, 1, 1] as [number, number, number],
-            visible: true,
-            category: product.categoryIds,
-          }));
-  
-        updateFloors([
-          {
-            id: "1",
-            name: "Ground Floor",
-            rooms: [
-              {
-                id: "1",
-                name: "Main Room",
-                width: 8,
-                length: 10,
-                height: 3,
-                furnitures: pinnedFurniture,
-              },
-            ],
-          },
-        ]);
-      } else {
-        // Load the template as before
-        updateFloors(roomEditorTemplate.floors);
-      }
-  
-      console.log('Floors updated:', floors);
-      alert("Template loaded successfully!");
-    } catch (error) {
-      console.error("Error loading template:", error);
-      alert("Failed to load template. Please try again.");
-    }
-  };
-
-  const loadContent = useCallback(async () => {
-    if (!id) {
-      setIsLoading(false)
-      return
-    }
-
-    try {
-      // First, try to load as a design
-      const designResponse = await api.getById<FrontEndTypes.APIDesign>(`designs`, id, accessToken ?? '')
-      const frontendDesign = mapBackendToFrontend<FrontEndTypes.APIDesign>(designResponse.data, 'design')
-
-      console.log('Loaded design:', frontendDesign)
-
-      const roomEditorDesign: RoomEditorTypes.Design = {
-        id: frontendDesign.id,
-        createdAt: frontendDesign.createdDate,
-        updatedAt: frontendDesign.updateDate,
-        type: "Sketch",
-        floors: frontendDesign.floors.map((floor) => ({
-          id: floor.id,
-          name: floor.name,
-          rooms: floor.rooms.map((room) => ({
-            id: room.name,
-            name: room.name,
-            width: room.width,
-            length: room.length,
-            height: room.height,
-            furnitures: room.furnitures.map((furniture) => ({
-              id: furniture.id,
-              name: furniture.name,
-              model: furniture.model,
-              position: furniture.position as [number, number, number],
-              rotation: furniture.rotation as [number, number, number],
-              scale: furniture.scale as [number, number, number],
-              visible: furniture.visible,
-              category: furniture.category || [],
-            })),
-          })),
-        })),
-      }
-
-      updateFloors(roomEditorDesign.floors)
-      setDesignId(frontendDesign.id)
-      toast({
-        title: "Design loaded successfully",
-        description: `Loaded design: ${frontendDesign.name}`,
-      })
-    } catch (designError) {
-      console.error("Error loading design:", designError)
-      
-      try {
-        // If it's not a design, try to load as a template
-        const templateResponse = await api.getById<FrontEndTypes.Template>(`templates`, id, accessToken ?? '')
-        const frontendTemplate = mapBackendToFrontend<FrontEndTypes.Template>(templateResponse.data, 'template')
-
-        console.log('Loaded template:', frontendTemplate)
-
-        const roomEditorTemplate: RoomEditorTypes.Design = {
-          id: frontendTemplate.id,
-          createdAt: frontendTemplate.createdDate,
-          updatedAt: frontendTemplate.updatedDate,
-          type: frontendTemplate.type as "Template" | "Sketch",
-          floors: frontendTemplate.floors.map((floor) => ({
-            id: floor.id,
-            name: floor.name,
-            rooms: floor.rooms.map((room) => ({
-              id: room.name,
-              name: room.name,
-              width: room.width,
-              length: room.length,
-              height: room.height,
-              furnitures: room.furnitures.map((furniture) => ({
-                id: furniture.id,
-                name: furniture.name,
-                model: furniture.model,
-                position: furniture.position as [number, number, number],
-                rotation: furniture.rotation as [number, number, number],
-                scale: furniture.scale as [number, number, number],
-                visible: furniture.visible,
-                category: furniture.category || [],
-              })),
-            })),
-          })),
-        }
-
-        if (roomEditorTemplate.type === "Sketch") {
-          // Handle sketch type template
-          const pinnedFurniture = frontendTemplate.products.map((product) => ({
-            id: product.id,
-            name: product.id, // You might want to fetch the actual product name
-            model: '', // You might want to fetch the actual model URL
-            position: [0, 0, 0] as [number, number, number],
-            rotation: [0, 0, 0] as [number, number, number],
-            scale: [1, 1, 1] as [number, number, number],
-            visible: true,
-            category: [],
-          }))
-
-          updateFloors([
-            {
-              id: "1",
-              name: "Ground Floor",
-              rooms: [
-                {
-                  id: "1",
-                  name: "Main Room",
-                  width: 8,
-                  length: 10,
-                  height: 3,
-                  furnitures: pinnedFurniture,
-                },
-              ],
-            },
-          ])
-        } else {
-          updateFloors(roomEditorTemplate.floors)
-        }
-
-        toast({
-          title: "Template loaded successfully",
-          description: `Loaded template: ${frontendTemplate.name}`,
-        })
-      } catch (templateError) {
-        console.error("Error loading template:", templateError)
-        toast({
-          title: "Error loading content",
-          description: "Failed to load the design or template. Please try again.",
-          variant: "destructive",
-        })
-      }
-    } finally {
-      setIsLoading(false)
-    }
-  }, [id, accessToken, toast, updateFloors])
 
   const handleRoomChange = (newRoom: RoomEditorTypes.Room) => {
     updateFloors(
@@ -1174,96 +742,14 @@ export default function RoomEditor({ id }: RoomEditorProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Save {saveType === "design" ? "Design" : "Template"}
-            </DialogTitle>
-            <DialogDescription>
-              Enter the details for your {saveType}.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Name
-              </Label>
-              <Input
-                id="name"
-                value={saveName}
-                onChange={(e) => setSaveName(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">
-                Description
-              </Label>
-              <Textarea
-                id="description"
-                value={saveDescription}
-                onChange={(e) => setSaveDescription(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="style" className="text-right">
-                Style
-              </Label>
-              <Select
-                onValueChange={setSelectedStyleId}
-                value={selectedStyleId}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select style" />
-                </SelectTrigger>
-                <SelectContent>
-                  {styles.map((style) => (
-                    <SelectItem key={style.id} value={style.id}>
-                      {style.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="newCategory" className="text-right">
-                Add Category
-              </Label>
-              <Input
-                id="newCategory"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                className="col-span-2"
-              />
-              <Button onClick={handleAddCustomCategory}>Add</Button>
-            </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label className="text-right">Categories</Label>
-              <div className="col-span-3 flex flex-wrap gap-2">
-                {customCategories.map((category, index) => (
-                  <div
-                    key={index}
-                    className="bg-secondary text-secondary-foreground px-2 py-1 rounded"
-                  >
-                    {category}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <FileUpload
-              label="Design Image"
-              accept="image/*"
-              onChange={handleImageUpload}
-            />
-          </div>
-          <DialogFooter>
-            <Button onClick={handleSaveConfirm}>Save</Button>
-            <Button variant="outline" onClick={() => setIsSaveDialogOpen(false)}>Cancel</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <SaveDialog
+        isOpen={isSaveDialogOpen}
+        onOpenChange={setIsSaveDialogOpen}
+        floors={floors}
+        products={products}
+        styles={styles}
+        clearStorage={clearStorage}
+      />
     </div>
   );
 }

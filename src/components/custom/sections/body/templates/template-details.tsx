@@ -119,6 +119,11 @@ export default function TemplateDetailsBody({ id }: TemplateDetailsProps) {
     setDialogWarning(!dialogWarning);
   };
 
+  const handleSimulateWithTemplate = () => {
+    setSketchWarning(false)
+    router.push(`/simulation?templateId=${template?.id}`);
+  }
+
   if (templateQuery.isLoading) {
     return <div>Loading template details...</div>;
   }
@@ -337,7 +342,7 @@ export default function TemplateDetailsBody({ id }: TemplateDetailsProps) {
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end">
-            <Button onClick={() => setSketchWarning(false)}>Understood</Button>
+            <Button onClick={handleSimulateWithTemplate}>Understood</Button>
           </div>
         </DialogContent>
       </Dialog>

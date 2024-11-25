@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Move, RotateCw, Maximize, Undo, Redo, Save, FolderOpen, Home, Trash2, Plus, Layers, ChevronRight } from 'lucide-react'
+import { Move, RotateCw, Maximize, Undo, Redo, Save, FolderOpen, Home, Trash2, Plus, Layers, ChevronRight, ArrowLeft } from 'lucide-react'
 import { ThemeToggler } from "../buttons/theme-toggler"
 import {
   Drawer,
@@ -126,9 +126,9 @@ export default function Toolbar({
   }, [])
 
   const handleLoadTemplate = useCallback((templateId: string) => {
-    onLoad(templateId)
-    setIsLoadDrawerOpen(false)
-  }, [onLoad])
+    onLoad(templateId);
+    setIsLoadDrawerOpen(false);
+  }, [onLoad]);
 
   const getMerchantName = useCallback((merchantId: string) => {
     const merchant = merchants.find((merchant) => merchant.id === merchantId);
@@ -190,6 +190,10 @@ export default function Toolbar({
   return (
     <div className="flex flex-wrap justify-between items-center p-2 dark:bg-gray-800 border-b">
       <div className="space-x-2 mb-2 sm:mb-0 flex flex-wrap items-center gap-2">
+        <Button onClick={() => router.push(session?.user.role === "CUSTOMER" ? "/customer" : session?.user.role === "CONSULTANT" ? "/consultant": "/")}>
+          <ArrowLeft size={24}/>
+          {session?.user.role === "CUSTOMER" ? "Return" : session?.user.role === "CONSULTANT" ? "Return": "Back to Home"}
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button>

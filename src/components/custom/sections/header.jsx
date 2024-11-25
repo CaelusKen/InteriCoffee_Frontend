@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, ShoppingCart, Layers } from 'lucide-react'
+import { Menu, X, ShoppingCart, Layers, Home, PaintBucket, ReceiptText } from 'lucide-react'
 import { ThemeToggler } from '../buttons/theme-toggler'
 import { useRouter } from 'next/navigation'
 import { useCart } from '../cart/cart-context'
@@ -22,6 +22,7 @@ import {
 import { LogOut, User } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CustomAvatar } from '../avatar/general-avatar'
+import { Separator } from '@/components/ui/separator'
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -114,6 +115,18 @@ const Header = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <Button variant={'ghost'} onClick={() => router.push('/customer')}>
+              <Home size={24}/>
+              <p>Home</p>
+            </Button>
+            <Button variant={'ghost'} onClick={() => router.push('/customer/designs')}>
+              <PaintBucket className="h-4 w-4" />
+              <span>Designs</span>
+            </Button>
+            <Button variant={'ghost'} onClick={() => router.push('/customer/orders')}>
+              <ReceiptText className="h-4 w-4" />
+              <span>Orders</span>
+            </Button>
             <Button variant={'ghost'} onClick={() => router.push('/simulation/setup')}>
               <Layers size={24}/>
               <p>Simulate</p>
@@ -207,12 +220,34 @@ const Header = () => {
               </Link>
             </motion.li>
           ))}
+            
           {
             session ? (
-              <CustomAvatar 
-                name={session.user.name}
-                role={session.user.role}
-                />
+              <>
+                <Separator />
+                <CustomAvatar 
+                  name={session.user.name}
+                  role={session.user.role}
+                  />
+                <div className='text-left flex flex-col justify-start gap-4'>
+                  <Button variant={'ghost'} className='flex justify-start items-center gap-4 pl-2 w-full' onClick={() => router.push('/customer')}>
+                    <Home size={24}/>
+                    <p>Home</p>
+                  </Button>
+                  <Button variant={'ghost'} className='flex justify-start items-center gap-4 pl-2 w-full' onClick={() => router.push('/customer/designs')}>
+                    <PaintBucket className="h-4 w-4" />
+                    <span>Designs</span>
+                  </Button>
+                  <Button variant={'ghost'} className='flex justify-start items-center gap-4 pl-2 w-full' onClick={() => router.push('/customer/orders')}>
+                    <ReceiptText className="h-4 w-4" />
+                    <span>Orders</span>
+                  </Button>
+                  <Button variant={'ghost'} className='flex justify-start items-center gap-4 pl-2 w-full' onClick={() => router.push('/simulation/setup')}>
+                    <Layers size={24}/>
+                    <p>Simulate</p>
+                  </Button>
+                </div>
+              </>
             ) : (
               <>
                 <li className='mt-4'>
