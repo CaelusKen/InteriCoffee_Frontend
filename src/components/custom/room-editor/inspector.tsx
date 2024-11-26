@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { Slider } from "@/components/ui/slider"
 import { Furniture, TransformUpdate } from '@/types/room-editor'
 import { Trash2, Edit2 } from 'lucide-react'
 
@@ -18,6 +19,21 @@ export default function Inspector({ selectedItem, furniture, onUpdateTransform, 
   const item = furniture.find(i => i.id === selectedItem)
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState('')
+  const [localTransform, setLocalTransform] = useState<{
+    position: [number, number, number],
+    rotation: [number, number, number],
+    scale: [number, number, number]
+  }>({ position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1] })
+
+  useEffect(() => {
+    if (item) {
+      setLocalTransform({
+        position: item.position,
+        rotation: item.rotation,
+        scale: item.scale
+      })
+    }
+  }, [item])
 
   if (!item) return <div className="p-4">No item selected</div>
 
@@ -29,6 +45,40 @@ export default function Inspector({ selectedItem, furniture, onUpdateTransform, 
   const handleFinishEdit = () => {
     onRename(item.id, editName)
     setIsEditing(false)
+  }
+
+  const handleTransformChange = (type: 'position' | 'rotation' | 'scale', axis: 0 | 1 | 2, value: number) => {
+    const newTransform = { ...localTransform }
+    newTransform[type][axis] = value
+    setLocalTransform(newTransform)
+    onUpdateTransform({ id: item.id, type, value: newTransform[type] })
+  }
+
+  const renderTransformControl = (type: 'position' | 'rotation' | 'scale', axis: 0 | 1 | 2, label: string) => {
+    const value = localTransform[type][axis]
+    const min = type === 'scale' ? 0.1 : -360
+    const max = type === 'scale' ? 10 : 360
+    const step = type === 'scale' ? 0.1 : 1
+
+    return (
+      <div className="flex items-center space-x-2">
+        <Label className="w-8">{label}</Label>
+        <Slider
+          value={[value]}
+          min={min}
+          max={max}
+          step={step}
+          onValueChange={([newValue]) => handleTransformChange(type, axis, newValue)}
+          className="flex-1"
+        />
+        <Input
+          type="number"
+          value={value.toFixed(2)}
+          onChange={(e) => handleTransformChange(type, axis, parseFloat(e.target.value))}
+          className="w-20"
+        />
+      </div>
+    )
   }
 
   return (
@@ -64,29 +114,24 @@ export default function Inspector({ selectedItem, furniture, onUpdateTransform, 
           </div>
         </div>
         <div className="space-y-4">
-          {['position', 'rotation', 'scale'].map((prop) => (
-            <div key={prop}>
-              <Label>{prop.charAt(0).toUpperCase() + prop.slice(1)}</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {['x', 'y', 'z'].map((axis, index) => (
-                  <Input
-                    key={axis}
-                    type="number"
-                    value={item[prop as keyof Pick<Furniture, 'position' | 'rotation' | 'scale'>][index]}
-                    onChange={(e) => {
-                      const newValue = [...item[prop as keyof Pick<Furniture, 'position' | 'rotation' | 'scale'>]]
-                      newValue[index] = parseFloat(e.target.value)
-                      onUpdateTransform({
-                        id: item.id,
-                        type: prop as 'position' | 'rotation' | 'scale',
-                        value: newValue as [number, number, number]
-                      })
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
+          <div>
+            <Label>Position</Label>
+            {renderTransformControl('position', 0, 'X')}
+            {renderTransformControl('position', 1, 'Y')}
+            {renderTransformControl('position', 2, 'Z')}
+          </div>
+          <div>
+            <Label>Rotation</Label>
+            {renderTransformControl('rotation', 0, 'X')}
+            {renderTransformControl('rotation', 1, 'Y')}
+            {renderTransformControl('rotation', 2, 'Z')}
+          </div>
+          <div>
+            <Label>Scale</Label>
+            {renderTransformControl('scale', 0, 'X')}
+            {renderTransformControl('scale', 1, 'Y')}
+            {renderTransformControl('scale', 2, 'Z')}
+          </div>
         </div>
       </div>
     </ScrollArea>
