@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { CalendarDays, Mail, Phone, MessageSquare, ShoppingBag, Pencil, Component, MessageSquareText } from "lucide-react"
 import { ApiResponse, PaginatedResponse } from "@/types/api"
-import { Account, Order } from "@/types/frontend/entities"
+import { Account, APIDesign, Order } from "@/types/frontend/entities"
 import { api } from "@/service/api"
 import { useQuery } from "@tanstack/react-query"
 import { useSession } from "next-auth/react"
@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/table"
 import { useRouter } from "next/navigation"
 import { useAccessToken } from "@/hooks/use-access-token"
+import CustomerDesignCard from "../../cards/customer-design-card"
 
 interface Activity {
   type: "message" | "purchase" | "design"
@@ -46,6 +47,9 @@ const fetchOrders = async (accessToken: string): Promise<ApiResponse<PaginatedRe
   return await api.getPaginated<Order>('orders', undefined, accessToken)
 }
 
+const fetchDesigns = async (accessToken: string): Promise<ApiResponse<PaginatedResponse<APIDesign>>> => {
+  return await api.getPaginated<APIDesign>('designs', undefined, accessToken)
+}
 
 export default function CustomerProfilePage() {
   const [page, setPage] = useState(1)
@@ -68,14 +72,26 @@ export default function CustomerProfilePage() {
     queryFn: () => fetchOrders(accessToken ?? '')
   })
 
+  const designsQuery = useQuery({
+    queryKey: ['designs'],
+    queryFn: () => fetchDesigns(accessToken?? '')
+  })
+
   const account = accountQuery.data?.data
 
   const orders = ordersQuery.data?.data?.items ?? []
+
+  const designs = designsQuery.data?.data?.items?? []
 
   const accountOrders = orders
     .filter((order) => order.accountId === account?.id)
     .sort((a, b) => b.updatedDate.getTime() - a.updatedDate.getTime())
     .slice(0, 5)
+  
+  const accountDesigns = designs
+    .filter((design) => design.accountId === account?.id)
+    .sort((a, b) => b.updateDate.getTime() - a.updateDate.getTime())
+    .slice(0, 3)
 
   
   const getActivityIcon = (type: Activity["type"]) => {
@@ -163,20 +179,27 @@ export default function CustomerProfilePage() {
           </Card>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <Card className="col-span-2">
           <CardHeader>
             <div className="flex justify-between">
               <p>Recent Designs</p>
               <div className="flex gap-4">
-                <Button>View all designs</Button>
-                <Button className="bg-success-700 dark:bg-success-600 hover:bg-success-600 dark:hover:bg-success-700">
+                <Button onClick={() => router.push('/customer/designs')}>View all designs</Button>
+                <Button className="bg-success-700 dark:bg-success-600 hover:bg-success-600 dark:hover:bg-success-700" onClick={() => router.push('/simulation/setup')}>
                   <Component size={24} />
                   Create design
                 </Button>
               </div>
             </div>
           </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                {accountDesigns.map((design) => (
+                  <CustomerDesignCard key={design.id} design={design} />
+                ))}
+            </div>
+          </CardContent>
         </Card>
         <Card>
           <CardHeader>
