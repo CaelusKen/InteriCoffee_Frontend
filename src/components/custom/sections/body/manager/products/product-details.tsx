@@ -18,8 +18,8 @@ import {
   Environment,
 } from "@react-three/drei"
 import LoadingPage from '@/components/custom/loading/loading'
-import { Model } from '../../manager/products/model'
-import { MerchantInfo } from '../../manager/products/merchant-info'
+import { Model } from './model'
+import { MerchantInfo } from './merchant-info'
 import { useAccessToken } from '@/hooks/use-access-token'
 
 const fetchProduct = async (id: string, accessToken: string): Promise<ApiResponse<Product>> => {
@@ -73,18 +73,11 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
   return (
     <section className="max-w-7xl mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
-        <Link href="/merchant/products" className="flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-gray-100">
+        <Link href="/manager/products" className="flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-white dark:hover:text-gray-100">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Products
         </Link>
-        <Link href={`/merchant/products/${productId}/update`} passHref>
-          <Button variant="outline" className="flex items-center">
-            <Edit className="mr-2 h-4 w-4" />
-            Edit Product
-          </Button>
-        </Link>
       </div>
-
       <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -103,7 +96,7 @@ export default function ProductDetails({ productId }: ProductDetailsProps) {
                 />
               </div>
               <div className="grid grid-cols-4 gap-2">
-                {normalImages.length > 0 && normalImages.map((image, index) => (
+                {product?.images.normalImages?.length > 0 && product?.images.normalImages?.map((image, index) => (
                   <div key={index} className="aspect-square relative overflow-hidden rounded-lg">
                     <img
                       src={image}

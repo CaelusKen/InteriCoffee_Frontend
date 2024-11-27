@@ -93,6 +93,22 @@ export interface BackendMerchant {
     "order-incomes":   BackendOrderIncome[];
 }
 
+export interface BackendMerchantRegistration {
+    email:             string;
+    address:           string;
+    "phone-number":    string;
+    "merchant-name":   string;
+    "logo-url":        string;
+    description:       string;
+    status:            string;
+    "merchant-code":   string;
+    "policy-document": string;
+    website:           string;
+    "user-name":       string;
+    password:          string;
+    avatar:            string;
+}
+
 export interface BackendOrderIncome {
     "order-id": string;
     income:     number;
@@ -117,6 +133,7 @@ export interface OrderProduct {
     name:          string;
     description:   string;
     price:         number;
+    quantity:      number;
     "merchant-id": string;
 }
 

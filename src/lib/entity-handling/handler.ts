@@ -201,6 +201,7 @@ export function mapBackendOrderProductToFrontend(backendOrderProduct: BackEndTyp
         name: backendOrderProduct.name,
         description: backendOrderProduct.description,
         price: backendOrderProduct.price,
+        quantity: backendOrderProduct.quantity,
         merchantId: backendOrderProduct["merchant-id"],
     };
 }

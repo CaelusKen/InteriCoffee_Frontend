@@ -18,7 +18,7 @@ import {
   } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
-import { Currency } from "lucide-react"
+import { ArrowLeft, ArrowRight, Currency } from "lucide-react"
 import { useAccessToken } from "@/hooks/use-access-token"
 
 const fetchOrders = async (
@@ -45,48 +45,65 @@ export default function ManagerOrdersTable() {
         queryFn: () => fetchOrders(page, 10, accessToken ?? ''),
     });
 
-    const orders = ordersQuery.data?.data.items ?? []
-    const totalCount = ordersQuery.data?.data?.totalCount ?? 0
-    const pageSize = ordersQuery.data?.data?.pageSize ?? 10
+    const orders = ordersQuery.data?.data.items.sort((a, b) => b.updatedDate.getTime() - a.updatedDate.getTime()) ?? []
+
+    //Pagination
+    const handlePreviousPage = () => setPage(page - 1);
+    const handleNextPage = () => setPage(page + 1);
+    const handleSetPage = (newPage: number) => setPage(newPage);
+    const slicedOrders = orders.slice((page - 1) * 10, page * 10);
+
 
     if (ordersQuery.isLoading) return <LoadingPage />
     if (ordersQuery.isError) return <div>Error loading products</div>
 
-    return(
+    //Create a Data Table with shadcn for Orders
+
+
+    return (
         <section>
             <h1 className="text-2xl font-bold mb-4">Orders Management</h1>
 
             {/* Orders List */}
-            {
-                orders.length === 0 ? (
-                    <p>No Orders Found</p>
-                ) : (
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[100px]">No.</TableHead>
-                                <TableHead>Order Date</TableHead>
-                                <TableHead>Order Total</TableHead>
-                                <TableHead>Shipping Address</TableHead>
-                                <TableHead className="text-right">Order Status</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {orders.map((order, index) => (
-                                <TableRow key={index}>
-                                    <TableCell>{index + 1}</TableCell>
-                                    <TableCell>{order.orderDate.toDateString()}</TableCell>
-                                    <TableCell>{order.totalAmount.toLocaleString("vi-VN", {style: "currency", currency: "VND"})}</TableCell>
-                                    <TableCell>{order.shippingAddress}</TableCell>
-                                    <TableCell className="text-right">
-                                        {order.status}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                )
-            }
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Order ID</TableHead>
+                        <TableHead>Total</TableHead>
+                        <TableHead>Shipping Address</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Action</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {slicedOrders.map((order) => (
+                        <TableRow key={order.id}>
+                            <TableCell>{order.id}</TableCell>
+                            <TableCell>
+                                {order.totalAmount.toLocaleString("vi-VN", {style: "currency", currency: "VND"})}
+                            </TableCell>
+                            <TableCell>{order.shippingAddress}</TableCell>
+                            <TableCell>{order.status}</TableCell>
+                            <TableCell>
+                                <Button onClick={() => router.push(`/manager/orders/${order.id}`)}>
+                                    View Details
+                                </Button>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+
+            {/* Pagination */}
+            <div className="flex justify-end items-center gap-4 mt-4">
+                <Button onClick={handlePreviousPage} disabled={page === 1}>
+                    <ArrowLeft/> Previous
+                </Button>
+                <span>Page {page} of {Math.ceil(orders.length / 10)}</span>
+                <Button onClick={handleNextPage} disabled={page === Math.ceil(orders.length / 10)}>
+                    Next <ArrowRight />
+                </Button>
+            </div>
         </section>
     )
 }

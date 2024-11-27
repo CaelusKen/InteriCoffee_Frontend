@@ -109,6 +109,20 @@ export interface Merchant {
     orderIncomes:      OrderIncome[];
 }
 
+export interface MerchantRegistration {
+    email:              Account["email"];
+    address:            Account["address"];
+    phoneNumber:        Account["phoneNumber"];
+    logoUrl:            string;
+    description:        string;
+    merchantCode?:      string;
+    policyDocument:     string;
+    website:            string;
+    userName:           Account["userName"];
+    password:           Account["password"];
+    avatar:             Account["avatar"];
+}
+
 export interface OrderIncome {
     orderId:    string;
     income:     number;
@@ -135,6 +149,7 @@ export interface OrderProduct {
     name:          string;
     description:   string;
     price:         number;
+    quantity:      number;
     merchantId:    Merchant["id"];
 }
 
