@@ -9,7 +9,9 @@ import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { CalendarIcon, MailIcon, PhoneIcon, MapPinIcon, BuildingIcon } from 'lucide-react'
+import { CalendarIcon, MailIcon, PhoneIcon, MapPinIcon, BuildingIcon, ArrowLeft } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
 
 interface AccountDetailsProps {
   id: string
@@ -21,6 +23,8 @@ const fetchAccountById = async (id: string, accessToken: string): Promise<ApiRes
 
 export default function ManagerAccountDetails({ id }: AccountDetailsProps) {
   const accessToken = useAccessToken()
+
+  const router = useRouter()
 
   const accountQuery = useQuery({
     queryKey: ['account', id],
@@ -45,8 +49,13 @@ export default function ManagerAccountDetails({ id }: AccountDetailsProps) {
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <Card className="max-w-3xl mx-auto">
+    <div className="container mx-auto py-2">
+      <Button variant={'link'} className='p-0' onClick={() => router.push("/manager/accounts")}>
+        <ArrowLeft/>
+        Back
+      </Button>
+      <h1 className="text-3xl font-bold">Account Details</h1>
+      <Card className="max-w-full mx-auto my-4">
         <CardHeader className="flex flex-row items-center gap-4">
           <Avatar className="w-20 h-20">
             <AvatarImage src={account.avatar} alt={account.userName} />

@@ -35,7 +35,7 @@ const CustomerDesignCard = ({ design }: CustomerDesignCardProps) => {
         </p>
         <div className="flex items-center text-sm text-muted-foreground">
           <Clock className="mr-1 h-4 w-4" />
-          {new Date(design.updateDate).toLocaleDateString()}
+          {new Date(design.updateDate).toLocaleDateString("vi-VN")}
         </div>
       </CardContent>
       <CardFooter className="p-4 flex justify-end items-center gap-2">
