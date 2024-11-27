@@ -40,7 +40,7 @@ const deleteAccount = async (id: string, accessToken: string): Promise<ApiRespon
 
 export default function AccountsTable() {
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(6);
+  const [pageSize, setPageSize] = useState(10);
 
   const router = useRouter()
 
@@ -121,7 +121,6 @@ export default function AccountsTable() {
                   <TableCell className="flex justify-end items-center gap-4">
                     <Button onClick={() => router.push(`/manager/accounts/${account.id}`)}>Details</Button>
                     <Button onClick={() => {}}>Ban</Button>
-                    <Button onClick={() => {}}>Edit</Button>
                     <Button onClick={() => {}}>Remove</Button>
                   </TableCell>
                 </TableRow>

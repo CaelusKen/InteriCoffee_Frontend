@@ -20,7 +20,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 import { useCart } from "../cart/cart-context";
-import { MerchantInfo } from "../sections/body/merchant/products/merchant-info";
+import { MerchantInfo } from "../sections/body/manager/products/merchant-info";
 import LoadingPage from "../loading/loading";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";

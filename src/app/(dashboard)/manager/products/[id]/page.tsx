@@ -1,5 +1,6 @@
+import ProductDetails from '@/components/custom/sections/body/manager/products/product-details'
 import { Suspense } from 'react'
-import ProductDetails from '@/components/custom/sections/body/merchant/products/product-details'
+
 
 export default function ViewProductPage({ params }: { params: { id: string } }) {
   return (

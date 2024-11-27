@@ -22,7 +22,7 @@ import { Product, ProductCategory } from "@/types/frontend/entities";
 import { api } from "@/service/api";
 import { useCart } from "@/components/custom/cart/cart-context";
 import { useQuery } from "@tanstack/react-query";
-import { MerchantInfo } from "../merchant/products/merchant-info";
+import { MerchantInfo } from "../manager/products/merchant-info";
 import LoadingPage from "@/components/custom/loading/loading";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
