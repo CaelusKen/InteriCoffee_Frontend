@@ -17,10 +17,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { useSession } from "next-auth/react";
 import { useAccessToken } from "@/hooks/use-access-token";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
+import { BanWarningDialog } from "../../sections/body/manager/accounts/ban-account-dialog";
 
 export const fetchAccounts = async (
   page = 1,
@@ -30,21 +31,19 @@ export const fetchAccounts = async (
   return api.getPaginated<Account>("accounts", { page, pageSize }, accessToken);
 };
 
-const updateAccount = async (account: Account, accessToken: string): Promise<ApiResponse<Account>> => {
-  return api.patch<Account>(`accounts/${account.id}`, account, undefined, accessToken);
-};
-
-const deleteAccount = async (id: string, accessToken: string): Promise<ApiResponse<Account>> => {
-  return api.delete<Account>(`accounts/${id}`, accessToken);
-};
-
 export default function AccountsTable() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [banDialogOpen, setBanDialogOpen] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
 
-  const router = useRouter()
+  const router = useRouter();
 
   const accessToken = useAccessToken();
+
+  const queryClient = useQueryClient();
+
+  const { toast } = useToast();
 
   const accountsQuery = useQuery({
     queryKey: ["accounts", page],
@@ -62,6 +61,59 @@ export default function AccountsTable() {
 
   //Slice the list to match the current page
   const slicedAccounts = accounts.slice((page - 1) * pageSize, page * pageSize);
+
+  //For ban/unban accounts
+  const banAccountMutation = useMutation({
+    mutationFn: (id: string) =>
+      api.patch<Account>(
+        `accounts/${id}`,
+        { status: "INACTIVE" },
+        undefined,
+        accessToken ?? ""
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["accounts"] as any);
+      toast({
+        title: "Account Banned",
+        description: "The account has been banned successfully.",
+        className: "bg-red-500",
+      });
+      setBanDialogOpen(false);
+    },
+  });
+
+  const unbanAccountMutation = useMutation({
+    mutationFn: (id: string) =>
+      api.patch<Account>(
+        `accounts/${id}`,
+        { status: "ACTIVE" },
+        undefined,
+        accessToken ?? ""
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["accounts"] as any);
+      toast({
+        title: "Account Unbanned",
+        description: "The account has been unbanned successfully.",
+        className: "bg-green-500",
+      });
+    },
+  });
+
+  const handleBanAccount = (account: Account) => {
+    setSelectedAccount(account);
+    setBanDialogOpen(true);
+  };
+
+  const handleConfirmBan = () => {
+    if (selectedAccount) {
+      banAccountMutation.mutate(selectedAccount.id);
+    }
+  };
+
+  const handleUnbanAccount = (id: string) => {
+    unbanAccountMutation.mutate(id);
+  };
 
   if (accountsQuery.isLoading) return <LoadingPage />;
   if (accountsQuery.isError) return <div>Error loading accounts</div>;
@@ -95,7 +147,11 @@ export default function AccountsTable() {
                 <TableRow key={index}>
                   <TableCell className="font-medium">
                     <img
-                      src={account.avatar || "https://github.com/shadcn.png"}
+                      src={
+                        account.avatar
+                          ? account.avatar
+                          : "https://github.com/shadcn.png"
+                      }
                       alt={account.userName}
                       className="w-[40px] rounded-full h-full object-cover"
                     />
@@ -106,22 +162,48 @@ export default function AccountsTable() {
                   {/* <TableCell>{account.address}</TableCell> */}
                   <TableCell>
                     <Badge
-                        variant={"default"}
-                        className={`${account.status === "ACTIVE" ? 'bg-green-500': 'bg-yellow-500'}`}
+                      variant={"default"}
+                      className={`${
+                        account.status === "ACTIVE"
+                          ? "bg-green-500 hover:bg-green-600"
+                          : "bg-yellow-500 hover:bg-yellow-600"
+                      }`}
                     >
-                        {account.status === "ACTIVE" ? "Active": "Banned"}
+                      {account.status === "ACTIVE" ? "Active" : "Banned"}
                     </Badge>
-                </TableCell>
+                  </TableCell>
                   <TableCell>{account.role}</TableCell>
                   <TableCell>
-                    {account.createdDate.toLocaleDateString()}
+                    {account.createdDate.toLocaleDateString("vi-VN")}
                   </TableCell>
                   {/* <TableCell>{account.updatedDate.toLocaleDateString()}</TableCell> */}
                   {/* This will be a toggler for the status of the account */}
                   <TableCell className="flex justify-end items-center gap-4">
-                    <Button onClick={() => router.push(`/manager/accounts/${account.id}`)}>Details</Button>
-                    <Button onClick={() => {}}>Ban</Button>
-                    <Button onClick={() => {}}>Remove</Button>
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        router.push(`/manager/accounts/${account.id}`)
+                      }
+                    >
+                      Details
+                    </Button>
+                    {account.status === "ACTIVE" ? (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleBanAccount(account)}
+                      >
+                        Ban
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleUnbanAccount(account.id)}
+                      >
+                        Unban
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -145,12 +227,12 @@ export default function AccountsTable() {
               >
                 Next
               </Button>
-            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <span>
-                    Page {page} of {Math.ceil(totalCount / pageSize)},
+                  Page {page} of {Math.ceil(totalCount / pageSize)},
                 </span>
                 <span>Total {totalCount} accounts</span>
-            </div>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -169,6 +251,13 @@ export default function AccountsTable() {
           </div>
         </>
       )}
+
+      <BanWarningDialog
+        isOpen={banDialogOpen}
+        onClose={() => setBanDialogOpen(false)}
+        onConfirm={handleConfirmBan}
+        accountName={selectedAccount?.userName ?? ""}
+      />
     </section>
   );
 }

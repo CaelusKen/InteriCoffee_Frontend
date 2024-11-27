@@ -71,6 +71,8 @@ export default function ManagerOrdersTable() {
                         <TableHead>Order ID</TableHead>
                         <TableHead>Total</TableHead>
                         <TableHead>Shipping Address</TableHead>
+                        <TableHead>Order at</TableHead>
+                        <TableHead>Updated at</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Action</TableHead>
                     </TableRow>
@@ -83,6 +85,8 @@ export default function ManagerOrdersTable() {
                                 {order.totalAmount.toLocaleString("vi-VN", {style: "currency", currency: "VND"})}
                             </TableCell>
                             <TableCell>{order.shippingAddress}</TableCell>
+                            <TableCell>{order.orderDate.toLocaleDateString("vi-VN")}</TableCell>
+                            <TableCell>{order.updatedDate.toLocaleDateString("vi-VN")}</TableCell>
                             <TableCell>{order.status}</TableCell>
                             <TableCell>
                                 <Button onClick={() => router.push(`/manager/orders/${order.id}`)}>
