@@ -23,7 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import FurnitureProductCard from "../../cards/furniture-card-v2";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, ShoppingBag, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAccessToken } from "@/hooks/use-access-token";
 import {
@@ -36,6 +36,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input";
+import { useCart } from "../../cart/cart-context";
+import { useToast } from "@/hooks/use-toast";
 
 interface DesignDetailsProps {
   id: string;
@@ -67,6 +69,10 @@ const CustomerDesignDetails = ({ id }: DesignDetailsProps) => {
   const router = useRouter()
 
   const accessToken = useAccessToken()
+
+  const { addItem } = useCart()
+
+  const { toast } = useToast()
 
   const designQuery = useQuery({
     queryKey: ["design", id],
@@ -136,7 +142,7 @@ const CustomerDesignDetails = ({ id }: DesignDetailsProps) => {
     ? [...editorRoom.furnitures, ...(editorRoom.nonFurnitures || [])]
     : [];
 
-  const designProducts = () => {
+  const designProducts = () : Product[] => {
     //Get all products in the design
     const productIds = design?.products?.map((f) => f.id);
     const designProducts = products.filter((product) =>
@@ -144,6 +150,34 @@ const CustomerDesignDetails = ({ id }: DesignDetailsProps) => {
     );
     return designProducts;
   };
+
+  const handleAddAllProductsToCart = async() => {
+    try {
+      const cartProducts = designProducts() ;
+      await cartProducts.map(cartProduct => {
+        addItem(
+          {
+            id: cartProduct.id,
+            name: cartProduct.name,
+            price: cartProduct.truePrice,
+            quantity: 1,
+          }
+        )
+      })
+      toast({
+        title: "Add to cart successfully",
+        description: "All products in this design have been added to your cart",
+        className: "bg-green-500",
+      });
+    } catch (err) {
+      toast({
+        title: "Add to cart fail",
+        description: `Error adding products to cart: ${err}`,
+        className: "bg-red-500"
+      });
+      console.error("Error adding products to cart:", err);
+    }
+  }
 
   const handleEnvironmentChange = (newEnvironment: string) => {
     setEnvironment(newEnvironment);
@@ -206,6 +240,15 @@ const CustomerDesignDetails = ({ id }: DesignDetailsProps) => {
             <CardTitle>Products Used</CardTitle>
           </CardHeader>
           <CardContent>
+            <div className="flex justify-between items-center mb-4">
+              <p>
+                {designProducts().length} product{(designProducts().length === 1)? "" : "s"} used in this design
+              </p>
+              <Button onClick={handleAddAllProductsToCart}>
+                <ShoppingBag />
+                Add them to cart
+              </Button>
+            </div>
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {designProducts().map((product) => (
                 <li key={product.id}>

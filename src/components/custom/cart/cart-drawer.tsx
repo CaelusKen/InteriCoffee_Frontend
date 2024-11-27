@@ -10,7 +10,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
 export function CartDrawer() {
-  const { items, removeItem, updateQuantity, total } = useCart()
+  const { items, removeItem, updateQuantity, total, clearCart } = useCart()
 
   const { data: session } = useSession();
 
@@ -64,6 +64,7 @@ export function CartDrawer() {
                   session === null ? 
                   (
                     <div className='flex flex-col justify-center'>
+                      <Button variant={"destructive"} className="w-full mt-4" onClick={clearCart}>Clear cart</Button>
                       <Button onClick={() => router.push('/login')} className="w-full mt-4">Login</Button>
                       <em className='w-full text-center'>You have to login in order to buy these items</em>
                     </div>

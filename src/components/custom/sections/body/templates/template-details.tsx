@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Bookmark, Box, Eye } from "lucide-react";
+import { ArrowLeft, Bookmark, Box, Eye, ShoppingBag } from "lucide-react";
 import FloorSelector from "./inputs/floor-selector";
 import RoomSelector from "./inputs/room-selector";
 import ModelViewer from "./inputs/room-preview";
@@ -22,7 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import ColorCard from "@/components/custom/cards/color-card";
-import { Merchant, Style, Template } from "@/types/frontend/entities";
+import { Merchant, Product, Style, Template } from "@/types/frontend/entities";
 import { ApiResponse } from "@/types/api";
 import { api } from "@/service/api";
 import { useQuery } from "@tanstack/react-query";
@@ -32,12 +32,18 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ProductCard } from "../consultant/template/template-details";
 import { useSession } from "next-auth/react";
+import { useCart } from "@/components/custom/cart/cart-context";
+import { useAccessToken } from "@/hooks/use-access-token";
 
 const fetchTemplateById = async (
   id: string
 ): Promise<ApiResponse<Template>> => {
   return api.getById<Template>("templates", id);
 };
+
+const fetchProductById = async(id: string, accessToken: string) : Promise<ApiResponse<Product>> => {
+  return api.getById<Product>('products', id, accessToken)
+}
 
 const fetchStyleById = async (id: string): Promise<ApiResponse<Style>> => {
   return api.getById<Style>("styles", id);
@@ -63,9 +69,13 @@ export default function TemplateDetailsBody({ id }: TemplateDetailsProps) {
 
   const { toast } = useToast()
 
+  const { addItem } = useCart()
+
   const router = useRouter()
 
   const { data: session } = useSession()
+
+  const accessToken = useAccessToken()
 
   const getMerchantById = (id: string) => {
     fetchMerchantById(id).then((res) => {
@@ -95,13 +105,39 @@ export default function TemplateDetailsBody({ id }: TemplateDetailsProps) {
   const formatDate = (date: Date | null | undefined) => {
     if (!date) return "N/A";
     const d = new Date(date);
-    return isNaN(d.getTime()) ? "Invalid Date" : d.toLocaleDateString();
+    return isNaN(d.getTime()) ? "Invalid Date" : d.toLocaleDateString("vi-VN");
   };
 
   const handleUseTemplateAsDesign = () => {
     setDialogWarning(false);
     if (template?.type.match("Sketch")) {
       setSketchWarning(true);
+    }
+  };
+
+  const handleAddAllProductsToCart = async () => {
+    try {
+      for (const product of template?.products || []) {
+        const productResponse = await fetchProductById(product.id, accessToken ?? '');
+        const productData = productResponse.data;
+        addItem({
+          id: productData.id,
+          name: productData.name,
+          price: productData.truePrice,
+          quantity: product.quantity,
+        });
+      }
+      toast({
+        title: "All products added to cart",
+        description: "Your selected template's products have been added to your cart.",
+        className: "bg-green-500"
+      });
+    } catch (err) {
+      toast({
+        title: "Add to cart fail",
+        description: `Error adding products to cart: ${err}`,
+        className: "bg-red-500"
+      });
     }
   };
 
@@ -211,7 +247,7 @@ export default function TemplateDetailsBody({ id }: TemplateDetailsProps) {
           <img
             src={template?.imageUrl}
             alt={template?.name}
-            className="w-full h-[400px] object-cover"
+            className="w-full h-[420px] object-cover"
           />
         </Card>
       </motion.section>
@@ -241,7 +277,13 @@ export default function TemplateDetailsBody({ id }: TemplateDetailsProps) {
         transition={{ duration: 0.75, delay: 1.1 }}
         className="mb-12"
       >
-        <h2 className="text-2xl font-bold mb-4">Featured Products</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold mb-4">Featured Products</h2>
+          <Button onClick={handleAddAllProductsToCart}>
+            <ShoppingBag/>
+            Add collection to cart
+          </Button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {template?.products.map((product, index) => (
             <ProductCard key={index} productId={product.id} quantity={product.quantity} />

@@ -106,7 +106,7 @@ export default function CustomerProfilePage() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-10">
+    <div className="mx-auto py-8 px-10">
       <div className="flex flex-col md:flex-row gap-8">
         <div className="md:w-1/3">
           <Card>
