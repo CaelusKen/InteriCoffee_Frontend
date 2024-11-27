@@ -201,7 +201,7 @@ const UserHome = () => {
                           <Package className="mr-2 h-4 w-4" />
                           Track
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => router.push(`/customer/orders?orderId=${order.id}`)}>
+                        <Button variant="outline" size="sm" onClick={() => router.push(`/customer/orders/${order.id}`)}>
                           <Package className="mr-2 h-4 w-4" />
                           Details
                         </Button>

@@ -91,31 +91,33 @@ const OrderHome = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Order ID</TableHead>
+              <TableHead className="w-[160px]">Order ID</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Quantity</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Updated</TableHead>
-              <TableHead>Action</TableHead>
+              <TableHead>Order at</TableHead>
+              <TableHead>Updated at</TableHead>
+              <TableHead className="text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedOrders.map((order) => (
               <TableRow key={order.id}>
-                <TableCell>{order.id}</TableCell>
+                <TableCell className="w-[160px]">{order.id}</TableCell>
                 <TableCell>
                   {order.totalAmount.toLocaleString("vi-VN", {
                     style: "currency",
                     currency: "VND",
                   })}
                 </TableCell>
-                <TableCell>{order.orderProducts.length}</TableCell>
+                <TableCell>{order.orderProducts.length} item(s)</TableCell>
                 <TableCell>
                   <Badge className={getStatusColor(order.status)}>
                     {order.status}
                   </Badge>
                 </TableCell>
-                <TableCell>{order.updatedDate.toLocaleString()}</TableCell>
+                <TableCell>{order.orderDate.toLocaleString("vi-VN")}</TableCell>
+                <TableCell>{order.updatedDate.toLocaleString("vi-VN")}</TableCell>
                 <TableCell className="text-right">
                   <Button
                     size="sm"
