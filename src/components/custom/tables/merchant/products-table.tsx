@@ -56,8 +56,8 @@ const fetchCategory = async(accessToken: string) : Promise<ApiResponse<Paginated
   return api.getPaginated<ProductCategory>('product-categories', undefined, accessToken)
 }
 
-const deleteProduct = async (id: string): Promise<ApiResponse<Product>> => {
-  return api.delete<Product>(`products/${id}`)
+const deleteProduct = async (id: string, accessToken: string): Promise<ApiResponse<Product>> => {
+  return api.delete<Product>(`products/${id}`, accessToken ?? '')
 }
 
 export default function MerchantProductsTable() {
@@ -84,7 +84,7 @@ export default function MerchantProductsTable() {
   })
 
   const deleteProductMutation = useMutation({
-    mutationFn: deleteProduct,
+    mutationFn:(id: string) => deleteProduct(id, accessToken ?? ''),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] })
       setSelectedProductId(null)
@@ -92,13 +92,14 @@ export default function MerchantProductsTable() {
       toast({
         title: "Product Deleted",
         description: "The product has been successfully deleted.",
+        className: "bg-green-500"
       })
     },
     onError: (error) => {
       console.error('Error deleting product:', error)
       toast({
         title: "Error",
-        description: "An error occurred while deleting the product. Please try again.",
+        description: `An error occurred while deleting the product ${error}`,
         variant: "destructive",
       })
     },
@@ -132,10 +133,12 @@ export default function MerchantProductsTable() {
     {
       accessorKey: "sellingPrice",
       header: "Selling Price",
+      cell: ({ row }) => `${row.original.sellingPrice.toLocaleString("vi-VN", { style: "currency", currency: "VND"})}`,
     },
     {
       accessorKey: "quantity",
       header: "Quantity In Stock",
+      cell: ({ row }) => `${row.original.quantity} item(s)`,
     },
     {
       accessorKey: "dimensions",
