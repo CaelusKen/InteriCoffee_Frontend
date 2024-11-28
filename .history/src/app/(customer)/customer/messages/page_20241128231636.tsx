@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import ChatList from '@/components/custom/user/messages/chat/chat-list'
+import { ChatList } from '@/components/custom/user/messages/chat/chat-list'
 import { ChatWindow } from '@/components/custom/user/messages/chat/chat-window'
 
 export default function ChatPage() {
