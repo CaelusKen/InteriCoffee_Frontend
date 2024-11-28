@@ -78,7 +78,6 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { FileUpload } from "../sections/body/merchant/products/file-upload";
 import { SaveDialog } from "./save-dialog";
 import { useContentLoader } from "@/hooks/use-content-loader";
-import { SaveTemplateDialog } from "./save-template-dialog";
 
 const ROOM_SCALE_FACTOR = 10;
 
@@ -148,7 +147,6 @@ export default function RoomEditor({ id }: RoomEditorProps) {
 
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
-  const [isSaveTemplateDialogOpen, setIsSaveTemplateDialogOpen] = useState(false);
   const [saveType, setSaveType] = useState<"design" | "template" | null>(null);
   const [customCategories, setCustomCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState("");
@@ -744,17 +742,6 @@ export default function RoomEditor({ id }: RoomEditorProps) {
         products={products}
         styles={styles}
         clearStorage={clearStorage}
-      />
-      <SaveTemplateDialog
-        isOpen={isSaveTemplateDialogOpen}
-        onOpenChange={setIsSaveTemplateDialogOpen}
-        templateId={searchParams.get("templateId") ?? id}
-        styles={styles}
-        floors={floors}
-        products={products.map(product => ({
-          id: product.id,
-          quantity: 1
-        }))}
       />
     </div>
   );

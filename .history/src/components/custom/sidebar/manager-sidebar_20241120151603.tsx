@@ -9,8 +9,7 @@ import {
   ArrowLeftRight,
   User,
   ListOrdered,
-  UserPlus,
-  List
+  UserPlus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -25,7 +24,6 @@ export default function ManagerSidebar() {
     { name: "Dashboard", icon: LayoutDashboard, href: "/manager" },
     { name: "Account", icon: User, href: "/manager/accounts" },
     { name: "Products", icon: Package, href: "/manager/products" },
-    { name: "Product Categories", icon: List, href: "/manager/product-categories"},
     { name: "Styles", icon: Palette, href: "/manager/styles" },
     { name: "Order", icon: ListOrdered, href: "/manager/orders" },
     { name: "Merchant Registration", icon: UserPlus, href: "/manager/merchant-registration" }

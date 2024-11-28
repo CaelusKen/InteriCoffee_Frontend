@@ -748,7 +748,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
       <SaveTemplateDialog
         isOpen={isSaveTemplateDialogOpen}
         onOpenChange={setIsSaveTemplateDialogOpen}
-        templateId={searchParams.get("templateId") ?? id}
+        templateId={searchParams.get("templateId")}
         styles={styles}
         floors={floors}
         products={products.map(product => ({
