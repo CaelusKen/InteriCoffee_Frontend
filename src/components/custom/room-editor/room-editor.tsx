@@ -295,14 +295,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
                         item.id === id.toString()
                           ? {
                               ...item,
-                              [type]:
-                                type === "rotation"
-                                  ? (value.map((v) => v * (180 / Math.PI)) as [
-                                      number,
-                                      number,
-                                      number
-                                    ])
-                                  : value,
+                              [type] : value,
                             }
                           : item
                       ),

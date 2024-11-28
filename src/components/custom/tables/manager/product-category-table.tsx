@@ -139,7 +139,7 @@ export default function MerchantProductCategoryTable() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => router.push(`/merchant/product-categories/${productCategory.id}/update`)}>
+                    <DropdownMenuItem onClick={() => router.push(`/manager/product-categories/${productCategory.id}/update`)}>
                       Edit
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => {

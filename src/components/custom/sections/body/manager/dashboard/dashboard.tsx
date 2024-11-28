@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts'
 import { Users, ShoppingBag, DollarSign, Store } from 'lucide-react'
 import { ApiResponse, PaginatedResponse } from "@/types/api"
 import { Account, Merchant, Order } from "@/types/frontend/entities"
@@ -9,48 +9,15 @@ import { api } from "@/service/api"
 import { useAccessToken } from "@/hooks/use-access-token"
 import { useQuery } from "@tanstack/react-query"
 
-const accountsData = [
-  { month: 'Jan', accounts: 120 },
-  { month: 'Feb', accounts: 150 },
-  { month: 'Mar', accounts: 200 },
-  { month: 'Apr', accounts: 180 },
-  { month: 'May', accounts: 220 },
-  { month: 'Jun', accounts: 250 },
-]
-
 //using api
 const fetchAccounts = async(accessToken: string): Promise<ApiResponse<PaginatedResponse<Account>>> => {
   return api.getPaginated<Account>("accounts", undefined, accessToken)
 }
 
-const ordersData = [
-  { month: 'Jan', orders: 300 },
-  { month: 'Feb', orders: 400 },
-  { month: 'Mar', orders: 500 },
-  { month: 'Apr', orders: 450 },
-  { month: 'May', orders: 550 },
-  { month: 'Jun', orders: 600 },
-]
 const fetchOrders = async(accessToken: string): Promise<ApiResponse<PaginatedResponse<Order>>> => {
   return api.getPaginated<Order>("orders", undefined, accessToken)
 }
 
-const revenueData = [
-  { month: 'Jan', revenue: 50000 },
-  { month: 'Feb', revenue: 60000 },
-  { month: 'Mar', revenue: 75000 },
-  { month: 'Apr', revenue: 70000 },
-  { month: 'May', revenue: 80000 },
-  { month: 'Jun', revenue: 90000 },
-]
-
-const merchantData = [
-  { name: 'Electronics', value: 30 },
-  { name: 'Clothing', value: 25 },
-  { name: 'Food', value: 20 },
-  { name: 'Books', value: 15 },
-  { name: 'Others', value: 10 },
-]
 const fetchMerchants = async(accessToken: string): Promise<ApiResponse<PaginatedResponse<Merchant>>> => {
   return api.getPaginated<Merchant>('merchants', undefined, accessToken)
 } 

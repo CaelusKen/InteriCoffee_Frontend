@@ -119,7 +119,7 @@ export default function FurnitureItem({
 }
 
 function arraysEqual(a: number[], b: number[]) {
-  return a.length === b.length && a.every((value, index) => Math.abs(value - b[index]) < 0.0001);
+  return a.length === b.length && a.every((value, index) => Math.abs(value - b[index]) < 0.01);
 }
 
 function normalizeAngle(angle: number): number {
