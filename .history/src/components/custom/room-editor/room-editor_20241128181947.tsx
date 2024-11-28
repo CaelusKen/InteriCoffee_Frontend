@@ -149,7 +149,6 @@ export default function RoomEditor({ id }: RoomEditorProps) {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [isSaveTemplateDialogOpen, setIsSaveTemplateDialogOpen] = useState(false);
-  const [templateToEdit, setTemplateToEdit] = useState<Template | null>(null);
   const [saveType, setSaveType] = useState<"design" | "template" | null>(null);
   const [customCategories, setCustomCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState("");
@@ -463,29 +462,8 @@ export default function RoomEditor({ id }: RoomEditorProps) {
   }, []);
 
   const handleSaveMerchant = useCallback(() => {
-    if (searchParams.get("templateId")) {
-      // If editing an existing template, fetch its data
-      const templateId = searchParams.get("templateId") as string;
-      api.get<Template>(`templates/${templateId}`, undefined, accessToken ?? "")
-        .then((res) => {
-          const template = mapBackendToFrontend<Template>(res.data, "template");
-          setTemplateToEdit(template);
-          setIsSaveTemplateDialogOpen(true);
-        })
-        .catch((error) => {
-          console.error("Error fetching template:", error);
-          toast({
-            title: "Error",
-            description: "Failed to fetch template information.",
-            variant: "destructive",
-          });
-        });
-    } else {
-      // If creating a new template, just open the dialog
-      setTemplateToEdit(null);
-      setIsSaveTemplateDialogOpen(true);
-    }
-  }, [searchParams, accessToken, toast]);
+    handleSaveClick("template");
+  }, []);
 
   const handleSaveClick = (type: "design" | "template") => {
     setSaveType(type);

@@ -29,18 +29,14 @@ import { useAccessToken } from "@/hooks/use-access-token";
 import { Account, Merchant, Product, Room, Template } from "@/types/frontend/entities";
 import { Floor } from "@/types/room-editor";
 import { mapBackendToFrontend } from "@/lib/entity-handling/handler";
-import { ApiResponse } from "@/types/api";
 
 interface SaveTemplateDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  templateId?: string;
   styles: { id: string; name: string }[];
   floors: Floor[]; // Replace with proper type
   products: Product[]; // Replace with proper type
-}
-
-const fetchTemplateById = async(id: string, accessToken: string): Promise<ApiResponse<Template>> => {
-  return api.getById<Template>("templates", id, accessToken?? "")
 }
 
 export function SaveTemplateDialog({
@@ -48,17 +44,13 @@ export function SaveTemplateDialog({
   onOpenChange,
   styles,
   floors,
+  templateId,
   products,
 }: SaveTemplateDialogProps) {
     const router = useRouter();
     const { data: session } = useSession();
     const accessToken = useAccessToken();
     const { toast } = useToast();
-
-    const searchParams = useSearchParams();
-
-    const isConsultant = session?.user.role === "CONSULTANT"
-    const isEditing = !!searchParams.get("templateId")
   
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
@@ -68,34 +60,28 @@ export function SaveTemplateDialog({
     const [image, setImage] = useState<File | null>(null);
     const [imageUrl, setImageUrl] = useState<string>("");
     const [isImageUpdated, setIsImageUpdated] = useState(false);
+    const [template, setTemplate] = useState<Template | null>(null)
   
     useEffect(() => {
-      if (isOpen) {
-        if(isConsultant && searchParams.get("templateId")) {
-          const templateId = searchParams.get("templateId") as string;
-          // Fetch existing template data if editing
-          fetchTemplateById(templateId, accessToken ?? '')
-            .then((res) => {
-              const template = mapBackendToFrontend<Template>(res.data, "template");
-              if(template) {
-                setName(template?.name?? '');
-                setDescription(template?.description?? '');
-                setCategories(template?.categories?? []);
-                setSelectedStyleId(template?.styleId?? '');
-                setImageUrl(template?.imageUrl?? '');
-              }
-
-              console.log("Fetched template data:", template);
-            })
-            .catch((error) => {
-              console.error("Error fetching template:", error);
-              toast({
-                title: "Error",
-                description: "Failed to fetch template information.",
-                variant: "destructive",
-              });
+      if (isOpen && templateId) {
+        // Fetch existing template data if editing
+        api.get<Template>(`templates/${templateId}`, undefined, accessToken ?? "")
+          .then((res) => {
+            setTemplate(res.data);
+            setName(template?.name ?? '');
+            setDescription(template?.description ?? '');
+            setCategories(template?.categories ?? []);
+            setSelectedStyleId(template?.styleId ?? '');
+            setImageUrl(template?.imageUrl ?? '');
+          })
+          .catch((error) => {
+            console.error("Error fetching template:", error);
+            toast({
+              title: "Error",
+              description: "Failed to fetch template information.",
+              variant: "destructive",
             });
-        }
+          });
       } else {
         // Reset form for new template
         setName("");
@@ -106,7 +92,7 @@ export function SaveTemplateDialog({
         setImageUrl("");
         setIsImageUpdated(false);
       }
-    }, [isOpen, isConsultant, accessToken, toast]);
+    }, [isOpen, accessToken, toast]);
   
     const handleAddCategory = () => {
       if (newCategory && !categories.includes(newCategory)) {
@@ -130,81 +116,30 @@ export function SaveTemplateDialog({
         });
         return;
       }
-
-      const account = await api
-      .get<Account>(`accounts/${session?.user.email}/info`)
-      .then((res) => {
-        const account = mapBackendToFrontend<Account>(
-          res.data,
-          "account"
-        );
-        return account;
-      });
-
-    if (!account.id) {
-      toast({
-        title: "Error",
-        description: "Unable to fetch account information. Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!name) {
-      toast({
-        title: "Error",
-        description: `Please provide a name for the template`,
-        variant: "destructive",
-      });
-      return;
-    }
+  
+      if (!name) {
+        toast({
+          title: "Error",
+          description: "Please provide a name for the template.",
+          variant: "destructive",
+        });
+        return;
+      }
   
       try {
-        let existingTemplate: Template | null = null;
-
-        if (isEditing) {
-          const response = await api.get<Template>(
-            `templates/${searchParams.get("templateId")}`,
-            undefined,
-            accessToken?? ""
-          );
-          existingTemplate = mapBackendToFrontend<Template>(
-            response.data,
-            "template"
-          );
-        }
-
-        const templateData: Partial<any> = {
+        const accountId = await api.get<Account>(`accounts/${session.user.email}/info`)
+          .then((res) => res.data.id);
+  
+        const merchantId = await api.get<Merchant>(`merchants/${accountId}`)
+          .then((res) => res.data.id);
+  
+        const templateData = {
           name,
           description,
-          image: imageUrl ? imageUrl : '',
+          image: template?.imageUrl ? imageUrl : template?.imageUrl,
           status: "ACTIVE",
           type: "Template",
-          floors: floors.map((floor) => ({
-            _id: floor.id,
-            name: floor.name,
-            "design-template-id": searchParams.get("templateId") || "",
-            rooms: floor?.rooms?.map((room: Room) => ({
-              name: room.name,
-              width: room.width,
-              height: room.height,
-              length: room.length,
-              furnitures: room.furnitures.map((furniture) => ({
-                _id: furniture.id,
-                name: furniture.name,
-                model: furniture.model,
-                position: furniture.position,
-                rotation: furniture.rotation,
-                scale: furniture.scale,
-                visible: furniture.visible,
-                category: furniture.category,
-              })),
-              "non-furnitures":
-                existingTemplate?.floors
-                  .find((f) => f.id === floor.id)
-                  ?.rooms.find((r) => r.name === room.name)?.nonFurnitures || [],
-            })),
-          })),
+          floors,
           categories,
           products: (() => {
             const productMap = new Map();
@@ -234,14 +169,14 @@ export function SaveTemplateDialog({
               quantity,
             }));
           })(),
-          "account-id": account.id,
-          "merchant-id": account.merchantId,
+          "account-id": accountId,
+          "merchant-id": merchantId,
           "style-id": selectedStyleId,
         };
   
-        if (searchParams.get("templateId")) {
+        if (templateId) {
           // Update existing template
-          await api.patch(`templates/${searchParams.get("templateId")}`, templateData, undefined, accessToken ?? "");
+          await api.patch(`templates/${templateId}`, templateData, undefined, accessToken ?? "");
           toast({
             title: "Template Updated",
             description: "Your template has been updated successfully.",
@@ -271,7 +206,7 @@ export function SaveTemplateDialog({
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{searchParams.get("templateId") ? "Edit Template" : "Save Template"}</DialogTitle>
+            <DialogTitle>{templateId ? "Edit Template" : "Save Template"}</DialogTitle>
             <DialogDescription>
               Enter the details for your template.
             </DialogDescription>

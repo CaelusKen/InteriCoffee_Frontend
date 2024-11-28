@@ -7,7 +7,7 @@ import { OrbitControls, Environment, Grid } from '@react-three/drei'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ChevronLeft, Edit2, Trash2, Maximize2, CheckIcon } from 'lucide-react'
+import { ChevronLeft, Edit2, Trash2, Maximize2 } from 'lucide-react'
 import SceneContent from '@/components/custom/room-editor/scene-view'
 import { TemplateData, Furniture, Room, TransformUpdate } from '@/types/room-editor'
 import { Room as FrontendRoom } from '@/types/frontend/entities'
@@ -161,6 +161,14 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
     return <div>Error loading template</div>
   }
 
+  const handleUpdateTransform = (update: TransformUpdate) => {
+    // In a real application, you'd update the template state here
+    console.log('Update transform:', update)
+  }
+
+  // const currentRoom = template.floors[0]?.rooms[0]
+  // const furniture = currentRoom?.furniture || []
+
   return (
     <div className="min-h-screen bg-background text-foreground p-8">
       <div className="max-w-6xl mx-auto">
@@ -184,14 +192,14 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Template Preview</CardTitle>
+              <CardTitle>Style Preview</CardTitle>
             </CardHeader>
             <CardContent>
               {/* 3D preview content */}
               {template?.type === "Template" && (
                 <>
                   <div className="flex space-x-4">
-                    <div className="flex flex-col gap-4 mb-2">
+                    <div className="flex flex-col gap-4">
                       <Label>Floor</Label>
                       <Select onValueChange={setSelectedFloor} value={selectedFloor}>
                         <SelectTrigger className="w-[180px]">
@@ -207,7 +215,7 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
                       </Select>
                     </div>
             
-                    <div className="flex flex-col gap-4 mb-2">
+                    <div className="flex flex-col gap-4">
                       <Label>Room</Label>
                       <Select onValueChange={setSelectedRoom} value={selectedRoom}>
                         <SelectTrigger className="w-[180px]">
@@ -251,7 +259,7 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Template Information</CardTitle>
+              <CardTitle>Style Information</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">{template?.description}</p>
@@ -261,14 +269,6 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
                   {template?.categories.map((category, index) => (
                     <Badge key={index} variant="secondary">{category}</Badge>
                   ))}
-                </div>
-              </div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold mb-2">Style</h3>
-                <div className="flex flex-wrap gap-2">
-                  <Badge>
-                    {style}
-                  </Badge>
                 </div>
               </div>
             </CardContent>

@@ -267,6 +267,7 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
                 <h3 className="text-lg font-semibold mb-2">Style</h3>
                 <div className="flex flex-wrap gap-2">
                   <Badge>
+                    <CheckIcon className="h-4 w-4 text-green-500" />
                     {style}
                   </Badge>
                 </div>

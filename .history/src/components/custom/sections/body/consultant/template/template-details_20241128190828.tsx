@@ -7,7 +7,7 @@ import { OrbitControls, Environment, Grid } from '@react-three/drei'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ChevronLeft, Edit2, Trash2, Maximize2, CheckIcon } from 'lucide-react'
+import { ChevronLeft, Edit2, Trash2, Maximize2 } from 'lucide-react'
 import SceneContent from '@/components/custom/room-editor/scene-view'
 import { TemplateData, Furniture, Room, TransformUpdate } from '@/types/room-editor'
 import { Room as FrontendRoom } from '@/types/frontend/entities'
@@ -251,7 +251,7 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Template Information</CardTitle>
+              <CardTitle>Style Information</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">{template?.description}</p>
@@ -261,14 +261,6 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
                   {template?.categories.map((category, index) => (
                     <Badge key={index} variant="secondary">{category}</Badge>
                   ))}
-                </div>
-              </div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold mb-2">Style</h3>
-                <div className="flex flex-wrap gap-2">
-                  <Badge>
-                    {style}
-                  </Badge>
                 </div>
               </div>
             </CardContent>

@@ -1,31 +1,24 @@
 'use client'
 
-import React, { useState, useEffect, Suspense, useMemo } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Canvas } from "@react-three/fiber"
 import { OrbitControls, Environment, Grid } from '@react-three/drei'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ChevronLeft, Edit2, Trash2, Maximize2, CheckIcon } from 'lucide-react'
+import { ChevronLeft, Edit2, Trash2, Maximize2 } from 'lucide-react'
 import SceneContent from '@/components/custom/room-editor/scene-view'
 import { TemplateData, Furniture, Room, TransformUpdate } from '@/types/room-editor'
-import { Room as FrontendRoom } from '@/types/frontend/entities'
-import { Room as EditorRoom } from '@/types/room-editor'
 import FurnitureProductCard from '@/components/custom/cards/furniture-card-v2'
 import { ApiResponse } from '@/types/api'
 import { Product, Template } from '@/types/frontend/entities'
 import { api } from '@/service/api'
 import { useQuery } from '@tanstack/react-query'
 import { useAccessToken } from '@/hooks/use-access-token'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import FloorSelector from '../../templates/inputs/floor-selector'
+import RoomSelector from '../../templates/inputs/room-selector'
+import ModelViewer from '../../templates/inputs/room-preview'
 import { Style } from '@/types/frontend/entities'
 
 interface TemplateProps {
@@ -76,9 +69,8 @@ export function ProductCard({ productId, quantity }: { productId: string, quanti
 
 export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
   const accessToken = useAccessToken()
-  const [selectedFloor, setSelectedFloor] = useState<string>("");
-  const [selectedRoom, setSelectedRoom] = useState<string>("");
-  const [environment, setEnvironment] = useState("apartment");
+  const [selectedFloor, setSelectedFloor] = useState(1);
+  const [selectedRoom, setSelectedRoom] = useState("living_room");
 
   const [isFullscreen, setIsFullscreen] = useState(false)
   const router = useRouter()
@@ -89,57 +81,6 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
   })
 
   const template = templateQuery.data?.data
-
-  const floors = template?.floors || [];
-  const rooms = selectedFloor
-    ? floors.find((f) => f.id === selectedFloor)?.rooms || []
-    : [];
-
-  const currentRoom: FrontendRoom | undefined = rooms.find(
-    (r) => r.name === selectedRoom
-  );
-
-  const mapToEditorRoom = (frontendRoom: FrontendRoom): EditorRoom => ({
-    id: frontendRoom.name,
-    name: frontendRoom.name,
-    width: frontendRoom.width,
-    length: frontendRoom.length,
-    height: frontendRoom.height,
-    furnitures: frontendRoom.furnitures.map((f) => ({
-      id: f.id,
-      name: f.name,
-      model: f.model,
-      position: (f.position as [number, number, number]) || [0, 0, 0],
-      rotation: (f.rotation as [number, number, number]) || [0, 0, 0],
-      scale: (f.scale as [number, number, number]) || [1, 1, 1],
-      visible: true,
-      category: ["default"],
-    })),
-    nonFurnitures:
-      frontendRoom.nonFurnitures?.map((f) => ({
-        id: f.id,
-        name: f.name,
-        model: f.model,
-        position: (f.position as [number, number, number]) || [0, 0, 0],
-        rotation: (f.rotation as [number, number, number]) || [0, 0, 0],
-        scale: (f.scale as [number, number, number]) || [1, 1, 1],
-        visible: true,
-        category: ["default"],
-      })) || [],
-  });
-
-  const editorRoom: EditorRoom | undefined = useMemo(() => {
-    if (!currentRoom) return undefined;
-    return mapToEditorRoom(currentRoom);
-  }, [currentRoom]);
-
-  const furniture: Furniture[] = editorRoom
-    ? [...editorRoom.furnitures, ...(editorRoom.nonFurnitures || [])]
-    : [];
-    
-  const handleEnvironmentChange = (newEnvironment: string) => {
-    setEnvironment(newEnvironment);
-  };
 
   const styleQuery = useQuery({
     queryKey: ["style", template?.styleId],
@@ -160,6 +101,14 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
   if (templateQuery.isError) {
     return <div>Error loading template</div>
   }
+
+  const handleUpdateTransform = (update: TransformUpdate) => {
+    // In a real application, you'd update the template state here
+    console.log('Update transform:', update)
+  }
+
+  // const currentRoom = template.floors[0]?.rooms[0]
+  // const furniture = currentRoom?.furniture || []
 
   return (
     <div className="min-h-screen bg-background text-foreground p-8">
@@ -184,62 +133,21 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Template Preview</CardTitle>
+              <CardTitle>Style Preview</CardTitle>
             </CardHeader>
             <CardContent>
               {/* 3D preview content */}
               {template?.type === "Template" && (
-                <>
-                  <div className="flex space-x-4">
-                    <div className="flex flex-col gap-4 mb-2">
-                      <Label>Floor</Label>
-                      <Select onValueChange={setSelectedFloor} value={selectedFloor}>
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="Select Floor" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {floors.map((floor) => (
-                            <SelectItem key={floor.id} value={floor.id}>
-                              {floor.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-            
-                    <div className="flex flex-col gap-4 mb-2">
-                      <Label>Room</Label>
-                      <Select onValueChange={setSelectedRoom} value={selectedRoom}>
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="Select Room" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {rooms.map((room) => (
-                            <SelectItem key={room.name} value={room.name}>
-                              {room.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  {editorRoom && (
-                    <div className="w-full h-[600px] bg-gray-100 rounded-lg overflow-hidden">
-                      <Canvas camera={{ position: [5, 5, 5], fov: 50 }}>
-                        <SceneContent
-                          room={editorRoom}
-                          furniture={furniture}
-                          selectedItem={null}
-                          onSelectItem={() => {}}
-                          onUpdateTransform={() => {}}
-                          transformMode="translate"
-                          environment={environment}
-                          onEnvironmentChange={handleEnvironmentChange}
-                        />
-                      </Canvas>
-                    </div>
-                  )}
-                </>
+                <Canvas>
+                  <ambientLight intensity={0.5} />
+                  <pointLight position={[10, 10, 10]} />
+                  <Suspense fallback={null}>
+                    <mesh position={[0, 0, 0]} rotation={[0, 0, 0]} scale={[0.5, 0.5, 0.5]}>
+                      <boxGeometry />
+                      <meshStandardMaterial color="red" />
+                    </mesh>
+                  </Suspense>
+                </Canvas>
               )}
               {template?.type === "Sketch" && (
                 <div className="text-red-500 mb-4 flex items-center">
@@ -251,7 +159,7 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Template Information</CardTitle>
+              <CardTitle>Style Information</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">{template?.description}</p>
@@ -261,14 +169,6 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
                   {template?.categories.map((category, index) => (
                     <Badge key={index} variant="secondary">{category}</Badge>
                   ))}
-                </div>
-              </div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold mb-2">Style</h3>
-                <div className="flex flex-wrap gap-2">
-                  <Badge>
-                    {style}
-                  </Badge>
                 </div>
               </div>
             </CardContent>
