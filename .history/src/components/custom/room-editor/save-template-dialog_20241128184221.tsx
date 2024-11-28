@@ -160,51 +160,13 @@ export function SaveTemplateDialog({
     }
   
       try {
-        let existingTemplate: Template | null = null;
-
-        if (isEditing) {
-          const response = await api.get<Template>(
-            `templates/${searchParams.get("templateId")}`,
-            undefined,
-            accessToken?? ""
-          );
-          existingTemplate = mapBackendToFrontend<Template>(
-            response.data,
-            "template"
-          );
-        }
-
-        const templateData: Partial<any> = {
+        const templateData = {
           name,
           description,
           image: imageUrl ? imageUrl : '',
           status: "ACTIVE",
           type: "Template",
-          floors: floors.map((floor) => ({
-            _id: floor.id,
-            name: floor.name,
-            "design-template-id": searchParams.get("templateId") || "",
-            rooms: floor?.rooms?.map((room: Room) => ({
-              name: room.name,
-              width: room.width,
-              height: room.height,
-              length: room.length,
-              furnitures: room.furnitures.map((furniture) => ({
-                _id: furniture.id,
-                name: furniture.name,
-                model: furniture.model,
-                position: furniture.position,
-                rotation: furniture.rotation,
-                scale: furniture.scale,
-                visible: furniture.visible,
-                category: furniture.category,
-              })),
-              "non-furnitures":
-                existingTemplate?.floors
-                  .find((f) => f.id === floor.id)
-                  ?.rooms.find((r) => r.name === room.name)?.nonFurnitures || [],
-            })),
-          })),
+          floors,
           categories,
           products: (() => {
             const productMap = new Map();
