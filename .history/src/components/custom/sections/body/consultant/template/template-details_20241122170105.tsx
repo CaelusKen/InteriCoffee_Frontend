@@ -95,7 +95,7 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
   return (
     <div className="min-h-screen bg-background text-foreground p-8">
       <div className="max-w-6xl mx-auto">
-        <Button variant="ghost" className="mb-6" onClick={() => router.push(`/simulation?templateId=${id}`)}>
+        <Button variant="ghost" className="mb-6" onClick={() => router.push('/consultant/templates')}>
           <ChevronLeft className="mr-2 h-4 w-4" />
           Back to Templates
         </Button>

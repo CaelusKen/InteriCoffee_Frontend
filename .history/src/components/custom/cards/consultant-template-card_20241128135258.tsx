@@ -56,11 +56,11 @@ export default function ConsultantTemplateCard(data: Template) {
 
   const handleUpdateTemplate = () => {
     setIsLoading(true)
-    router.push(`/simulation?templateId=${data.id}`)
+    router.push(`/consultant/templates/${data.id}/update`)
   }
 
   const handleViewTemplateDetails = () => {
-    router.push(`/consultant/templates/${data.id}`)
+    router.push(`/simulation?templateId=${data.id}`)
   }
 
   const handleDeleteTemplate = () => {

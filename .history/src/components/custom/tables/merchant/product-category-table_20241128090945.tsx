@@ -46,7 +46,6 @@ import {
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 import { useAccessToken } from '@/hooks/use-access-token'
-import { useSession } from 'next-auth/react'
 
 const fetchCategory = async(accessToken: string) : Promise<ApiResponse<PaginatedResponse<ProductCategory>>> => {
     return api.getPaginated<ProductCategory>('product-categories', undefined, accessToken)
@@ -64,8 +63,6 @@ export default function MerchantProductCategoryTable() {
     const [selectedProductCategoryId, setSelectedProductCategoryId] = useState<string | null>(null)
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
     const { toast } = useToast()
-
-    const { data: session } = useSession()
   
     const router = useRouter()
 
@@ -133,28 +130,26 @@ export default function MerchantProductCategoryTable() {
               const productCategory = row.original
       
               return (
-                  session?.user.role === "MANAGER" && (
-                    <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => router.push(`/manager/product-categories/${productCategory.id}/update`)}>
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => {
-                        setSelectedProductCategoryId(productCategory.id)
-                        setIsDeleteDialogOpen(true)
-                      }}>
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  )
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                      <span className="sr-only">Open menu</span>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => router.push(`/merchant/product-categories/${productCategory.id}/update`)}>
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => {
+                      setSelectedProductCategoryId(productCategory.id)
+                      setIsDeleteDialogOpen(true)
+                    }}>
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )
             },
           },

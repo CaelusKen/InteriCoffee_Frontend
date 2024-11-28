@@ -748,13 +748,9 @@ export default function RoomEditor({ id }: RoomEditorProps) {
       <SaveTemplateDialog
         isOpen={isSaveTemplateDialogOpen}
         onOpenChange={setIsSaveTemplateDialogOpen}
-        templateId={searchParams.get("templateId") ?? id}
-        styles={styles}
         floors={floors}
-        products={products.map(product => ({
-          id: product.id,
-          quantity: 1
-        }))}
+        products={products}
+        styles={styles}
       />
     </div>
   );

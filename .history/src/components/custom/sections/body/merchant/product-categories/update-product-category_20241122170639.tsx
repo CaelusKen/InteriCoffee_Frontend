@@ -36,7 +36,7 @@ export default function UpdateProductCategoryForm({ categoryId }: UpdateProductC
         title: "Category Updated",
         description: "Your product category has been updated successfully.",
       })
-      router.push("/manager/product-categories")
+      router.push("/merchant/product-categories")
     },
     onError: (error) => {
       console.error('Error updating product category:', error)
