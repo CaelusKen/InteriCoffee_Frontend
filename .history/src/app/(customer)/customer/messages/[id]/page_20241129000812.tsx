@@ -1,10 +1,10 @@
 import { Suspense } from 'react'
-import ChatList from '@/components/custom/user/messages/chat/chat-list'
+import { ChatList } from '@/components/custom/user/messages/chat/chat-list'
 import { ChatWindow } from '@/components/custom/user/messages/chat/chat-window'
 
-export default function ChatPage() {
+export default function ChatSessionPage() {
   return (
-    <div className="flex gap-4 h-full">
+    <div className="flex h-full">
       <Suspense fallback={<div>Loading chats...</div>}>
         <ChatList />
       </Suspense>

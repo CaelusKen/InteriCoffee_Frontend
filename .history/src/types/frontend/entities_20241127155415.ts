@@ -29,7 +29,6 @@ export interface Message {
     sender:       string;
     message:      string;
     timeStamp:    Date;
-    fileUrl?:     string;
 }
 
 
