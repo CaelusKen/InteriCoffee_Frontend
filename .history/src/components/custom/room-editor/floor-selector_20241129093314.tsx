@@ -50,12 +50,6 @@ export default function FloorSelector({
     setNewName('');
   };
 
-  const handleFloorSelect = (floorId: string) => {
-    if (floorId !== selectedFloor) {
-      onFloorChange(floorId);
-    }
-  };
-
   return (
     <ScrollArea className="h-[200px] w-full border-b">
       <div className="p-4">
@@ -80,7 +74,7 @@ export default function FloorSelector({
                 <Button
                   variant={selectedFloor === floor.id ? "default" : "outline"}
                   className="w-full justify-start"
-                  onClick={() => handleFloorSelect(floor.id as string)}
+                  onClick={() => onSelectFloor(floor.id as string)}
                 >
                   {floor.name}
                 </Button>

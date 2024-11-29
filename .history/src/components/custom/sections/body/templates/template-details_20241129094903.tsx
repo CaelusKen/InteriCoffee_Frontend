@@ -184,7 +184,6 @@ export default function TemplateDetailsBody({ id }: TemplateDetailsProps) {
 
   const handleUseTemplateAsDesign = () => {
     setDialogWarning(false);
-    router.push(`/simulation?templateId=${id}`)
     if (template?.type.match("Sketch")) {
       setSketchWarning(true);
     }

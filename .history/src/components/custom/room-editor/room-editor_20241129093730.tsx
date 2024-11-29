@@ -324,36 +324,43 @@ export default function RoomEditor({ id }: RoomEditorProps) {
     const currentRoom = currentFloor?.rooms?.find(r => r.id === selectedRoom);
     
     if (currentRoom) {
-      updateFloors(
-        floors.map(floor => {
-          if (floor.id === selectedFloor) {
-            return {
-              ...floor,
-              rooms: floor.rooms?.map(room => {
-                if (room.id === selectedRoom) {
-                  return {
-                    ...room,
-                    furnitures: room.furnitures.map(furniture => ({
-                      ...furniture,
-                      // Ensure we're storing the exact values
-                      position: [...furniture.position] as [number, number, number],
-                      rotation: [...furniture.rotation] as [number, number, number],
-                      scale: [...furniture.scale] as [number, number, number],
-                    }))
-                  };
-                }
-                return room;
-              })
-            };
-          }
-          return floor;
-        })
-      );
+      const updatedFloors = floors.map(floor => {
+        if (floor.id === selectedFloor) {
+          return {
+            ...floor,
+            rooms: floor.rooms?.map(room => {
+              if (room.id === selectedRoom) {
+                return {
+                  ...room,
+                  furnitures: room.furnitures.map(furniture => ({
+                    ...furniture,
+                    // Ensure we're storing the exact values
+                    position: [...furniture.position] as [number, number, number],
+                    rotation: [...furniture.rotation] as [number, number, number],
+                    scale: [...furniture.scale] as [number, number, number],
+                  }))
+                };
+              }
+              return room;
+            })
+          };
+        }
+        return floor;
+      });
+      
+      // Update the floors state
+      updateFloors(updatedFloors);
     }
     
     // Then update the selected floor
     setSelectedFloor(floorId);
-  };
+    
+    // Set the selected room to the first room of the new floor
+    const newFloor = floors.find(f => f.id === floorId);
+    if (newFloor && newFloor.rooms && newFloor.rooms.length > 0) {
+      setSelectedRoom(newFloor.rooms[0].id ?? '');
+    }
+  };  
 
   const toggleVisibility = (id: string) => {
     updateFloors(

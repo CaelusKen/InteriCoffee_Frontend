@@ -184,7 +184,6 @@ export default function TemplateDetailsBody({ id }: TemplateDetailsProps) {
 
   const handleUseTemplateAsDesign = () => {
     setDialogWarning(false);
-    router.push(`/simulation?templateId=${id}`)
     if (template?.type.match("Sketch")) {
       setSketchWarning(true);
     }
@@ -420,7 +419,7 @@ export default function TemplateDetailsBody({ id }: TemplateDetailsProps) {
         <h2 className="text-3xl font-bold mb-8">3D Preview</h2>
         {template?.type.match("Template") && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="md:col-span-4">
+            <div className="md:col-span-1">
               <Card>
                 <CardHeader>
                   <CardTitle>Template Preview</CardTitle>
