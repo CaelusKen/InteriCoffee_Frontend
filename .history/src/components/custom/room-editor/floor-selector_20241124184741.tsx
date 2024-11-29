@@ -13,7 +13,6 @@ interface FloorSelectorProps {
   onSelectRoom: (roomId: string) => void;
   onRenameFloor: (floorId: string, newName: string) => void;
   onRenameRoom: (floorId: string, roomId: string, newName: string) => void;
-  onFloorChange: (floorId: string) => void;
 }
 
 export default function FloorSelector({
@@ -24,7 +23,6 @@ export default function FloorSelector({
   onSelectRoom,
   onRenameFloor,
   onRenameRoom,
-  onFloorChange,
 }: FloorSelectorProps) {
   const [editingFloorId, setEditingFloorId] = useState<string | null>(null);
   const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
@@ -48,12 +46,6 @@ export default function FloorSelector({
       setEditingFloorId(null);
     }
     setNewName('');
-  };
-
-  const handleFloorSelect = (floorId: string) => {
-    if (floorId !== selectedFloor) {
-      onFloorChange(floorId);
-    }
   };
 
   return (
@@ -80,7 +72,7 @@ export default function FloorSelector({
                 <Button
                   variant={selectedFloor === floor.id ? "default" : "outline"}
                   className="w-full justify-start"
-                  onClick={() => handleFloorSelect(floor.id as string)}
+                  onClick={() => onSelectFloor(floor.id as string)}
                 >
                   {floor.name}
                 </Button>

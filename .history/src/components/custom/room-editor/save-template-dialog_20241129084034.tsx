@@ -76,7 +76,7 @@ export function SaveTemplateDialog({
           // Fetch existing template data if editing
           fetchTemplateById(templateId, accessToken ?? '')
             .then((res) => {
-              const template = res.data
+              const template = mapBackendToFrontend<Template>(res.data, "template");
               if(template) {
                 setName(template?.name?? '');
                 setDescription(template?.description?? '');
@@ -140,6 +140,8 @@ export function SaveTemplateDialog({
         );
         return account;
       });
+
+      console.log(account.id);
       
 
     if (!account.id) {
@@ -182,7 +184,7 @@ export function SaveTemplateDialog({
           status: "ACTIVE",
           type: "Template",
           floors: floors.map((floor) => ({
-            _id: floor.id?.toString(),
+            _id: floor.id,
             name: floor.name,
             "design-template-id": searchParams.get("templateId") || "",
             rooms: floor?.rooms?.map((room: Room) => ({

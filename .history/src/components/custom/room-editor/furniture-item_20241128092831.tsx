@@ -58,19 +58,16 @@ export default function FurnitureItem({
       const scaleFactor = (maxRoomDimension * ROOM_SCALE_FACTOR) / maxModelDimension
       
       groupRef.current.position.set(...position)
-      groupRef.current.rotation.set(
+      groupRef.current?.rotation.set(
         ...rotation.map((deg) => THREE.MathUtils.degToRad(deg)) as [number, number, number]
-      )
+      );
       groupRef.current.scale.set(...scale)
 
-      // Only update scale if it has changed significantly
-      if (Math.abs(scale[0] - scaleFactor) > 0.01) {
-        onUpdateTransform({
-          id,
-          type: 'scale',
-          value: [scaleFactor, scaleFactor, scaleFactor]
-        })
-      }
+      onUpdateTransform({
+        id,
+        type: 'scale',
+        value: [scaleFactor, scaleFactor, scaleFactor]
+      })
     }
   }, [modelDimensions, roomDimensions, position, rotation, scale, id, onUpdateTransform])
 

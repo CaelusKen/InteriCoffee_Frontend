@@ -318,43 +318,6 @@ export default function RoomEditor({ id }: RoomEditorProps) {
     return ((angle % 360) + 360) % 360;
   };
 
-  const handleFloorChange = (floorId: string) => {
-    // Save current floor's furniture state before switching
-    const currentFloor = floors.find(f => f.id === selectedFloor);
-    const currentRoom = currentFloor?.rooms?.find(r => r.id === selectedRoom);
-    
-    if (currentRoom) {
-      updateFloors(
-        floors.map(floor => {
-          if (floor.id === selectedFloor) {
-            return {
-              ...floor,
-              rooms: floor.rooms?.map(room => {
-                if (room.id === selectedRoom) {
-                  return {
-                    ...room,
-                    furnitures: room.furnitures.map(furniture => ({
-                      ...furniture,
-                      // Ensure we're storing the exact values
-                      position: [...furniture.position] as [number, number, number],
-                      rotation: [...furniture.rotation] as [number, number, number],
-                      scale: [...furniture.scale] as [number, number, number],
-                    }))
-                  };
-                }
-                return room;
-              })
-            };
-          }
-          return floor;
-        })
-      );
-    }
-    
-    // Then update the selected floor
-    setSelectedFloor(floorId);
-  };
-
   const toggleVisibility = (id: string) => {
     updateFloors(
       floors.map((floor) =>
@@ -665,7 +628,6 @@ export default function RoomEditor({ id }: RoomEditorProps) {
             onSelectRoom={setSelectedRoom}
             onRenameFloor={handleRenameFloor}
             onRenameRoom={handleRenameRoom}
-            onFloorChange={handleFloorChange}
           />
           <Hierarchy
             furniture={getCurrentFurniture()}

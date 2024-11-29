@@ -182,7 +182,6 @@ export function SaveTemplateDialog({
           status: "ACTIVE",
           type: "Template",
           floors: floors.map((floor) => ({
-            _id: floor.id?.toString(),
             name: floor.name,
             "design-template-id": searchParams.get("templateId") || "",
             rooms: floor?.rooms?.map((room: Room) => ({
