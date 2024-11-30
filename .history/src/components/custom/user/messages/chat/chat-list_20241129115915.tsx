@@ -1,0 +1,94 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { ref, onValue, off, push, set } from 'firebase/database'
+import { db } from '@/service/firebase'
+import { MerchantSearch } from './merchant-search'
+import { Merchant, ChatSession } from '@/types/frontend/entities'
+import { useSession } from 'next-auth/react'
+import { v4 as uuidv4 } from 'uuid'
+
+interface ChatSessionListItem {
+  id: string
+  customerId: string
+  merchantId: string
+  lastMessage: string
+  updatedDate: string
+}
+
+export default function ChatList() {
+  const [chatSessions, setChatSessions] = useState<ChatSessionListItem[]>([])
+  const router = useRouter()
+  const { data: session } = useSession()
+
+  useEffect(() => {
+    if (!session?.user?.email) return
+
+    const chatsRef = ref(db, 'chats')
+    
+    onValue(chatsRef, (snapshot) => {
+      const data = snapshot.val()
+      if (data) {
+        const sessionList = Object.entries(data).map(([id, session]: [string, any]) => ({
+          id,
+          customerId: session.customerId,
+          merchantId: session.merchantId,
+          lastMessage: session.lastMessage || '',
+          updatedDate: session.updatedDate
+        }))
+        setChatSessions(sessionList)
+      }
+    })
+
+    return () => off(chatsRef)
+  }, [session])
+
+  const handleMerchantSelect = async (merchant: Merchant) => {
+    if (!session?.user?.email) return
+
+    const newSessionId = uuidv4()
+    const newSession: ChatSession = {
+      id: newSessionId,
+      customerId: session.user.email,
+      advisorId: merchant.id,
+      messages: [],
+      createdDate: new Date(),
+      updatedDate: new Date(),
+    }
+
+    const chatRef = ref(db, `chats/${newSessionId}`)
+    await set(chatRef, newSession)
+
+    router.push(`/chat/${newSessionId}`)
+  }
+
+  return (
+    <Card className="w-1/4 h-full overflow-y-auto border-r">
+      <CardHeader>
+        <CardTitle>Chat Sessions</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <MerchantSearch onMerchantSelect={handleMerchantSelect} />
+        <div className="mt-4">
+          {chatSessions.map((session) => (
+            <Button
+              key={session.id}
+              variant="ghost"
+              className="w-full justify-start text-left mb-2"
+              onClick={() => router.push(`/chat/${session.id}`)}
+            >
+              <div>
+                <div className="font-semibold">Merchant ID: {session.merchantId}</div>
+                <div className="text-sm text-muted-foreground truncate">{session.lastMessage}</div>
+                <div className="text-xs text-muted-foreground">{new Date(session.updatedDate).toLocaleString()}</div>
+              </div>
+            </Button>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

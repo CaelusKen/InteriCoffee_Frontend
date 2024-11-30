@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, ShoppingCart, Layers, Home, PaintBucket, ReceiptText, MessageCircleDashed, MessageCircle } from 'lucide-react'
+import { Menu, X, ShoppingCart, Layers, Home, PaintBucket, ReceiptText, MessageCircleDashed } from 'lucide-react'
 import { ThemeToggler } from '../buttons/theme-toggler'
 import { useRouter } from 'next/navigation'
 import { useCart } from '../cart/cart-context'
@@ -132,7 +132,7 @@ const Header = () => {
               <p>Simulate</p>
             </Button>
             <Button variant={'ghost'} onClick={() => router.push('/customer/messages')}>
-              <MessageCircle size={24}/>
+              <MessageCircleDashed size={24}/>
               <p>Chat</p>
             </Button>
           </>
