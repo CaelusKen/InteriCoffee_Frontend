@@ -1,13 +1,23 @@
-import { ref, set, push, onValue, off, query, orderByChild, equalTo, get, update } from 'firebase/database';
+import { ref, set, push, onValue, off, query, orderByChild, equalTo } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { realtimeDb, storage } from '@/service/firebase';
 import { api } from '@/service/api';
-import { Merchant, ChatSession, Message } from '@/types/frontend/entities';
+import { Merchant } from '@/types/frontend/entities';
 
-interface DefaultMessage {
-  trigger: string;
-  response: string;
+export interface ChatMessage {
+  id: string;
+  sender: string;
+  content: string;
+  timestamp: string;
+  fileUrl?: string;
+}
+
+export interface ChatSession {
+  id: string;
+  participantId: string;
+  lastMessage: string;
+  updatedAt: string;
 }
 
 const sanitizeEmail = (email: string): string => {
@@ -67,31 +77,6 @@ export const firebaseChat = {
     });
   },
 
-  // Add a function to assign a consultant to a chat session
-  assignConsultant: async (sessionId: string, consultantId: string) => {
-    const sessionRef = ref(realtimeDb, `chatSessions/${sessionId}`);
-    await update(sessionRef, { assignedConsultantId: consultantId });
-    
-    // Update in backend API
-    await api.patch(`chat-sessions/${sessionId}`, { assignedConsultantId: consultantId });
-  },
-
-  // Add a function to set up default messages for a merchant
-  setDefaultMessages: async (merchantId: string, defaultMessages: any[]) => {
-    const defaultMessagesRef = ref(realtimeDb, `merchantDefaultMessages/${merchantId}`);
-    await set(defaultMessagesRef, defaultMessages);
-    
-    // Save to backend API
-    await api.post(`merchants/${merchantId}/default-messages`, { defaultMessages });
-  },
-
-  // Add a function to get default messages for a merchant
-  getDefaultMessages: async (merchantId: string): Promise<DefaultMessage[]> => {
-    const defaultMessagesRef = ref(realtimeDb, `merchantDefaultMessages/${merchantId}`);
-    const snapshot = await get(defaultMessagesRef);
-    return snapshot.val() || [];
-  },
-
   sendMessage: async (email: string, sessionId: string, message: string, file?: File) => {
     const sanitizedEmail = sanitizeEmail(email);
     const chatRef = ref(realtimeDb, `chats/${sanitizedEmail}/${sessionId}/messages`);
@@ -103,33 +88,15 @@ export const firebaseChat = {
       fileUrl = await getDownloadURL(fileRef);
     }
 
-    const newMessage: Message = {
+    const newMessage: ChatMessage = {
       id: uuidv4(),
       sender: email,
-      message: message,
-      timeStamp: new Date(),
+      content: message,
+      timestamp: new Date().toISOString(),
       fileUrl,
     };
 
     await push(chatRef, newMessage);
-
-    const session = await get(ref(realtimeDb, `chatSessions/${sessionId}`));
-    const sessionData = session.val();
-
-    if (sessionData.merchantId === email || sessionData.assignedConsultantId === email) {
-      const defaultMessages = await firebaseChat.getDefaultMessages(sessionData.merchantId);
-      if (defaultMessages) {
-        const matchingDefaultMessage = defaultMessages.find((dm: DefaultMessage) => dm.trigger === message);
-        if (matchingDefaultMessage) {
-          await push(chatRef, {
-            id: uuidv4(),
-            sender: email,
-            content: matchingDefaultMessage.response,
-            timestamp: new Date().toISOString(),
-          });
-        }
-      }
-    }
 
     //Backup to API
     await api.post<ChatSession>('chat-sessions', newMessage).then((res) => {
@@ -143,17 +110,9 @@ export const firebaseChat = {
 
     await set(ref(realtimeDb, `chats/${sanitizedEmail}/${sessionId}`), {
       lastMessage: message,
-      updatedAt: newMessage.timeStamp,
+      updatedAt: newMessage.timestamp,
     });
     console.log('Message sent');
-  },
-
-
-  // Add a function to handle video calls
-  initiateVideoCall: async (sessionId: string) => {
-    // Implement video call logic here
-    // This could involve creating a new entry in Firebase for the call
-    // and returning the necessary information to start the call
   },
 
   listenToSessions: (email: string, callback: (sessions: ChatSession[]) => void) => {
@@ -169,11 +128,6 @@ export const firebaseChat = {
           participantId: session.participantId,
           lastMessage: session.lastMessage,
           updatedAt: session.updatedAt,
-          messages: session.messages,
-          customerId: session.customerId,
-          advisorId: session.advisorId,
-          createdDate: session.createdDate,
-          updatedDate: session.updatedDate,
         }));
         console.log('Processed sessions:', sessions);
         callback(sessions);
@@ -186,14 +140,14 @@ export const firebaseChat = {
     return () => off(sessionsRef);
   },
 
-  listenToMessages: (email: string, sessionId: string, callback: (messages: Message[]) => void) => {
+  listenToMessages: (email: string, sessionId: string, callback: (messages: ChatMessage[]) => void) => {
     console.log('Setting up message listener for:', { email, sessionId });
     const sanitizedEmail = sanitizeEmail(email);
     const messagesRef = ref(realtimeDb, `chats/${sanitizedEmail}/${sessionId}/messages`);
     onValue(messagesRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const messages = Object.values(data) as Message[];
+        const messages = Object.values(data) as ChatMessage[];
         console.log('Received messages:', messages);
         callback(messages);
       } else {
@@ -203,15 +157,6 @@ export const firebaseChat = {
     });
 
     return () => off(messagesRef);
-  },
-
-  saveChatSessionToBackend: async (sessionId: string) => {
-    const sessionRef = ref(realtimeDb, `chatSessions/${sessionId}`);
-    const snapshot = await get(sessionRef);
-    if (snapshot.exists()) {
-      const sessionData = snapshot.val();
-      await api.patch(`chat-sessions/${sessionId}`, sessionData);
-    }
   },
 
   loadChatHistory: async(sessionId: string) => {

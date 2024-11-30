@@ -5,6 +5,15 @@ import { realtimeDb, storage } from '@/service/firebase';
 import { api } from '@/service/api';
 import { Merchant, ChatSession, Message } from '@/types/frontend/entities';
 
+export interface ChatMessage {
+  id: string;
+  sender: string;
+  content: string;
+  timeStamp: string;
+  fileUrl?: string;
+  messages? : Message[]
+}
+
 interface DefaultMessage {
   trigger: string;
   response: string;
@@ -103,11 +112,11 @@ export const firebaseChat = {
       fileUrl = await getDownloadURL(fileRef);
     }
 
-    const newMessage: Message = {
+    const newMessage: ChatMessage = {
       id: uuidv4(),
       sender: email,
-      message: message,
-      timeStamp: new Date(),
+      content: message,
+      timeStamp: new Date().toISOString(),
       fileUrl,
     };
 
@@ -186,14 +195,14 @@ export const firebaseChat = {
     return () => off(sessionsRef);
   },
 
-  listenToMessages: (email: string, sessionId: string, callback: (messages: Message[]) => void) => {
+  listenToMessages: (email: string, sessionId: string, callback: (messages: ChatMessage[]) => void) => {
     console.log('Setting up message listener for:', { email, sessionId });
     const sanitizedEmail = sanitizeEmail(email);
     const messagesRef = ref(realtimeDb, `chats/${sanitizedEmail}/${sessionId}/messages`);
     onValue(messagesRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const messages = Object.values(data) as Message[];
+        const messages = Object.values(data) as ChatMessage[];
         console.log('Received messages:', messages);
         callback(messages);
       } else {
