@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 
 export default function ChatPage() {
   return (
-    <div>
+    <div className="flex gap-4 h-full">
       <Suspense fallback={<div>Loading chats...</div>}>
         <CustomerDashboard/>
       </Suspense>
