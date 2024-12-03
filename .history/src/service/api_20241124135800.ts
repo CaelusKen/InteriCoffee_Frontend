@@ -77,7 +77,6 @@ export const api = {
       const formattedQueryParams = {
         'page-no': queryParams?.page,
         'page-size': queryParams?.pageSize,
-        'keyword': queryParams?.keyword
       };
 
       const response = await fetchAPI<any>(endpoint, { method: 'GET' }, formattedQueryParams, accessToken);

@@ -4,13 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import Link from 'next/link'
-import { ApiResponse } from '@/types/api'
-import { Account } from '@/types/frontend/entities'
-import { api } from '@/service/api'
-
-const fetchAccountByEmail = async(email: string): Promise<ApiResponse<Account>> => {
-  return api.get<Account>(`accounts/${email}/info}`)
-}
 
 export default function Dashboard() {
   return (
