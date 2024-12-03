@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
+import io, { Socket } from "socket.io-client";
+import { db } from "@/service/firebase";
 import { collection, query, orderBy, limit, onSnapshot, QuerySnapshot, DocumentData } from "firebase/firestore";
 import { Message, FormEvent } from "@/types/chat";
 import { Button } from "@/components/ui/button";
@@ -10,8 +12,8 @@ import { ApiResponse } from "@/types/api";
 import { Account } from "@/types/frontend/entities";
 import { api } from "@/service/api";
 import { useQuery } from "@tanstack/react-query";
-import { useSocket } from "@/hooks/use-socket";
-import { db } from "@/service/firebase";
+
+let socket: Socket | null = null;
 
 const fetchAccountByEmail = async(email: string): Promise<ApiResponse<Account>> => {
     return api.get<Account>(`accounts/${email}/info`)
@@ -25,32 +27,45 @@ export default function Chat({ roomId }: { roomId: string }) {
 
   const accountQuery = useQuery({
     queryKey: ["account", session?.user?.email],
-    queryFn: () => fetchAccountByEmail(session?.user?.email ?? ''),
-    enabled: !!session?.user?.email
+    queryFn: () => fetchAccountByEmail(session?.user?.email ?? '')
   })
 
   const account = accountQuery.data?.data as Account
 
-  const socket = useSocket('http://localhost:3000', '/api/messages/socketio');
-
   useEffect(() => {
-    if (socket) {
-      socket.emit("join-room", roomId);
+    const initializeSocket = async () => {
+      await socketInitializer();
+    };
+    
+    initializeSocket();
+    fetchMessages();
+    
+    return () => {
+      if (socket) {
+        socket.disconnect();
+      }
+    };
+  }, [roomId]);
+
+  const socketInitializer = async () => {
+    try {
+      await fetch('/api/socketio');
+      socket = io("http://localhost:3000", {
+        path: "/api/messages/socketio",
+      });
+
+      socket.on("connect", () => {
+        console.log("Connected to Socket.IO");
+        socket?.emit("join-room", roomId);
+      });
 
       socket.on("receive-message", (message: Message) => {
         setMessages((prevMessages) => [...prevMessages, message]);
       });
-
-      return () => {
-        socket.off("receive-message");
-        socket.emit("leave-room", roomId);
-      };
+    } catch (error) {
+      console.error("Socket initialization error:", error);
     }
-  }, [socket, roomId]);
-
-  useEffect(() => {
-    fetchMessages();
-  }, [roomId]);
+  };
 
   const fetchMessages = async () => {
     try {
@@ -100,12 +115,9 @@ export default function Chat({ roomId }: { roomId: string }) {
 
       if (response.ok) {
         setInputMessage("");
-      } else {
-        throw new Error("Failed to send message");
       }
     } catch (error) {
       console.error("Error sending message:", error);
-      // You might want to show an error message to the user here
     }
   };
 

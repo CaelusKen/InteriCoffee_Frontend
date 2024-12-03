@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
     // Create a unique filename for the message
     const filename = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const messageRef = ref(storage, `chats/chat-files/${roomId}/${filename}`);
+    const messageRef = ref(storage, `chat-files/${roomId}/${filename}`);
 
     // Create metadata for the message
     const metadata = {
