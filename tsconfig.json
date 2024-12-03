@@ -39,7 +39,7 @@
     ".next/types/**/*.ts",
     "src/components/custom/sections/header.jsx",
     "src/components/custom/sections/footer.jsx"
-  ],
+, "src/lib/socket.js"  ],
   "exclude": [
     "node_modules"
   ]

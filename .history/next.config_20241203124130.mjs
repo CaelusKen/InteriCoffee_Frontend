@@ -29,4 +29,29 @@ const nextConfig = {
   },
 };
 
+const dev = process.env.NODE_ENV !== 'production';
+const app = next({ dev, conf: nextConfig });
+const handle = app.getRequestHandler();
+
+app.prepare().then(() => {
+  createServer((req, res) => {
+    const parsedUrl = parse(req.url, true);
+    handle(req, res, parsedUrl);
+  }).listen(3000, (err) => {
+    if (err) throw err;
+    console.log('> Ready on http://localhost:3000');
+  });
+
+  const httpServer = createServer((req, res) => {
+    const parsedUrl = parse(req.url, true);
+    handle(req, res, parsedUrl);
+  });
+
+  initSocket(httpServer);
+
+  httpServer.listen(3001, () => {
+    console.log('> Socket.IO server running on http://localhost:3001');
+  });
+});
+
 export default nextConfig;
