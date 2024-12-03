@@ -1,11 +1,14 @@
-import CustomerDashboard from '@/components/custom/user/messages/customer-chat-dashboard'
-import { Suspense } from 'react'
+'use client'
 
-export default function ChatPage() {
+import ChatDashboard from "@/components/custom/chat/test-chat"
+import { Suspense } from "react"
+
+export default function CustomerChatPage() {
   return (
-    <div>
-      <Suspense fallback={<div>Loading chats...</div>}>
-        <CustomerDashboard/>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Chat Dashboard</h1>
+      <Suspense fallback={<div>Loading...</div>}>
+        <ChatDashboard />
       </Suspense>
     </div>
   )

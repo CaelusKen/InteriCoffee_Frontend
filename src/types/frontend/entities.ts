@@ -23,6 +23,7 @@ export interface ChatSession {
     customerId:     Account["id"];
     advisorId:      Account["id"];
     lastMessage?:   string;
+    defaultMessages?: Message[];
 }
 
 export interface Message {

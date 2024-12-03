@@ -1,7 +1,9 @@
-import MerchantDashboard from "@/components/custom/sections/body/merchant/messages/merchant-chat-dashboard";
-import React from "react";
+'use client'
 
-
-export default function MessageHomePage() {
-    return <MerchantDashboard />
+export default function ChatPage() {
+  return (
+    <div>
+      Chat
+    </div>
+  )
 }
