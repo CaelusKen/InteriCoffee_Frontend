@@ -1,10 +1,3 @@
-import { createServer } from 'http';
-import { parse } from 'url';
-import next from 'next';
-import pkg from './src/lib/socket.js';
-
-const { initSocket } = pkg;
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {

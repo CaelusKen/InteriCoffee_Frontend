@@ -54,6 +54,7 @@
     "react-chat-engine-advanced": "^0.1.28",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
+    "react-firebase-hooks": "^5.1.1",
     "react-hook-form": "^7.53.1",
     "react-hotkeys-hook": "^4.5.1",
     "react-reconciler": "^0.29.2",
