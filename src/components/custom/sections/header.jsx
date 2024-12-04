@@ -131,7 +131,7 @@ const Header = () => {
               <Layers size={24}/>
               <p>Simulate</p>
             </Button>
-            <Button variant={'ghost'} onClick={() => router.push('/customer/messages')}>
+            <Button variant={'ghost'} onClick={() => router.push('/customer/chat')}>
               <MessageCircle size={24}/>
               <p>Chat</p>
             </Button>
