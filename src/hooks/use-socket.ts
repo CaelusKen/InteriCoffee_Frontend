@@ -1,26 +1,22 @@
-import { useEffect, useState } from 'react';
-import io, { Socket } from 'socket.io-client';
+'use client'
 
-export const useSocket = (url: string, path: string) => {
-  const [socket, setSocket] = useState<Socket | null>(null);
+import { useEffect, useRef } from 'react'
+import io, { Socket } from 'socket.io-client'
+
+export function useSocket() {
+  const socketRef = useRef<Socket | null>(null)
 
   useEffect(() => {
-    const socketIo = io(url, { path });
+    // Initialize socket connection
+    socketRef.current = io('http://localhost:3001')
 
-    socketIo.on('connect', () => {
-      console.log('Connected to Socket.IO');
-    });
-
-    socketIo.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
-    });
-
-    setSocket(socketIo);
-
+    // Cleanup on unmount
     return () => {
-      socketIo.disconnect();
-    };
-  }, [url, path]);
+      if (socketRef.current) {
+        socketRef.current.disconnect()
+      }
+    }
+  }, [])
 
-  return socket;
-};
+  return socketRef.current
+}

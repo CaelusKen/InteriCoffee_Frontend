@@ -1,99 +1,144 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useAuthState } from 'react-firebase-hooks/auth'
-import { collection, addDoc, query, orderBy, onSnapshot } from 'firebase/firestore'
-import { auth, db } from '@/service/firebase'
-import { socket, connectSocket, disconnectSocket } from '@/lib/socket'
-import { ChatMessage } from '@/components/custom/chat/chat-message'
-import { ChatInput } from '@/components/custom/chat/chat-input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState, useEffect } from 'react'
+import { ChatSidebar } from '@/components/custom/chat/chat-sidebar'
+import { ChatMain } from '@/components/custom/chat/chat-main'
+import { MerchantSearch } from '@/components/custom/chat/merchant-search'
+import { FirestoreChat, FirestoreChatParticipant } from '@/types/firestore'
+import { createChat, subscribeToChats, fetchChatById } from '@/lib/firebase-storage'
+import { useSession } from 'next-auth/react'
+import { ApiResponse } from '@/types/api'
+import { Account, Merchant } from '@/types/frontend/entities'
+import { api } from '@/service/api'
+import { useQuery } from '@tanstack/react-query'
+import { useToast } from '@/hooks/use-toast'
+import { mapBackendToFrontend } from '@/lib/entity-handling/handler'
 
-interface Message {
-  id: string
-  text: string
-  sender: string
-  timestamp: Date
-  roomId: string
+const fetchAccountByEmail = async(email: string) : Promise<ApiResponse<Account>> => {
+  if (!email) return Promise.reject(new Error('Email is required'))
+  return api.get<Account>(`accounts/${email}/info`)
 }
 
-export default function ChatDashboard() {
-  const [user] = useAuthState(auth)
-  const [messages, setMessages] = useState<Message[]>([])
-  const roomId = 'general' // You can make this dynamic
+export default function ChatPage() {
+  const [chats, setChats] = useState<FirestoreChat[]>([])
+  const [selectedChat, setSelectedChat] = useState<FirestoreChat | null>(null)
+  const [showMerchantSearch, setShowMerchantSearch] = useState(false)
+  const { data: session } = useSession()
+
+  const { toast } = useToast()
+
+  const accountQuery = useQuery({
+    queryKey: ['account', session?.user?.email],
+    queryFn: () => fetchAccountByEmail(session?.user?.email ?? ''),
+    enabled: !!session?.user?.email,
+    refetchInterval: 60000,
+  })
+
+  const account = accountQuery.data?.data ? mapBackendToFrontend<Account>(accountQuery.data.data, 'account') : undefined
 
   useEffect(() => {
-    if (!user) return
+    if (account?.id) {
+      const unsubscribe = subscribeToChats(account.id, (updatedChats) => {
+        setChats(updatedChats)
+        if (updatedChats.length === 0) {
+          setShowMerchantSearch(true)
+        }
+      })
 
-    // Connect to Socket.IO
-    connectSocket()
-    socket.emit('join_room', roomId)
+      return () => unsubscribe()
+    }
+  }, [account?.id])
 
-    // Listen for new messages from Socket.IO
-    socket.on('receive_message', (message: Message) => {
-      setMessages(prev => [...prev, message])
-    })
+  const handleStartNewChat = async (merchant: Merchant) => {
+    console.log('Starting new chat with merchant:', merchant);
+    
+    if (!account) {
+      console.error('No valid account data available');
+      toast({
+        title: "Error",
+        description: "Unable to start chat. Please try again later.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    console.log('Account data:', account);
 
-    // Set up Firestore listener
-    const q = query(
-      collection(db, 'messages'),
-      orderBy('timestamp', 'asc')
+    try {
+      console.log('Attempting to create chat...');
+      const newChatId = await createChat(account, merchant);
+      console.log('New chat created with ID:', newChatId);
+      
+      console.log('Fetching chat by ID...');
+      const newChat = await fetchChatById(newChatId);
+      console.log('Fetched chat:', newChat);
+      
+      if (newChat) {
+        console.log('Updating state with new chat...');
+        setChats(prevChats => [...prevChats, newChat]);
+        setSelectedChat(newChat);
+        setShowMerchantSearch(false);
+        console.log('State updated successfully');
+      } else {
+        console.error('fetchChatById returned null');
+        throw new Error('Failed to create chat');
+      }
+    } catch (error) {
+      console.error('Error in handleStartNewChat:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create chat. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  if (accountQuery.isLoading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>
+  }
+
+  if (accountQuery.isError || !account) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <p className="text-red-500 mb-4">Error loading account data</p>
+        <button 
+          onClick={() => accountQuery.refetch()}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+        >
+          Retry
+        </button>
+      </div>
     )
+  }
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const newMessages = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Message[]
-      setMessages(newMessages)
-    })
-
-    return () => {
-      disconnectSocket()
-      unsubscribe()
-    }
-  }, [user])
-
-  const handleSendMessage = async (text: string) => {
-    if (!user) return
-
-    const message = {
-      text,
-      sender: user.email || 'Anonymous',
-      timestamp: new Date(),
-      roomId
-    }
-
-    // Send to Socket.IO for real-time updates
-    socket.emit('send_message', message)
-
-    // Store in Firebase
-    await addDoc(collection(db, 'messages'), message)
+  const currentUser: FirestoreChatParticipant = {
+    id: account.id,
+    name: account.userName,
+    email: account.email,
+    avatar: account.avatar,
+    role: 'customer'
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <Card className="mx-auto max-w-4xl">
-        <CardHeader>
-          <CardTitle>Chat Dashboard</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[600px] space-y-4 overflow-y-auto p-4">
-            {messages.map((message) => (
-              <ChatMessage
-                key={message.id}
-                message={message.text}
-                sender={message.sender}
-                timestamp={message.timestamp}
-                isCurrentUser={message.sender === user?.email}
-              />
-            ))}
-          </div>
-          <div className="border-t p-4">
-            <ChatInput onSendMessage={handleSendMessage} />
-          </div>
-        </CardContent>
-      </Card>
+    <div className="flex h-screen bg-background px-10 py-4">
+      <ChatSidebar 
+        chats={chats} 
+        selectedChat={selectedChat} 
+        onSelectChat={setSelectedChat}
+        onNewChat={() => setShowMerchantSearch(true)}
+        currentUserId={account.id}
+      />
+      {showMerchantSearch ? (
+        <MerchantSearch onSelectMerchant={(merchant) => handleStartNewChat(merchant)} />
+      ) : (
+        selectedChat && (
+          <ChatMain 
+            chatId={selectedChat.id}
+            currentUser={currentUser}
+            otherUser={selectedChat.participants.find(p => p.id !== account.id) as FirestoreChatParticipant}
+          />
+        )
+      )}
     </div>
   )
 }
