@@ -14,9 +14,10 @@ interface ChatSidebarProps {
   currentUserId: string
   onSelectChat: (chat: FirestoreChat) => void
   onNewChat: () => void
+  isLoading: boolean;
 }
 
-export function ChatSidebar({ chats, selectedChat, currentUserId, onSelectChat, onNewChat }: ChatSidebarProps) {
+export function ChatSidebar({ chats, selectedChat, currentUserId, onSelectChat, onNewChat, isLoading }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
   const filteredChats = chats.filter(chat => 
@@ -47,29 +48,37 @@ export function ChatSidebar({ chats, selectedChat, currentUserId, onSelectChat, 
       </div>
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-2">
-          {filteredChats.map((chat) => {
-            const otherParticipant = getOtherParticipant(chat)
-            return (
-              <button
-                key={chat.id}
-                className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors ${
-                  selectedChat?.id === chat.id ? 'bg-accent' : 'hover:bg-accent'
-                }`}
-                onClick={() => onSelectChat(chat)}
-              >
-                <Avatar>
-                  <AvatarImage src={otherParticipant.avatar} />
-                  <AvatarFallback>{otherParticipant.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 text-left">
-                  <div className="font-medium">{otherParticipant.name}</div>
-                  <div className="text-sm text-muted-foreground truncate">
-                    {chat.lastMessage?.content || 'No messages yet'}
+        {isLoading ? (
+          <div className="p-4 text-center">
+            <p>Loading chats...</p>
+          </div>
+        ) : (
+          <>
+            {filteredChats.map((chat) => {
+              const otherParticipant = getOtherParticipant(chat)
+              return (
+                <button
+                  key={chat.id}
+                  className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors ${
+                    selectedChat?.id === chat.id ? 'bg-accent' : 'hover:bg-accent'
+                  }`}
+                  onClick={() => onSelectChat(chat)}
+                >
+                  <Avatar>
+                    <AvatarImage src={otherParticipant.avatar} />
+                    <AvatarFallback>{otherParticipant.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 text-left">
+                    <div className="font-medium">{otherParticipant.name}</div>
+                    <div className="text-sm text-muted-foreground truncate">
+                      {chat.lastMessage?.content || 'No messages yet'}
+                    </div>
                   </div>
-                </div>
-              </button>
-            )
-          })}
+                </button>
+              )
+            })}
+          </>
+        )}
         </div>
       </ScrollArea>
     </div>
