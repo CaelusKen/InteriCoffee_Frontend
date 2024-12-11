@@ -23,6 +23,7 @@ export default function ChatPage() {
   const [chats, setChats] = useState<FirestoreChat[]>([])
   const [selectedChat, setSelectedChat] = useState<FirestoreChat | null>(null)
   const [showMerchantSearch, setShowMerchantSearch] = useState(false)
+  const [isLoadingChats, setIsLoadingChats] = useState(true);
   const { data: session } = useSession()
 
   const { toast } = useToast()
@@ -38,13 +39,17 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (account?.id) {
-      const unsubscribe = subscribeToChats(account.id, (updatedChats) => {
+      setIsLoadingChats(true);
+      const unsubscribe = subscribeToChats(account.id, 'customer',(updatedChats) => {
+        console.log('Received updated chats:', updatedChats);
         setChats(updatedChats)
         if (updatedChats.length === 0) {
           setShowMerchantSearch(true)
+        } else if (!selectedChat) {
+          setSelectedChat(updatedChats[0])
         }
+        setIsLoadingChats(false);
       })
-
       return () => unsubscribe()
     }
   }, [account?.id])
@@ -127,6 +132,7 @@ export default function ChatPage() {
         onSelectChat={setSelectedChat}
         onNewChat={() => setShowMerchantSearch(true)}
         currentUserId={account.id}
+        isLoading={isLoadingChats}
       />
       {showMerchantSearch ? (
         <MerchantSearch onSelectMerchant={(merchant) => handleStartNewChat(merchant)} />

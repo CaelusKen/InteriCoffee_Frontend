@@ -79,6 +79,7 @@ import { FileUpload } from "../sections/body/merchant/products/file-upload";
 import { SaveDialog } from "./save-dialog";
 import { useContentLoader } from "@/hooks/use-content-loader";
 import { SaveTemplateDialog } from "./save-template-dialog";
+import { QuantityDialog } from './quantity-dialog';
 
 const ROOM_SCALE_FACTOR = 10;
 
@@ -153,6 +154,8 @@ export default function RoomEditor({ id }: RoomEditorProps) {
   const [saveType, setSaveType] = useState<"design" | "template" | null>(null);
   const [customCategories, setCustomCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState("");
+  const [isQuantityDialogOpen, setIsQuantityDialogOpen] = useState(false);
+  const [quantity, setQuantity] = useState(1);
   const { toast } = useToast();
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const stylesQuery = useQuery({
@@ -279,6 +282,13 @@ export default function RoomEditor({ id }: RoomEditorProps) {
       )
     );
   };
+
+  const addMultipleFurniture = () => {
+    for (let i = 0; i < quantity; i++) {
+      addFurniture(selectedItem as string, []);
+    }
+    setIsQuantityDialogOpen(false);
+  }
 
   const updateTransform = ({
     id,
@@ -818,6 +828,13 @@ export default function RoomEditor({ id }: RoomEditorProps) {
         styles={styles}
         floors={floors}
         products={products}
+      />
+      <QuantityDialog
+        isOpen={isQuantityDialogOpen}
+        onOpenChange={setIsQuantityDialogOpen}
+        onConfirm={addMultipleFurniture}
+        quantity={quantity}
+        setQuantity={setQuantity}
       />
     </div>
   );

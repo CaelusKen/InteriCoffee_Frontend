@@ -15,7 +15,7 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
           <MerchantSidebar />
           <section className='flex-1 overflow-hidden bg-white dark:bg-gray-900'>
             <MerchantHeader />
-            <ScrollArea className="h-[calc(100vh-5rem)] p-6">
+            <ScrollArea className="h-[calc(100vh-5rem)] p-2">
               {children}
             </ScrollArea>
           </section>

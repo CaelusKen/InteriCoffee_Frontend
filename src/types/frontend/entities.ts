@@ -107,7 +107,7 @@ export interface Merchant {
     description:       string;
     status:            string;
     merchantCode:      string;
-    policyDocument:    string;
+    policyDocument?:   string;
     website:           string;
     orderIncomes:      OrderIncome[];
 }

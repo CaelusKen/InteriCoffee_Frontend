@@ -152,22 +152,46 @@ export function subscribeToChat(chatId: string, callback: (messages: FirestoreMe
   })
 }
 
-export function subscribeToChats(userId: string, callback: (chats: FirestoreChat[]) => void): () => void {
-  const chatsRef = collection(db, 'chats')
+export function subscribeToChats(userId: string, role: 'merchant' | 'customer', callback: (chats: FirestoreChat[]) => void): () => void {
+  console.log('Subscribing to chats for:', userId, 'with role:', role);
+  
+  const chatsRef = collection(db, 'chats');
+  
+  // Query for documents where the complete participant object exists in the array
   const q = query(
     chatsRef,
-    where('participants', 'array-contains', { id: userId }),
+    where('participants', 'array-contains', {
+      id: userId,
+      role: role
+    }),
     orderBy('updatedAt', 'desc')
-  )
+  );
 
   return onSnapshot(q, (snapshot) => {
-    const chats = snapshot.docs.map(doc => ({
-      ...doc.data(),
-      id: doc.id
-    })) as FirestoreChat[]
-    callback(chats)
-  })
+    try {
+      const chats = snapshot.docs.map(doc => {
+        const data = doc.data();
+        console.log('Processing chat:', doc.id, data);
+        return {
+          ...data,
+          id: doc.id,
+          updatedAt: data.updatedAt?.toDate() || new Date(),
+          createdAt: data.createdAt?.toDate() || new Date(),
+        } as FirestoreChat;
+      });
+      
+      console.log('Processed chats:', chats.length);
+      callback(chats);
+    } catch (error) {
+      console.error('Error processing chat data:', error);
+      callback([]);
+    }
+  }, (error) => {
+    console.error('Error in subscribeToChats:', error);
+    callback([]);
+  });
 }
+
 
 export async function markMessageAsRead(chatId: string, messageId: string, userId: string): Promise<void> {
   await updateDoc(doc(db, 'chats', chatId, 'messages', messageId), {
