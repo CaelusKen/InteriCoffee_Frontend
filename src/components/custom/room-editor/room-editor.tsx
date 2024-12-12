@@ -79,7 +79,7 @@ import { FileUpload } from "../sections/body/merchant/products/file-upload";
 import { SaveDialog } from "./save-dialog";
 import { useContentLoader } from "@/hooks/use-content-loader";
 import { SaveTemplateDialog } from "./save-template-dialog";
-import { QuantityDialog } from './quantity-dialog';
+import { AlertTriangle, Coffee, Trash2 } from "lucide-react";
 
 const ROOM_SCALE_FACTOR = 10;
 
@@ -154,8 +154,6 @@ export default function RoomEditor({ id }: RoomEditorProps) {
   const [saveType, setSaveType] = useState<"design" | "template" | null>(null);
   const [customCategories, setCustomCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState("");
-  const [isQuantityDialogOpen, setIsQuantityDialogOpen] = useState(false);
-  const [quantity, setQuantity] = useState(1);
   const { toast } = useToast();
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const stylesQuery = useQuery({
@@ -256,17 +254,21 @@ export default function RoomEditor({ id }: RoomEditorProps) {
     return ROOM_SCALE_FACTOR / maxDimension;
   };
 
-  const addFurniture = (model: string, category: ProductCategory["id"][]) => {
-    const newItem: RoomEditorTypes.Furniture = {
-      id: `${products.find(p => p.modelTextureUrl === model)?.id}${getCurrentFurniture().length + 1}`,
-      name: `${products.find(p => p.modelTextureUrl === model)?.name} ${getCurrentFurniture().length + 1}`,
-      model: model,
-      position: [0, 0, 0],
-      rotation: [0, 0, 0],
-      scale: [1, 1, 1],
-      visible: true,
-      category: category,
-    };
+  const addFurniture = (model: string, category: ProductCategory["id"][], quantity: number) => {
+    const newFurniture = Array.from({ length: quantity }, (_, index) => {
+      const newItem: RoomEditorTypes.Furniture = {
+        id: `${products.find(p => p.modelTextureUrl === model)?.id}${getCurrentFurniture().length + index + 1}`,
+        name: `${products.find(p => p.modelTextureUrl === model)?.name} ${getCurrentFurniture().length + index + 1}`,
+        model: model,
+        position: [index * 0.5, 0, index * 0.5], // Offset each item slightly
+        rotation: [0, 0, 0],
+        scale: [1, 1, 1],
+        visible: true,
+        category: category,
+      };
+      return newItem;
+    });
+
     updateFloors(
       floors.map((floor) =>
         floor.id === selectedFloor
@@ -274,7 +276,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
               ...floor,
               rooms: floor.rooms?.map((room) =>
                 room.id === selectedRoom.toString()
-                  ? { ...room, furnitures: [...room.furnitures, newItem] }
+                  ? { ...room, furnitures: [...room.furnitures, ...newFurniture] }
                   : room
               ),
             }
@@ -283,12 +285,6 @@ export default function RoomEditor({ id }: RoomEditorProps) {
     );
   };
 
-  const addMultipleFurniture = () => {
-    for (let i = 0; i < quantity; i++) {
-      addFurniture(selectedItem as string, []);
-    }
-    setIsQuantityDialogOpen(false);
-  }
 
   const updateTransform = ({
     id,
@@ -322,7 +318,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
       )
     );
   };
-  
+
   // Helper function to normalize angle between 0 and 360 degrees
   const normalizeAngle = (angle: number): number => {
     return ((angle % 360) + 360) % 360;
@@ -332,7 +328,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
     // Save current floor's furniture state before switching
     const currentFloor = floors.find(f => f.id === selectedFloor);
     const currentRoom = currentFloor?.rooms?.find(r => r.id === selectedRoom);
-    
+
     if (currentRoom) {
       updateFloors(
         floors.map(floor => {
@@ -360,7 +356,7 @@ export default function RoomEditor({ id }: RoomEditorProps) {
         })
       );
     }
-    
+
     // Then update the selected floor
     setSelectedFloor(floorId);
   };
@@ -778,17 +774,25 @@ export default function RoomEditor({ id }: RoomEditorProps) {
         }
       />
       <AlertDialog open={isClearDialogOpen} onOpenChange={setIsClearDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-primary-200 border-2 border-primary-200 rounded-lg shadow-xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Clear All Furniture</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to remove all furniture from the current
-              room? This action cannot be undone.
+            <AlertDialogTitle className="text-2xl font-bold text-primary-800 flex items-center">
+              <Trash2 className="w-6 h-6 mr-2 text-primary-600" />
+              Clear All Furniture
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-secondary-700">
+              Are you sure you want to remove all furniture from the current room? 
+              This action is like emptying your coffee cup - it cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={clearAllFurniture}>
+          <AlertDialogFooter className="space-x-2">
+            <AlertDialogCancel className="bg-secondary-200 text-secondary-800 hover:bg-secondary-300">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={clearAllFurniture}
+              className="bg-primary-600 text-white hover:bg-primary-700"
+            >
               Clear All
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -798,22 +802,38 @@ export default function RoomEditor({ id }: RoomEditorProps) {
         open={isWarningDialogOpen}
         onOpenChange={setIsWarningDialogOpen}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-primary-200 border-2 border-primary-200 rounded-lg shadow-xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Beta Version Warning</AlertDialogTitle>
-            <AlertDialogDescription>
-              This is a beta version of the Room-editor. Many features are meant
-              to be upgraded and enhanced in the future. Please visit our Github
-              to raise issues or provide feedback.
+            <AlertDialogTitle className="text-2xl font-bold text-primary-800 flex items-center">
+              <Coffee className="w-6 h-6 mr-2 text-primary-600" />
+              Beta Version: Brewing in Progress
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-secondary-700">
+              <p className="mb-4">
+                Welcome to the beta version of our Room-editor! Like a perfect cup of coffee, 
+                we're still brewing and refining our features.
+              </p>
+              <p className="mb-4">
+                Many features are meant to be upgraded and enhanced in the future. 
+                Your feedback is crucial in helping us perfect our blend!
+              </p>
+              <p className="flex items-center">
+                <AlertTriangle className="w-5 h-5 mr-2 text-primary-600" />
+                Please visit our Github to raise issues or provide feedback.
+              </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setIsWarningDialogOpen(false)}>
-              Understood
+            <AlertDialogAction 
+              onClick={() => setIsWarningDialogOpen(false)}
+              className="bg-primary-600 text-white hover:bg-primary-700"
+            >
+              Got it, let's brew!
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
       <SaveDialog
         isOpen={isSaveDialogOpen}
         onOpenChange={setIsSaveDialogOpen}
@@ -828,13 +848,6 @@ export default function RoomEditor({ id }: RoomEditorProps) {
         styles={styles}
         floors={floors}
         products={products}
-      />
-      <QuantityDialog
-        isOpen={isQuantityDialogOpen}
-        onOpenChange={setIsQuantityDialogOpen}
-        onConfirm={addMultipleFurniture}
-        quantity={quantity}
-        setQuantity={setQuantity}
       />
     </div>
   );

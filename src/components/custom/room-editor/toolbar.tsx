@@ -32,9 +32,18 @@ import { useQuery } from "@tanstack/react-query"
 import { api } from "@/service/api"
 import { ApiResponse, PaginatedResponse } from "@/types/api"
 import { Furniture } from "@/types/room-editor"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 interface ToolbarProps {
-  onAddFurniture: (model: string, category: ProductCategory['id'][]) => void
+  onAddFurniture: (model: string, category: ProductCategory['id'][], quantity: number) => void
   transformMode: "translate" | "rotate" | "scale"
   setTransformMode: (mode: "translate" | "rotate" | "scale") => void
   onUndo: () => void
@@ -89,6 +98,10 @@ export default function Toolbar({
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isLoadDrawerOpen, setIsLoadDrawerOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [isQuantityDialogOpen, setIsQuantityDialogOpen] = useState(false)
+  const [quantity, setQuantity] = useState(1)
+  const [selectedModel, setSelectedModel] = useState<string | null>(null)
+  const [selectedCategories, setSelectedCategories] = useState<ProductCategory['id'][]>([])
 
   const { data: session } = useSession()
   const router = useRouter()
@@ -145,6 +158,16 @@ export default function Toolbar({
     }
   }, [session, onSaveCustomer, onSaveMerchant, router])
 
+  const handleAddFurniture = useCallback(() => {
+    if (selectedModel && selectedCategories.length > 0) {
+      onAddFurniture(selectedModel, selectedCategories, quantity);
+      setIsQuantityDialogOpen(false);
+      setSelectedModel(null);
+      setSelectedCategories([]);
+      setQuantity(1);
+    }
+  }, [selectedModel, selectedCategories, quantity, onAddFurniture]);
+
   const renderCategoryMenu = (categories: ProductCategory[]) => {
     return categories.map((category) => (
       <DropdownMenuSub key={category.id}>
@@ -169,8 +192,9 @@ export default function Toolbar({
                         <DropdownMenuItem
                           key={product.id}
                           onSelect={() => {
-                            onAddFurniture(product.modelTextureUrl, product.categoryIds);
-                            setIsDrawerOpen(false);
+                            setSelectedModel(product.modelTextureUrl);
+                            setSelectedCategories(product.categoryIds);
+                            setIsQuantityDialogOpen(true);
                           }}
                         >
                           {product.name}
@@ -262,7 +286,7 @@ export default function Toolbar({
         >
           <Save className="mr-2 h-4 w-4" />
           {session?.user.role === "CUSTOMER" ? "Save Design" : 
-           session?.user.role === "CONSULTANT" ? "Save Template" : "Login to Save"}
+           session?.user.role === "CONSULTANT" ? "Save Template" : "Login to Use"}
         </Button>
         <Button
           onClick={handleLoadClick}
@@ -320,7 +344,11 @@ export default function Toolbar({
               {pinnedFurniture.map((item) => (
                 <Button
                   key={item.id}
-                  onClick={() => onAddFurniture(item.model, item.category)}
+                  onClick={() => {
+                    setSelectedModel(item.model);
+                    setSelectedCategories(item.category);
+                    setIsQuantityDialogOpen(true);
+                  }}
                   className="p-2 h-auto flex flex-col items-center justify-start hover:bg-secondary-400"
                 >
                   <span className="text-xs text-center">{item.name}</span>
@@ -330,6 +358,30 @@ export default function Toolbar({
           </ScrollArea>
         </div>
       )}
+      <Dialog open={isQuantityDialogOpen} onOpenChange={setIsQuantityDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Furniture</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="quantity" className="text-right">
+                Quantity
+              </Label>
+              <Input
+                id="quantity"
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleAddFurniture}>Add</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
