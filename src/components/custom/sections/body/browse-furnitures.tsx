@@ -58,7 +58,9 @@ export default function BrowseFurnitures() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc"); //For sorting ascending and descending
   const [sortField, setSortField] = useState<keyof Product>("name"); //For sorting products
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    0, 1000000000,
+  ]);
 
   const productsQuery = useQuery({
     queryKey: ["products"],
@@ -136,7 +138,10 @@ export default function BrowseFurnitures() {
           </div>
 
           {/* Sort Options */}
-          <div className="flex items-center space-x-2 w-full md:w-1/2">
+          <div className="flex justify-start items-center space-x-2 w-full md:w-1/2">
+            <span className="w-full">
+              Sort by:
+            </span>
             <Select
               onValueChange={(value) => setSortField(value as keyof Product)}
               value={sortField}
@@ -163,47 +168,6 @@ export default function BrowseFurnitures() {
               )}
             </Button>
           </div>
-        </div>
-
-        {/* Pagination Controls */}
-        <div className="flex items-center justify-end space-x-2 w-full md:w-1/3">
-          <Button
-            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-            disabled={page === 1}
-            variant="outline"
-            size="sm"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span>
-            Page {page} of {totalPages}
-          </span>
-          <Button
-            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-            disabled={page === totalPages}
-            variant="outline"
-            size="sm"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Select
-            onValueChange={(value) => {
-              setPageSize(Number(value));
-              setPage(1);
-            }}
-            value={String(pageSize)}
-          >
-            <SelectTrigger className="w-[100px]">
-              <SelectValue placeholder="Per page" />
-            </SelectTrigger>
-            <SelectContent>
-              {[12, 24, 48, 96].map((size) => (
-                <SelectItem key={size} value={String(size)}>
-                  {size}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
@@ -247,8 +211,18 @@ export default function BrowseFurnitures() {
                     onValueChange={handlePriceRangeChange}
                   />
                   <div className="flex justify-between">
-                    <span>{priceRange[0].toLocaleString('vi-VN', {style: 'currency', currency: 'VND'})}</span>
-                    <span>{priceRange[1].toLocaleString('vi-VN', {style: 'currency', currency: 'VND'})}</span>
+                    <span>
+                      {priceRange[0].toLocaleString("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      })}
+                    </span>
+                    <span>
+                      {priceRange[1].toLocaleString("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      })}
+                    </span>
                   </div>
                 </div>
               </AccordionContent>
@@ -280,6 +254,46 @@ export default function BrowseFurnitures() {
             </div>
           )}
         </div>
+      </div>
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-end space-x-2 w-full">
+        <Button
+          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+          disabled={page === 1}
+          variant="outline"
+          size="sm"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span>
+          Page {page} of {totalPages}
+        </span>
+        <Button
+          onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+          disabled={page === totalPages}
+          variant="outline"
+          size="sm"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+        <Select
+          onValueChange={(value) => {
+            setPageSize(Number(value));
+            setPage(1);
+          }}
+          value={String(pageSize)}
+        >
+          <SelectTrigger className="w-[100px]">
+            <SelectValue placeholder="Per page" />
+          </SelectTrigger>
+          <SelectContent>
+            {[12, 24, 48, 96].map((size) => (
+              <SelectItem key={size} value={String(size)}>
+                {size}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );
