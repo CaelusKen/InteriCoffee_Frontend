@@ -6,11 +6,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
-interface OrderResultProps {
-  id: string
-}
-
-const SuccessOrderCard = ({ id }: OrderResultProps) => {
+const SuccessOrderCard = () => {
   const router = useRouter()
 
   return (
@@ -33,12 +29,12 @@ const SuccessOrderCard = ({ id }: OrderResultProps) => {
               <ArrowLeft className="mr-2" size={24} />
               Return to Homepage
             </Button>
-            <Button variant={'outline'} onClick={() => router.push(`/customers/orders/${id}`)}>
+            <Button variant={'outline'} onClick={() => router.push(`/customers/orders/${123456}`)}>
               View Order Details
             </Button>
           </div>
           <p className="text-gray-600 text-center">
-            Your order number: <span className="font-semibold">${id}</span>
+            Your order number: <span className="font-semibold">#123456</span>
           </p>
         </CardFooter>
       </Card>

@@ -1,18 +1,10 @@
 'use client'
 
 import React from 'react'
-import { Coffee, XCircle, CheckCircle, ArrowLeft } from "lucide-react"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Button } from '@/components/ui/button'
-import { useRouter } from 'next/navigation'
+import { Coffee, XCircle, CheckCircle } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
 
-interface OrderResultProps {
-  id: string
-}
-
-const FailOrderCard = ({ id }: OrderResultProps) => {
-  const router = useRouter()
-
+const FailOrderCard = () => {
   return (
     <Card className="w-full max-w-md mx-auto overflow-hidden bg-white shadow-lg border-2 border-red-500">
         <div className="bg-red-500 p-4 flex items-center justify-between">
@@ -30,20 +22,6 @@ const FailOrderCard = ({ id }: OrderResultProps) => {
             <p className="text-sm text-gray-500 text-center">Please try again or contact support.</p>
           </div>
         </CardContent>
-        <CardFooter className='flex flex-col'>
-          <div className="flex items-center justify-between w-full gap-2 my-4">
-            <Button onClick={() => router.push('/furnitures')}>
-              <ArrowLeft className="mr-2" size={24} />
-              Return to Homepage
-            </Button>
-            <Button variant={'outline'}>
-              Re-order
-            </Button>
-          </div>
-          <p className="text-gray-600 text-center">
-            Your order number: <span className="font-semibold">{id}</span>
-          </p>
-        </CardFooter>
       </Card>
   )
 }

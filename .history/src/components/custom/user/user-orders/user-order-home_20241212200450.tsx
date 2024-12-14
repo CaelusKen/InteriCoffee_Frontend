@@ -103,7 +103,7 @@ const OrderHome = () => {
           <TableBody>
             {paginatedOrders.map((order) => (
               <TableRow key={order.id}>
-                <TableCell className="w-[160px]">{order.id.replace(/\D/g, "").slice(0, 8)}</TableCell>
+                <TableCell className="w-[160px]">{order.id.replace(/\D/g, "")}</TableCell>
                 <TableCell>
                   {order.totalAmount.toLocaleString("vi-VN", {
                     style: "currency",

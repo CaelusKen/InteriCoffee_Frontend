@@ -6,11 +6,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 
-interface OrderResultProps {
-  id: string
-}
-
-const FailOrderCard = ({ id }: OrderResultProps) => {
+const FailOrderCard = () => {
   const router = useRouter()
 
   return (
@@ -41,7 +37,7 @@ const FailOrderCard = ({ id }: OrderResultProps) => {
             </Button>
           </div>
           <p className="text-gray-600 text-center">
-            Your order number: <span className="font-semibold">{id}</span>
+            Your order number: <span className="font-semibold">#123456</span>
           </p>
         </CardFooter>
       </Card>

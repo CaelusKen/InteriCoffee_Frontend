@@ -6,11 +6,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
-interface OrderResultProps {
-  id: string
-}
-
-const SuccessOrderCard = ({ id }: OrderResultProps) => {
+const SuccessOrderCard = () => {
   const router = useRouter()
 
   return (
@@ -25,7 +21,7 @@ const SuccessOrderCard = ({ id }: OrderResultProps) => {
           </div>
           <h3 className="text-xl font-semibold text-center mb-2">Thank You!</h3>
           <p className="text-gray-600 text-center mb-4">Your coffee is being prepared with love.</p>
-          <div className="border-t-2 border-dashed border-green-300"></div>
+          <div className="border-t-2 border-dashed border-green-300 pt-4"></div>
         </CardContent>
         <CardFooter className='flex flex-col'>
           <div className="flex items-center justify-between w-full gap-2 my-4">
@@ -33,12 +29,12 @@ const SuccessOrderCard = ({ id }: OrderResultProps) => {
               <ArrowLeft className="mr-2" size={24} />
               Return to Homepage
             </Button>
-            <Button variant={'outline'} onClick={() => router.push(`/customers/orders/${id}`)}>
+            <Button variant={'outline'} onClick={() => router.push(`/customers/orders/${123456}`)}>
               View Order Details
             </Button>
           </div>
           <p className="text-gray-600 text-center">
-            Your order number: <span className="font-semibold">${id}</span>
+            Your order number: <span className="font-semibold">#123456</span>
           </p>
         </CardFooter>
       </Card>
