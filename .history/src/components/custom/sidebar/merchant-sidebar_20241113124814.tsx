@@ -24,6 +24,7 @@ export default function MerchantSidebar() {
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, href: "/merchant" },
     { name: "Product Stocks", icon: Package, href: "/merchant/products" },
+    { name: "Product Categories", icon: Archive, href: "/merchant/product-categories" },
     { name: "Styles", icon: Palette, href: "/merchant/styles" },
     { name: "Messages", icon: MessageSquare, href: "/merchant/messages" },
     { name: "Sales Campaigns", icon: TrendingUp, href: "/merchant/campaigns" },
