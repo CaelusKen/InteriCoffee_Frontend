@@ -49,12 +49,10 @@ export default function Dashboard() {
     const { data } = accountQuery;
     const mappedAccount = mapBackendToFrontend<Account>(data.data, 'account');
 
-    
-
     api.get<any>(`orders/merchant/${mappedAccount.merchantId}`).then((res) =>{
       if(res.status === 200) {
         setMerchantOrders(mapBackendListToFrontend<Order>(res.data.items, 'order').items)
-        setMerchantTemplates(mapBackendListToFrontend<Template>(templateQuery.data?.data.items, 'template').items)
+        setMerchantTemplates(mapBackendListToFrontend<Template>(res.data.items, 'template').items.filter(item => item.merchantId === mappedAccount.merchantId))
       }
     })
   }

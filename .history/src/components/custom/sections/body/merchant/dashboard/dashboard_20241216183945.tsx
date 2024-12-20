@@ -1,65 +1,49 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { BarChart, MessageSquare, Package, Palette, DollarSign, Users, ShoppingCart, TrendingUp, ArrowRight } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import Link from 'next/link'
 import { ApiResponse, PaginatedResponse } from '@/types/api'
-import { Account, Order, Template } from '@/types/frontend/entities'
+import { Account, Order } from '@/types/frontend/entities'
 import { api } from '@/service/api'
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { useAccessToken } from '@/hooks/use-access-token'
-import { mapBackendListToFrontend, mapBackendToFrontend } from '@/lib/entity-handling/handler'
+import { mapBackendToFrontend } from '@/lib/entity-handling/handler'
 
-const fetchAccountByEmail = async(email: string) : Promise<ApiResponse<Account>> => {
+const fetchAccountByEmail = async(email: string): Promise<ApiResponse<Account>> => {
   return api.get<Account>(`accounts/${email}/info`)
 }
 
-const fetchTemplates = async() : Promise<ApiResponse<PaginatedResponse<Template>>> => {
-  return api.getPaginated<Template>('templates')
+const fetchMerchantOrders = async(merchantId: string, accessToken: string): Promise<ApiResponse<PaginatedResponse<Order>>> => {
+  return api.getPaginated<Order>(`orders/merchant/${merchantId}`, undefined, accessToken)
 }
 
 export default function Dashboard() {
   const { data: session } = useSession();
 
   const accessToken = useAccessToken();
-
-  const [merchantOrders, setMerchantOrders] = useState<Order[] | null>(null)
-
-  const [merchantTemplates, setMerchantTemplates] = useState<Template[] | null>(null)
-
+  
   const accountQuery = useQuery({
-    queryKey: ['accountByEmail', session?.user.email],
-    queryFn: () => fetchAccountByEmail(session?.user.email?? ''),
-    enabled:!!session?.user.email,
+    queryKey: ['account', session?.user?.email],
+    queryFn: () => fetchAccountByEmail(session?.user?.email ?? ''),
+    enabled:!!session?.user?.email
+  })
+
+  const account = accountQuery.data?.data;
+
+  const merchantOrdersQuery = useQuery({
+    queryKey: ['merchantOrders', account?.merchantId],
+    queryFn: () => fetchMerchantOrders(account?.merchantId?? '', accessToken?? ''),
+    enabled:!!account?.merchantId,
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
 
-  const templateQuery = useQuery({
-    queryKey: ['templates'],
-    queryFn: () => fetchTemplates(),
-    enabled: true,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  })
-
-  if(session && accountQuery.data?.data) {
-    const { data } = accountQuery;
-    const mappedAccount = mapBackendToFrontend<Account>(data.data, 'account');
-
-    
-
-    api.get<any>(`orders/merchant/${mappedAccount.merchantId}`).then((res) =>{
-      if(res.status === 200) {
-        setMerchantOrders(mapBackendListToFrontend<Order>(res.data.items, 'order').items)
-        setMerchantTemplates(mapBackendListToFrontend<Template>(templateQuery.data?.data.items, 'template').items)
-      }
-    })
-  }
-
-  const totalSales = merchantOrders?.reduce((sum, order) => sum + order.totalAmount, 0)
+  const merchantOrders = merchantOrdersQuery.data?.data?.items
+  
 
   return (
     <main className="container mx-auto px-4 py-8 space-y-8">
@@ -68,8 +52,8 @@ export default function Dashboard() {
         {/* Overview Section */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[
-            { title: "Total Sales", icon: DollarSign, value: totalSales?.toLocaleString('vi-VN', { style:'currency', currency: 'VND' }), trend: "+5.2%" },
-            { title: "Active Styles", icon: Palette, value: merchantTemplates?.length, trend: "+2" },
+            { title: "Total Sales", icon: DollarSign, value: "$10,234", trend: "+5.2%" },
+            { title: "Active Styles", icon: Palette, value: "15", trend: "+2" },
             { title: "New Messages", icon: MessageSquare, value: "24", trend: "+10" },
             { title: "Ongoing Campaigns", icon: TrendingUp, value: "3", trend: "0" }
           ].map((item) => (

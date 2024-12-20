@@ -28,9 +28,8 @@ export default function Dashboard() {
   const accessToken = useAccessToken();
 
   const [merchantOrders, setMerchantOrders] = useState<Order[] | null>(null)
-
-  const [merchantTemplates, setMerchantTemplates] = useState<Template[] | null>(null)
-
+  
+  // TODO: Fix this, network catch error
   const accountQuery = useQuery({
     queryKey: ['accountByEmail', session?.user.email],
     queryFn: () => fetchAccountByEmail(session?.user.email?? ''),
@@ -38,23 +37,13 @@ export default function Dashboard() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
 
-  const templateQuery = useQuery({
-    queryKey: ['templates'],
-    queryFn: () => fetchTemplates(),
-    enabled: true,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  })
-
   if(session && accountQuery.data?.data) {
     const { data } = accountQuery;
     const mappedAccount = mapBackendToFrontend<Account>(data.data, 'account');
 
-    
-
     api.get<any>(`orders/merchant/${mappedAccount.merchantId}`).then((res) =>{
       if(res.status === 200) {
         setMerchantOrders(mapBackendListToFrontend<Order>(res.data.items, 'order').items)
-        setMerchantTemplates(mapBackendListToFrontend<Template>(templateQuery.data?.data.items, 'template').items)
       }
     })
   }
@@ -69,7 +58,7 @@ export default function Dashboard() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[
             { title: "Total Sales", icon: DollarSign, value: totalSales?.toLocaleString('vi-VN', { style:'currency', currency: 'VND' }), trend: "+5.2%" },
-            { title: "Active Styles", icon: Palette, value: merchantTemplates?.length, trend: "+2" },
+            { title: "Active Styles", icon: Palette, value: "15", trend: "+2" },
             { title: "New Messages", icon: MessageSquare, value: "24", trend: "+10" },
             { title: "Ongoing Campaigns", icon: TrendingUp, value: "3", trend: "0" }
           ].map((item) => (

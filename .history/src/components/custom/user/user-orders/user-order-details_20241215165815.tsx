@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChevronLeft, Package, MapPin, CreditCard, ShoppingCart } from 'lucide-react'
-import { OrderDeliveryStatus } from "./user-order-delivery-status"
+import { OrderDeliveryStatus } from "@/components/order-delivery-status"
 
 const fetchOrderById = async (id: string, accessToken: string) => {
   return api.getById<Order>("orders", id, accessToken)
@@ -29,7 +29,7 @@ const fetchProductById = async (
 }
 
 const updateOrderStatus = async (id: string, status: Order["status"], accessToken: string) => {
-  return api.patch<Order>(`orders/${id}`, { status: status }, undefined, accessToken)
+  return api.update<Order>("orders", id, { status }, accessToken)
 }
 
 interface OrderTicketProps {
