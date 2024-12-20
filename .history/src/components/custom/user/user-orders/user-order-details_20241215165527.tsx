@@ -1,6 +1,6 @@
 "use client"
 
-import { useQuery, useMutation } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAccessToken } from "@/hooks/use-access-token"
 import { api } from "@/service/api"
 import { Order, Product } from "@/types/frontend/entities"
@@ -8,8 +8,7 @@ import { mapBackendToFrontend } from "@/lib/entity-handling/handler"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChevronLeft, Package, MapPin, CreditCard, ShoppingCart } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
 import { OrderDeliveryStatus } from "./user-order-delivery-status"
 
 const fetchOrderById = async (id: string, accessToken: string) => {
@@ -29,7 +28,7 @@ const fetchProductById = async (
 }
 
 const updateOrderStatus = async (id: string, status: Order["status"], accessToken: string) => {
-  return api.patch<Order>(`orders/${id}`, { status: status }, undefined, accessToken)
+  return api.patch<Order>(`orders/${id}`, { status:  status }, undefined, accessToken)
 }
 
 interface OrderTicketProps {
@@ -38,6 +37,7 @@ interface OrderTicketProps {
 
 export default function OrderTicket({ id }: OrderTicketProps) {
   const accessToken = useAccessToken()
+  const queryClient = useQueryClient()
 
   const { data: orderData, refetch } = useQuery({
     queryKey: ["order", id],
@@ -72,16 +72,14 @@ export default function OrderTicket({ id }: OrderTicketProps) {
   }
 
   return (
-    <Card className="max-w-4xl mx-auto my-8">
-      <CardHeader className="bg-primary text-primary-foreground">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-3xl">Order Ticket</CardTitle>
-          <Badge variant="secondary" className="text-lg">#{order.id}</Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-6">
+    <div className="max-w-4xl mx-auto my-8 bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
+      <div className="bg-primary text-primary-foreground p-6">
+        <h1 className="text-3xl font-bold">Order Ticket</h1>
+        <p className="text-lg">#{order.id}</p>
+      </div>
+      <div className="p-6 space-y-6">
+        <div className="flex justify-between items-start">
+          <div className="space-y-6 flex-1">
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm text-muted-foreground dark:text-gray-400">
@@ -95,8 +93,7 @@ export default function OrderTicket({ id }: OrderTicketProps) {
                 <p className="text-sm text-muted-foreground dark:text-gray-400">
                   Total Amount
                 </p>
-                <p className="text-2xl font-bold dark:text-white flex items-center">
-                  <CreditCard className="mr-2 h-5 w-5" />
+                <p className="text-2xl font-bold dark:text-white">
                   {order.totalAmount.toLocaleString("vi-VN", {
                     style: "currency",
                     currency: "VND",
@@ -106,22 +103,22 @@ export default function OrderTicket({ id }: OrderTicketProps) {
             </div>
             <Separator className="border-dashed dark:border-gray-600" />
             <div>
-              <p className="text-sm text-muted-foreground dark:text-gray-400 flex items-center">
-                <MapPin className="mr-2 h-4 w-4" />
+              <p className="text-sm text-muted-foreground dark:text-gray-400">
                 Shipping Address
               </p>
               <p className="font-medium dark:text-white">{order.shippingAddress}</p>
             </div>
           </div>
-          <OrderDeliveryStatus
-            status={order.status}
-            onConfirmReceived={handleConfirmReceived}
-          />
+          <div className="ml-8 flex-1">
+            <OrderDeliveryStatus
+              status={order.status}
+              onConfirmReceived={handleConfirmReceived}
+            />
+          </div>
         </div>
         <Separator className="border-dashed dark:border-gray-600" />
         <div>
-          <h2 className="text-xl font-semibold mb-4 dark:text-white flex items-center">
-            <ShoppingCart className="mr-2 h-5 w-5" />
+          <h2 className="text-xl font-semibold mb-4 dark:text-white">
             Order Items
           </h2>
           <div className="space-y-4">
@@ -134,8 +131,8 @@ export default function OrderTicket({ id }: OrderTicketProps) {
             ))}
           </div>
         </div>
-      </CardContent>
-      <CardFooter className="bg-muted dark:bg-gray-700 flex justify-between items-center">
+      </div>
+      <div className="bg-muted dark:bg-gray-700 p-6 flex justify-between items-center">
         <Button
           variant="outline"
           onClick={() => window.history.back()}
@@ -146,8 +143,8 @@ export default function OrderTicket({ id }: OrderTicketProps) {
         <p className="text-sm text-muted-foreground dark:text-gray-300">
           Thank you for your order!
         </p>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   )
 }
 
@@ -168,36 +165,32 @@ function OrderProductItem({
   if (!product) return null
 
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-center space-x-4">
-          <div className="flex-shrink-0 h-20 w-20">
-            <img
-              src={product.images.thumbnail}
-              alt={product.name}
-              className="h-full w-full object-cover rounded-md"
-            />
-          </div>
-          <div className="flex-grow">
-            <h3 className="font-medium dark:text-white">{product.name}</h3>
-            <p className="text-sm text-muted-foreground dark:text-gray-400">
-              {orderProduct.quantity} x{" "}
-              {orderProduct.price.toLocaleString("vi-VN", {
-                style: "currency",
-                currency: "VND",
-              })}
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="font-medium dark:text-white">
-              {(orderProduct.quantity * orderProduct.price).toLocaleString(
-                "vi-VN",
-                { style: "currency", currency: "VND" }
-              )}
-            </p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex items-center space-x-4">
+      <div className="flex-shrink-0 h-20 w-20">
+        <img
+          src={product.images.thumbnail}
+          alt={product.name}
+          className="h-full w-full object-cover rounded-md"
+        />
+      </div>
+      <div className="flex-grow">
+        <h3 className="font-medium dark:text-white">{product.name}</h3>
+        <p className="text-sm text-muted-foreground dark:text-gray-400">
+          {orderProduct.quantity} x{" "}
+          {orderProduct.price.toLocaleString("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          })}
+        </p>
+      </div>
+      <div className="text-right">
+        <p className="font-medium dark:text-white">
+          {(orderProduct.quantity * orderProduct.price).toLocaleString(
+            "vi-VN",
+            { style: "currency", currency: "VND" }
+          )}
+        </p>
+      </div>
+    </div>
   )
 }

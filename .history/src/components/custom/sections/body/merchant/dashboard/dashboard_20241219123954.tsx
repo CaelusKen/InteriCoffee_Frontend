@@ -7,19 +7,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import Link from 'next/link'
 import { ApiResponse, PaginatedResponse } from '@/types/api'
-import { Account, Order, Template } from '@/types/frontend/entities'
+import { Account, Order } from '@/types/frontend/entities'
 import { api } from '@/service/api'
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { useAccessToken } from '@/hooks/use-access-token'
-import { mapBackendListToFrontend, mapBackendToFrontend } from '@/lib/entity-handling/handler'
+import { mapBackendToFrontend } from '@/lib/entity-handling/handler'
 
 const fetchAccountByEmail = async(email: string) : Promise<ApiResponse<Account>> => {
   return api.get<Account>(`accounts/${email}/info`)
-}
-
-const fetchTemplates = async() : Promise<ApiResponse<PaginatedResponse<Template>>> => {
-  return api.getPaginated<Template>('templates')
 }
 
 export default function Dashboard() {
@@ -27,10 +23,9 @@ export default function Dashboard() {
 
   const accessToken = useAccessToken();
 
-  const [merchantOrders, setMerchantOrders] = useState<Order[] | null>(null)
-
-  const [merchantTemplates, setMerchantTemplates] = useState<Template[] | null>(null)
-
+  const [account, setAccount] = useState<Account | null>(null);
+  
+  // TODO: Fix this, network catch error
   const accountQuery = useQuery({
     queryKey: ['accountByEmail', session?.user.email],
     queryFn: () => fetchAccountByEmail(session?.user.email?? ''),
@@ -38,28 +33,13 @@ export default function Dashboard() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
 
-  const templateQuery = useQuery({
-    queryKey: ['templates'],
-    queryFn: () => fetchTemplates(),
-    enabled: true,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  })
-
   if(session && accountQuery.data?.data) {
     const { data } = accountQuery;
-    const mappedAccount = mapBackendToFrontend<Account>(data.data, 'account');
-
-    
-
-    api.get<any>(`orders/merchant/${mappedAccount.merchantId}`).then((res) =>{
-      if(res.status === 200) {
-        setMerchantOrders(mapBackendListToFrontend<Order>(res.data.items, 'order').items)
-        setMerchantTemplates(mapBackendListToFrontend<Template>(templateQuery.data?.data.items, 'template').items)
-      }
-    })
+    setAccount(mapBackendToFrontend<Account>(data.data, 'account'))
   }
 
-  const totalSales = merchantOrders?.reduce((sum, order) => sum + order.totalAmount, 0)
+  console.log(account);
+  
 
   return (
     <main className="container mx-auto px-4 py-8 space-y-8">
@@ -68,8 +48,8 @@ export default function Dashboard() {
         {/* Overview Section */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[
-            { title: "Total Sales", icon: DollarSign, value: totalSales?.toLocaleString('vi-VN', { style:'currency', currency: 'VND' }), trend: "+5.2%" },
-            { title: "Active Styles", icon: Palette, value: merchantTemplates?.length, trend: "+2" },
+            { title: "Total Sales", icon: DollarSign, value: "$10,234", trend: "+5.2%" },
+            { title: "Active Styles", icon: Palette, value: "15", trend: "+2" },
             { title: "New Messages", icon: MessageSquare, value: "24", trend: "+10" },
             { title: "Ongoing Campaigns", icon: TrendingUp, value: "3", trend: "0" }
           ].map((item) => (
