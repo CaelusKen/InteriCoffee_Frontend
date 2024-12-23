@@ -58,7 +58,6 @@ const getColumns = (getStatusColor: (status: Order["status"]) => string, router:
     {
       accessorKey: 'id',
       header: 'ID',
-      cell: ({ row }) => row.original.id.replace(/\D/g, "").slice(0, 8),
     },
     {
       accessorKey: 'orderDate',
@@ -87,7 +86,7 @@ const getColumns = (getStatusColor: (status: Order["status"]) => string, router:
     {
       accessorKey: 'totalAmount',
       header: 'Total Amount',
-      cell: ({ row }) => `${row.original.totalAmount.toLocaleString('vi-VN', { style:"currency", currency: 'VND'})}`,
+      cell: ({ row }) => `$${row.original.totalAmount}`,
     },
     {
       accessorKey: 'status',
@@ -113,7 +112,7 @@ const getColumns = (getStatusColor: (status: Order["status"]) => string, router:
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => router.push(`/merchant/orders/${row.original.id}`)}>
+            <DropdownMenuItem onClick={() => router.push(`/merchants/orders/${row.original.id}`)}>
               View
             </DropdownMenuItem>
           </DropdownMenuContent>

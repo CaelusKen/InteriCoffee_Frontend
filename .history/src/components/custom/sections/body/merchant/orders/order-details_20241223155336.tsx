@@ -1,7 +1,6 @@
 "use client"
 
 import { useQuery, useMutation } from "@tanstack/react-query"
-import { useAccessToken } from "@/hooks/use-access-token"
 import { api } from "@/service/api"
 import { Order, Product } from "@/types/frontend/entities"
 import { mapBackendToFrontend } from "@/lib/entity-handling/handler"
@@ -9,45 +8,37 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChevronLeft, Package, MapPin, CreditCard, ShoppingCart } from 'lucide-react'
-import { OrderDeliveryStatus } from "./user-order-delivery-status"
+import { ChevronLeft, Package, MapPin, CreditCard, ShoppingCart, Printer } from 'lucide-react'
+import { PackagingStatus } from "./merchant-order-status"
 
-const fetchOrderById = async (id: string, accessToken: string) => {
-  return api.getById<Order>("orders", id, accessToken)
+const fetchOrderById = async (id: string) => {
+  return api.getById<Order>(`orders`, id)
 }
 
-const fetchProductById = async (
-  id: string,
-  accessToken: string
-): Promise<Product> => {
+const fetchProductById = async (id: string): Promise<Product> => {
   const product = await api
-    .getById<Product>("products", id, accessToken)
-    .then((res) => {
-      return mapBackendToFrontend<Product>(res.data, "product")
-    })
+    .get<Product>(`products/${id}`)
+    .then((res) => mapBackendToFrontend<Product>(res.data, "product"))
   return product
 }
 
-const updateOrderStatus = async (id: string, status: Order["status"], accessToken: string) => {
-  return api.patch<Order>(`orders/${id}`, { status: status }, undefined, accessToken)
+const updatePackagingStatus = async (id: string, status: string) => {
+  return api.patch<Order>(`orders/${id}`, { status: status })
 }
 
-interface OrderTicketProps {
+interface PackagingDetailsProps {
   id: string
 }
 
-export default function OrderTicket({ id }: OrderTicketProps) {
-  const accessToken = useAccessToken()
-
+export default function MerchantOrderDetails({ id }: PackagingDetailsProps) {
   const { data: orderData, refetch } = useQuery({
-    queryKey: ["order", id],
-    queryFn: () => fetchOrderById(id, accessToken ?? ""),
-    enabled: !!id && !!accessToken,
+    queryKey: ["packaging-order", id],
+    queryFn: () => fetchOrderById(id),
+    enabled: !!id,
   })
 
   const updateStatusMutation = useMutation({
-    mutationFn: (newStatus: Order["status"]) =>
-      updateOrderStatus(id, newStatus, accessToken ?? ""),
+    mutationFn: (newStatus: string) => updatePackagingStatus(id, newStatus),
     onSuccess: () => {
       refetch()
     },
@@ -57,26 +48,38 @@ export default function OrderTicket({ id }: OrderTicketProps) {
 
   if (!order) return null
 
-  const getStatusColor = (status: Order["status"]) => {
-    const colors: Record<Order["status"], string> = {
-      PENDING: "bg-yellow-500",
-      SHIPPED: "bg-blue-500",
+  const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      PREPARING: "bg-yellow-500",
+      PACKAGED: "bg-blue-500",
+      SHIPPED: "bg-purple-500",
       COMPLETED: "bg-green-500",
-      CANCELLED: "bg-red-500",
     }
     return colors[status] || "bg-gray-500"
   }
 
-  const handleConfirmReceived = () => {
-    updateStatusMutation.mutate("COMPLETED")
+  const handleStatusUpdate = (newStatus: string) => {
+    updateStatusMutation.mutate(newStatus)
   }
 
   return (
     <Card className="max-w-4xl mx-auto my-8">
       <CardHeader className="bg-primary text-primary-foreground">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-3xl">Order Ticket</CardTitle>
-          <Badge variant="secondary" className="text-lg">#{order.id.replace(/\D/g, "").slice(0, 8)}</Badge>
+          <CardTitle className="text-3xl">Packaging Details</CardTitle>
+          <div className="flex gap-4 items-center">
+            <Badge variant="secondary" className="text-lg">
+              #{order.id?.replace(/\D/g, "").slice(0, 8)}
+            </Badge>
+            <Button 
+              variant="secondary" 
+              size="sm"
+              onClick={() => window.print()}
+            >
+              <Printer className="mr-2 h-4 w-4" />
+              Print Label
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="p-6 space-y-6">
@@ -85,7 +88,7 @@ export default function OrderTicket({ id }: OrderTicketProps) {
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm text-muted-foreground dark:text-gray-400">
-                  Order Status
+                  Packaging Status
                 </p>
                 <Badge className={getStatusColor(order.status)}>
                   {order.status}
@@ -93,14 +96,11 @@ export default function OrderTicket({ id }: OrderTicketProps) {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground dark:text-gray-400">
-                  Total Amount
+                  Total Items
                 </p>
                 <p className="text-2xl font-bold dark:text-white flex items-center">
-                  <CreditCard className="mr-2 h-5 w-5" />
-                  {order.totalAmount.toLocaleString("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  })}
+                  <Package className="mr-2 h-5 w-5" />
+                  {order.orderProducts.reduce((acc, item) => acc + item.quantity, 0)}
                 </p>
               </div>
             </div>
@@ -113,23 +113,22 @@ export default function OrderTicket({ id }: OrderTicketProps) {
               <p className="font-medium dark:text-white">{order.shippingAddress}</p>
             </div>
           </div>
-          <OrderDeliveryStatus
+          <PackagingStatus
             status={order.status}
-            onConfirmReceived={handleConfirmReceived}
+            onUpdateStatus={handleStatusUpdate}
           />
         </div>
         <Separator className="border-dashed dark:border-gray-600" />
         <div>
           <h2 className="text-xl font-semibold mb-4 dark:text-white flex items-center">
             <ShoppingCart className="mr-2 h-5 w-5" />
-            Order Items
+            Items to Package
           </h2>
           <div className="space-y-4">
             {order.orderProducts.map((orderProduct) => (
-              <OrderProductItem
+              <PackagingProductItem
                 key={orderProduct.id}
                 orderProduct={orderProduct}
-                accessToken={accessToken ?? ""}
               />
             ))}
           </div>
@@ -144,23 +143,21 @@ export default function OrderTicket({ id }: OrderTicketProps) {
           <ChevronLeft className="mr-2 h-4 w-4" /> Back
         </Button>
         <p className="text-sm text-muted-foreground dark:text-gray-300">
-          Thank you for your order!
+          Order placed on {new Date(order.orderDate).toLocaleDateString()}
         </p>
       </CardFooter>
     </Card>
   )
 }
 
-function OrderProductItem({
+function PackagingProductItem({
   orderProduct,
-  accessToken,
 }: {
   orderProduct: Order["orderProducts"][0]
-  accessToken: string
 }) {
   const { data: productData } = useQuery({
-    queryKey: ["product", orderProduct.id],
-    queryFn: () => fetchProductById(orderProduct.id, accessToken),
+    queryKey: ["packaging-product", orderProduct.id],
+    queryFn: () => fetchProductById(orderProduct.id),
   })
 
   const product = productData
@@ -181,20 +178,13 @@ function OrderProductItem({
           <div className="flex-grow">
             <h3 className="font-medium dark:text-white">{product.name}</h3>
             <p className="text-sm text-muted-foreground dark:text-gray-400">
-              {orderProduct.quantity} x{" "}
-              {orderProduct.price.toLocaleString("vi-VN", {
-                style: "currency",
-                currency: "VND",
-              })}
+              Quantity: {orderProduct.quantity}
             </p>
           </div>
           <div className="text-right">
-            <p className="font-medium dark:text-white">
-              {(orderProduct.quantity * orderProduct.price).toLocaleString(
-                "vi-VN",
-                { style: "currency", currency: "VND" }
-              )}
-            </p>
+            <Badge variant="outline">
+              {orderProduct.quantity} {orderProduct.quantity === 1 ? 'unit' : 'units'}
+            </Badge>
           </div>
         </div>
       </CardContent>

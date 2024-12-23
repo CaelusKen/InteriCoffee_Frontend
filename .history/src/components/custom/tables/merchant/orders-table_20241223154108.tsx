@@ -113,7 +113,7 @@ const getColumns = (getStatusColor: (status: Order["status"]) => string, router:
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => router.push(`/merchant/orders/${row.original.id}`)}>
+            <DropdownMenuItem onClick={() => router.push(`/merchants/orders/${row.original.id}`)}>
               View
             </DropdownMenuItem>
           </DropdownMenuContent>
