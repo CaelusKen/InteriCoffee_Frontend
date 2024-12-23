@@ -179,7 +179,7 @@ const UserHome = () => {
             <TableBody>
               {accountOrders?.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.id.replace(/\D/g, "").slice(0, 8)}</TableCell>
+                  <TableCell className="font-medium">{order.id}</TableCell>
                   <TableCell>{order.orderDate.toLocaleDateString()}</TableCell>
                   <TableCell>
                     {order.totalAmount.toLocaleString("vi-VN", {

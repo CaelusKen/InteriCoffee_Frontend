@@ -37,7 +37,7 @@ import {
   ColumnFiltersState,
   getFilteredRowModel,
 } from "@tanstack/react-table";
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, MoreHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
@@ -54,29 +54,73 @@ const fetchMerchantOrders = async (
   return api.get<any>(`orders/merchant/${merchantId}`);
 };
 
-const getColumns = (getStatusColor: (status: Order["status"]) => string, router: ReturnType<typeof useRouter>): ColumnDef<Order>[] => [
+const MerchantsOrderTable = () => {
+  const { data: session } = useSession();
+
+  const router = useRouter();
+
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [rowSelection, setRowSelection] = useState({});
+
+  // Account Query
+  const accountQuery = useQuery({
+    queryKey: ["accountByEmail", session?.user.email],
+    queryFn: () => fetchAccountByEmail(session?.user.email ?? ""),
+    enabled: !!session?.user.email,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Get merchant ID from account data
+  const merchantId = accountQuery.data?.data
+    ? mapBackendToFrontend<Account>(accountQuery.data.data, "account")
+        .merchantId
+    : null;
+
+  // Orders Query - depends on merchantId
+  const ordersQuery = useQuery({
+    queryKey: ["merchantOrders", merchantId],
+    queryFn: () => fetchMerchantOrders(merchantId!),
+    enabled: !!merchantId,
+    staleTime: 1000 * 60 * 5,
+    select: (data) =>
+      mapBackendListToFrontend<Order>(data.data.items, "order").items,
+  });
+
+  const getStatusColor = (status: Order["status"]) => {
+    switch (status) {
+      case "Processing":
+        return "bg-yellow-500";
+      case "Shipped":
+        return "bg-blue-500";
+      case "Delivered":
+        return "bg-green-500";
+      case "Cancelled":
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  // Setup Order Table
+  const columns: ColumnDef<Order>[] = [
     {
-      accessorKey: 'id',
-      header: 'ID',
+      accessorKey: "id",
+      header: "Order Id",
       cell: ({ row }) => row.original.id.replace(/\D/g, "").slice(0, 8),
     },
     {
-      accessorKey: 'orderDate',
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Order Date
-            {column.getIsSorted() === "asc" ? (
-              <ChevronUp className="ml-2 h-4 w-4" />
-            ) : (
-              <ChevronDown className="ml-2 h-4 w-4" />
-            )}
-          </Button>
-        );
-      },
+      accessorKey: "amount",
+      header: "Amount",
+      cell: ({ row }) =>
+        `${row.original.totalAmount.toLocaleString("vi-VN", {
+          style: "currency",
+          currency: "VND",
+        })}`,
+    },
+    {
+      accessorKey: "orderDate",
+      header: "Order Date",
       cell: ({ row }) =>
         new Date(row.original.orderDate).toLocaleString("en-US", {
           year: "numeric",
@@ -85,97 +129,45 @@ const getColumns = (getStatusColor: (status: Order["status"]) => string, router:
         }),
     },
     {
-      accessorKey: 'totalAmount',
-      header: 'Total Amount',
-      cell: ({ row }) => `${row.original.totalAmount.toLocaleString('vi-VN', { style:"currency", currency: 'VND'})}`,
-    },
-    {
-      accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => (
-        <Badge
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        return (
+          <Badge
             variant="secondary"
             className={`${getStatusColor(row.original.status)} text-white`}
-        >
+          >
             {row.original.status}
-        </Badge>
-      ),
+          </Badge>
+        );
+      },
     },
     {
-      accessorKey: 'actions',
-      header: 'Actions',
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => router.push(`/merchant/orders/${row.original.id}`)}>
-              View
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+      id: "actions",
+      cell: ({ row }) => {
+        const product = row.original;
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() => router.push(`/merchant/orders/${product.id}`)}
+              >
+                View Details
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
     },
   ];
-
-const MerchantsOrderTable = () => {
-    const { data: session } = useSession()
-  const router = useRouter()
-
-  // Table state
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: 'orderDate', desc: true }
-  ]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [rowSelection, setRowSelection] = useState({})
-
-  const getStatusColor = (status: Order['status']) => {
-    switch (status) {
-      case 'pending':
-        return 'secondary'
-      case 'processing':
-        return 'warning'
-      case 'shipped':
-        return 'info'
-      case 'delivered':
-        return 'success'
-      case 'cancelled':
-        return 'danger'
-      default:
-        return 'default'
-    }
-  }
-
-    // Account Query
-    const accountQuery = useQuery({
-        queryKey: ['accountByEmail', session?.user.email],
-        queryFn: () => fetchAccountByEmail(session?.user.email ?? ''),
-        enabled: !!session?.user.email,
-        staleTime: 1000 * 60 * 5, // 5 minutes
-    })
-
-    // Get merchant ID from account data
-    const merchantId = accountQuery.data?.data ? 
-      mapBackendToFrontend<Account>(accountQuery.data.data, 'account').merchantId : 
-      null;
-
-    // Orders Query - depends on merchantId
-    const ordersQuery = useQuery({
-        queryKey: ['merchantOrders', merchantId],
-        queryFn: () => fetchMerchantOrders(merchantId!),
-        enabled: !!merchantId,
-        staleTime: 1000 * 60 * 5,
-        select: (data) => mapBackendListToFrontend<Order>(data.data.items, 'order').items
-    })
-
-  const columns = React.useMemo(
-    () => getColumns(getStatusColor, router),
-    [router]
-  );
 
   const table = useReactTable({
     data: ordersQuery.data ?? [],
@@ -192,14 +184,14 @@ const MerchantsOrderTable = () => {
       columnFilters,
       rowSelection,
     },
-  })
+  });
 
   if (accountQuery.isLoading || ordersQuery.isLoading) {
-    return <div className="flex items-center justify-center p-8">Loading...</div>
+    return <div>Loading...</div>;
   }
 
   if (!accountQuery.data?.data || !ordersQuery.data) {
-    return <div className="flex items-center justify-center p-8">Error fetching data</div>
+    return <div>Error fetching data</div>;
   }
 
   return (
@@ -273,7 +265,7 @@ const MerchantsOrderTable = () => {
         </Button>
       </div>
     </div>
-  )
+  );
 };
 
 export default MerchantsOrderTable;
