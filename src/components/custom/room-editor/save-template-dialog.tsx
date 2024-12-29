@@ -346,7 +346,7 @@ export function SaveTemplateDialog({
               label="Template Image"
               accept="image/*"
               onChange={handleImageUpload}
-              currentImageUrl={imageUrl}
+              currentFileUrl={imageUrl}
             />
           </div>
           <DialogFooter>

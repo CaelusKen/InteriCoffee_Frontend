@@ -386,7 +386,7 @@ export function SaveDialog({
             label="Design Image"
             accept="image/*"
             onChange={handleImageUpload}
-            currentImageUrl={designImageUrl}
+            currentFileUrl={designImageUrl}  
           />
         </div>
         <DialogFooter>

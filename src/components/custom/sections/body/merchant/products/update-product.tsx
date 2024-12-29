@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast"
 import { ProductFormBase, ProductFormData } from './product-form-base'
 import { useSession } from 'next-auth/react'
 import { useAccessToken } from '@/hooks/use-access-token'
+import { ApiResponse } from '@/types/api'
 
 interface UpdateProductProps {
   productId: string
@@ -65,22 +66,22 @@ export default function UpdateProduct({ productId }: UpdateProductProps) {
 
   const mapFrontendToBackend = (frontendData: ProductFormData): any => {
     return {
-      name: frontendData.name,
-      "category-ids": frontendData.categoryIds,
-      description: frontendData.description,
-      "true-price": frontendData.sellingPrice,
-      discount: frontendData.discount,
-      quantity: frontendData.quantity,
-      dimensions: frontendData.dimensions,
-      materials: frontendData.materials,
-      "campaign-id": frontendData.campaignId,
-      "merchant-id": frontendData.merchantId,
-      status: frontendData.status,
+      name: frontendData.name ?? productQuery.data?.data.name,
+      "category-ids": frontendData.categoryIds ?? productQuery.data?.data.categoryIds,
+      description: frontendData.description ?? productQuery.data?.data.description,
+      "true-price": frontendData.sellingPrice ?? productQuery.data?.data.truePrice,
+      discount: frontendData.discount ?? productQuery.data?.data.discount,
+      quantity: frontendData.quantity ?? productQuery.data?.data.quantity,
+      dimensions: frontendData.dimensions ?? productQuery.data?.data.dimensions,
+      materials: frontendData.materials ?? productQuery.data?.data.materials,
+      "campaign-id": frontendData.campaignId ?? productQuery.data?.data.campaignId,
+      "merchant-id": frontendData.merchantId ?? productQuery.data?.data.merchantId,
+      status: frontendData.status ?? productQuery.data?.data.status,
       images: {
-        thumbnail: frontendData.thumbnailUrl,
-        "normal-images": frontendData.normalImageUrls
+        thumbnail: frontendData.thumbnailUrl ?? productQuery.data?.data.images.thumbnail,
+        "normal-images": frontendData.normalImageUrls ?? productQuery.data?.data.images.normalImages
       },
-      "model-texture-url": frontendData.modelTextureUrl,
+      "model-texture-url": frontendData.modelTextureUrl ?? productQuery.data?.data.modelTextureUrl,
     }
   }
 

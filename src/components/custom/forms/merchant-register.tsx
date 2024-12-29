@@ -25,9 +25,8 @@ import { useSession } from "next-auth/react"
 import { mapBackendToFrontend } from "@/lib/entity-handling/handler"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { storage } from "@/service/firebase"
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 import { Textarea } from "@/components/ui/textarea"
+import { FileUpload } from "../sections/body/merchant/products/file-upload"
 
 const fetchAccountByEmail = (
   email: string,
@@ -47,36 +46,13 @@ const formSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   address: z.string().min(5, "Address must be at least 5 characters"),
-  avatar: z
-    .any()
-    .refine((files) => files?.length == 1, "Image is required.")
-    .refine((files) => files?.[0]?.size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
-    .refine(
-      (files) => ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
-      "Only .png files are accepted."
-    ),
 
   // Business Information
   businessEmail: z.string().email("Invalid business email address"),
   businessDescription: z.string().min(10, "Business description must be at least 10 characters"),
   businessWebsite: z.string().url("Invalid website URL"),
   businessName: z.string().min(2, "Business name must be at least 2 characters"),
-  logoUrl: z
-    .any()
-    .refine((files) => files?.length == 1, "Logo is required.")
-    .refine((files) => files?.[0]?.size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
-    .refine(
-      (files) => ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
-      "Only .png files are accepted."
-    ),
-  businessLicense: z
-    .any()
-    .refine((files) => files?.length == 1, "Business license is required.")
-    .refine((files) => files?.[0]?.size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
-    .refine(
-      (files) => ACCEPTED_PDF_TYPES.includes(files?.[0]?.type),
-      "Only .pdf files are accepted."
-    ),
+  businessCode: z.string().min(10, "Business code must be at least 10 characters"),
 
   // Terms Agreement
   agreeTerms: z.boolean().refine((value) => value === true, "You must agree to the terms"),
@@ -86,6 +62,11 @@ export default function MerchantRegistrationForm() {
   const { data: session } = useSession()
   const accessToken = useAccessToken()
   const { toast } = useToast()
+  const [pdfFile, setPdfFile] = useState<File | null>(null)
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [logoUrl, setLogoUrl] = useState<string>("")
+  const [businessLicenseUrl, setBusinessLicenseUrl] = useState<string>("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const accountQuery = useQuery({
     queryKey: ["accountByEmail", session?.user?.email],
@@ -98,52 +79,59 @@ export default function MerchantRegistrationForm() {
     ? mapBackendToFrontend<Account>(accountQuery.data.data, "account")
     : undefined
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: account?.userName,
-      phoneNumber: account?.phoneNumber,
-      email: account?.email,
+      fullName: account?.userName || "",
+      phoneNumber: account?.phoneNumber || "",
+      email: account?.email || "",
       password: "",
-      address: account?.address,
+      address: account?.address || "",
       businessEmail: "",
       businessDescription: "",
       businessWebsite: "",
       businessName: "",
+      businessCode: "",
       agreeTerms: false,
     },
   })
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!pdfFile) {
+      toast({
+        title: "Error",
+        description: "Please upload a business license",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!logoFile) {
+      toast({
+        title: "Error",
+        description: "Please upload a logo",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsSubmitting(true)
+    
     try {
-      // Upload business license to Firebase
-      const businessfileName = `${values.fullName}-${new Date().toISOString()}-merchant-registration.pdf`
-      const storageRef = ref(storage, `merchant-registration/${businessfileName}`)
-      await uploadBytes(storageRef, values.businessLicense[0])
-      const downloadURL = await getDownloadURL(storageRef)
-
-      // Upload logo to Firebase
-      const logoFileName = `${values.fullName}-${new Date().toISOString()}-merchant-logo.png`
-      const logoStorageRef = ref(storage, `merchant-logos/${logoFileName}`)
-      await uploadBytes(logoStorageRef, values.logoUrl[0])
-      const logoDownloadURL = await getDownloadURL(logoStorageRef)
-
       const submitData = {
         email: values.email,
         address: values.address,
         "phone-number": values.phoneNumber,
         "merchant-name": values.businessName,
-        "logo-url": logoDownloadURL,
+        "logo-url": logoUrl,
         description: values.businessDescription,
-        "policy-document": downloadURL,
+        "policy-document": businessLicenseUrl,
         website: values.businessWebsite,
         status: "INACTIVE",
         "user-name": values.fullName,
+        "merchant-code": values.businessCode,
         password: values.password,
-        avatar: logoDownloadURL
+        avatar: logoUrl
       }
 
       const response = await api.post("auth/merchant/register", submitData, accessToken ?? "")
@@ -153,7 +141,11 @@ export default function MerchantRegistrationForm() {
           title: "Registration Submitted",
           description: "Your merchant registration has been submitted successfully.",
         })
-        form.reset() // Reset the form after successful submission
+        form.reset()
+        setPdfFile(null)
+        setLogoFile(null)
+        setLogoUrl("")
+        setBusinessLicenseUrl("")
       } else {
         throw new Error("Unexpected response from server")
       }
@@ -281,6 +273,19 @@ export default function MerchantRegistrationForm() {
                   </div>
                   <FormField
                     control={form.control}
+                    name="businessCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Code</FormLabel>
+                        <FormControl>
+                          <Input placeholder="ABC123" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
                     name="businessDescription"
                     render={({ field }) => (
                       <FormItem>
@@ -305,48 +310,40 @@ export default function MerchantRegistrationForm() {
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="businessLicense"
-                    render={({ field: { onChange, value, ...field } }) => (
-                      <FormItem>
-                        <FormLabel>Business License (PDF)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="file"
-                            accept=".pdf"
-                            onChange={(e) => onChange(e.target.files?.[0])}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Please upload your "Giấy Phép Kinh Doanh" in PDF format (max 5MB)
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="logoUrl"
-                    render={({ field: { onChange, value, ...field } }) => (
-                      <FormItem>
-                        <FormLabel>Logo (PNG)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="file"
-                            accept=".png"
-                            onChange={(e) => onChange(e.target.files?.[0])}
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                        <FormDescription>
-                          Please upload your logo in PNG format (max 5MB)
-                        </FormDescription>
-                      </FormItem>
-                      )}
-                    />
+                  
+                  <FormItem>
+                    <FormLabel>Business License</FormLabel>
+                    <FormControl>
+                      <FileUpload
+                        label="Business License"
+                        accept=".pdf,application/pdf"
+                        onChange={(file: File, downloadURL: string) => {
+                          setPdfFile(file)
+                          setBusinessLicenseUrl(downloadURL)
+                        }}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Please upload your "Giấy Phép Kinh Doanh" in PDF format (max 5MB)
+                    </FormDescription>
+                  </FormItem>
+
+                  <FormItem>
+                    <FormLabel>Logo</FormLabel>
+                    <FormControl>
+                      <FileUpload
+                        label="Logo"
+                        accept=".png,image/png"
+                        onChange={(file: File, downloadURL: string) => {
+                          setLogoFile(file)
+                          setLogoUrl(downloadURL)
+                        }}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Please upload your logo in PNG format (max 5MB)
+                    </FormDescription>
+                  </FormItem>
                 </div>
               </div>
 

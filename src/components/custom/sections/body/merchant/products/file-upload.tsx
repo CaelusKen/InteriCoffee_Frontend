@@ -15,7 +15,7 @@ type SingleFileUploadProps = {
   accept: string
   onChange: (file: File, downloadURL: string) => void
   multiple?: false
-  currentImageUrl?: string
+  currentFileUrl?: string
 }
 
 type MultipleFileUploadProps = {
@@ -29,7 +29,7 @@ type FileUploadProps = SingleFileUploadProps | MultipleFileUploadProps
 
 type PreviewFile = {
   url: string
-  type: 'image' | '3d'
+  type: 'image' | '3d' | 'pdf'
   file: File | null
 }
 
@@ -44,8 +44,9 @@ export function FileUpload(props: FileUploadProps) {
   const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
-    if (!multiple && 'currentImageUrl' in props && props.currentImageUrl) {
-      setPreviewFiles([{ url: props.currentImageUrl, type: 'image', file: null }])
+    if (!multiple && 'currentFileUrl' in props && props.currentFileUrl) {
+      const fileType = props.currentFileUrl.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image'
+      setPreviewFiles([{ url: props.currentFileUrl, type: fileType, file: null }])
     }
 
     return () => {
@@ -64,7 +65,7 @@ export function FileUpload(props: FileUploadProps) {
     const files = Array.from(fileList)
     const newPreviewFiles: PreviewFile[] = files.map(file => ({
       url: URL.createObjectURL(file),
-      type: file.type.startsWith('image/') ? 'image' : '3d',
+      type: file.type.startsWith('image/') ? 'image' : file.type === 'application/pdf' ? 'pdf' : '3d',
       file
     }))
 
@@ -88,7 +89,7 @@ export function FileUpload(props: FileUploadProps) {
 
   const uploadFilesToFirebase = async (files: File[]): Promise<string[]> => {
     const uploads = files.map(async (file) => {
-      const storageRef = ref(storage, `design-images/${Date.now()}-${file.name}`)
+      const storageRef = ref(storage, `design-files/${Date.now()}-${file.name}`)
       const uploadTask = uploadBytesResumable(storageRef, file)
 
       return new Promise<string>((resolve, reject) => {
@@ -141,6 +142,17 @@ export function FileUpload(props: FileUploadProps) {
                 fill
                 className="object-cover"
               />
+            ) : file.type === 'pdf' ? (
+              <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <span className="ml-2">PDF</span>
+              </div>
             ) : (
               <Canvas style={{ background: '#f0f0f0' }}>
                 <Suspense fallback={null}>
