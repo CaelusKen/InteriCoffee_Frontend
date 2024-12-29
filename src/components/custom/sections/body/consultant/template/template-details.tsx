@@ -25,8 +25,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label";
 import { Style } from '@/types/frontend/entities'
+import { useToast } from '@/hooks/use-toast'
 
 interface TemplateProps {
   id: string,
@@ -43,6 +54,10 @@ const fetchProductById = async(id: string, accessToken: string) : Promise<ApiRes
 const fetchStyleById = async (id: string): Promise<ApiResponse<Style>> => {
   return api.getById<Style>("styles", id);
 };
+
+const deleteTemplate = async(id: string, accessToken : string) : Promise<ApiResponse<Template>> => {
+  return api.delete<Template>(`templates/${id}`, accessToken)
+}
 
 export function ProductCard({ productId, quantity }: { productId: string, quantity: number }) {
   const accessToken = useAccessToken()
@@ -79,9 +94,12 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
   const [selectedFloor, setSelectedFloor] = useState<string>("");
   const [selectedRoom, setSelectedRoom] = useState<string>("");
   const [environment, setEnvironment] = useState("apartment");
+  const [isLoading, setIsLoading] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   const [isFullscreen, setIsFullscreen] = useState(false)
   const router = useRouter()
+  const { toast } = useToast()
   
   const templateQuery = useQuery({
     queryKey: ['template', id],
@@ -153,6 +171,45 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
     setIsFullscreen(!isFullscreen)
   }
 
+  const handleUpdateTemplate = () => {
+    setIsLoading(true)
+    router.push(`/simulation?templateId=${id}`)
+  }
+
+  const handleViewTemplateDetails = () => {
+    router.push(`/consultant/templates/${id}`)
+  }
+
+  const handleDeleteTemplate = () => {
+    setShowDeleteDialog(true)
+  }
+
+  const confirmDeleteTemplate = async () => {
+    setShowDeleteDialog(false)
+    setIsLoading(true)
+    try {
+      const res = await deleteTemplate(id, accessToken ?? '')
+      if (res.status === 200) {
+        toast({
+          title: 'Delete Template Successfully',
+          description: 'Template Deleted Successfully',
+          className: 'bg-green-500'
+        })
+        router.refresh()
+      } else {
+        throw new Error('Delete failed')
+      }
+    } catch (error) {
+      toast({
+        title: 'Delete Template Failed',
+        description: 'Template deletion failed. Please check network log and console for details.',
+        className: 'bg-red-500'
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   if (templateQuery.isLoading) {
     return <div>Loading...</div>
   }
@@ -171,11 +228,18 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">{template?.name}</h1>
           <div className="space-x-2">
-            <Button variant="destructive" className='bg-yellow-300 hover:bg-yellow-400 text-black'>
+            <Button
+              onClick={handleUpdateTemplate}
+              variant="destructive" 
+              className='bg-yellow-300 hover:bg-yellow-400 text-black'>
               <Edit2 className="mr-2 h-4 w-4" />
               Edit
             </Button>
-            <Button variant="destructive" className='bg-red-400 hover:bg-red-500'>
+            <Button
+              onClick={handleDeleteTemplate}
+              variant="destructive" 
+              className='bg-red-400 hover:bg-red-500'
+            >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </Button>
@@ -281,6 +345,21 @@ export default function ConsultantTemplateDetailsPage({id}: TemplateProps) {
           ))}
         </div>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this template?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the template.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteTemplate}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

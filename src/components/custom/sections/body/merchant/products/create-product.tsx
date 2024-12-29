@@ -36,6 +36,14 @@ export default function CreateProduct() {
       const mappedData = mapFrontendToBackend(formData)
       return api.post<Product>('products', mappedData, accessToken ?? '')
     },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Product created successfully!",
+        className: "bg-green-500",
+      })
+      router.push('/merchant/products')
+    },
     onError: (error) => {
       console.error('Error creating product:', error)
       toast({
