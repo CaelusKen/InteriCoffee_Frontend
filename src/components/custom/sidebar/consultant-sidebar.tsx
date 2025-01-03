@@ -23,8 +23,8 @@ export default function ConsultantSidebar() {
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, href: "/consultant" },
     { name: "Templates", icon: Palette, href: "/consultant/templates" },
-    { name: "Messages", icon: MessageSquare, href: "/consultant/messages" },
-    { name: "Switch To Customer", icon: ArrowLeftRight, href: "/furnitures"}
+    // { name: "Messages", icon: MessageSquare, href: "/consultant/messages" },
+    // { name: "Switch To Customer", icon: ArrowLeftRight, href: "/furnitures"}
   ]
 
   return (

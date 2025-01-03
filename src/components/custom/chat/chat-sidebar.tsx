@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -19,19 +19,32 @@ interface ChatSidebarProps {
 
 export function ChatSidebar({ chats, selectedChat, currentUserId, onSelectChat, onNewChat, isLoading }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('')
+  const [filteredChats, setFilteredChats] = useState<FirestoreChat[]>([])
 
-  const filteredChats = chats.filter(chat => 
-    chat.participants.some(participant => 
-      participant.name.toLowerCase().includes(searchQuery.toLowerCase())
+  useEffect(() => {
+    // Filter chats that include the current user
+    const userChats = chats.filter(chat => 
+      chat.participants.some(participant => participant.id === currentUserId)
     )
-  )
+    setFilteredChats(userChats)
+  }, [chats, currentUserId])
+
+  useEffect(() => {
+    // Apply search filter
+    const searchFiltered = chats.filter(chat => 
+      chat.participants.some(participant => 
+        participant.name.toLowerCase().includes(searchQuery.toLowerCase())
+      ) && chat.participants.some(participant => participant.id === currentUserId)
+    )
+    setFilteredChats(searchFiltered)
+  }, [searchQuery, chats, currentUserId])
 
   const getOtherParticipant = (chat: FirestoreChat): FirestoreChatParticipant => {
     return chat.participants.find(p => p.id !== currentUserId) || chat.participants[0]
   }
 
   return (
-    <div className="w-80 border-r flex flex-col">
+    <div className="w-full md:w-1/3 lg:w-1/4 border-r flex flex-col">
       <div className="p-4 border-b flex items-center justify-between">
         <div className="relative flex-1">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -51,6 +64,10 @@ export function ChatSidebar({ chats, selectedChat, currentUserId, onSelectChat, 
         {isLoading ? (
           <div className="p-4 text-center">
             <p>Loading chats...</p>
+          </div>
+        ) : filteredChats.length === 0 ? (
+          <div className="p-4 text-center">
+            <p>No chats found</p>
           </div>
         ) : (
           <>
