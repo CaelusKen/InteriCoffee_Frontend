@@ -5,7 +5,7 @@ import { ChatSidebar } from '@/components/custom/chat/chat-sidebar'
 import { ChatMain } from '@/components/custom/chat/chat-main'
 import { MerchantSearch } from '@/components/custom/chat/merchant-search'
 import { FirestoreChat, FirestoreChatParticipant } from '@/types/firestore'
-import { createChat, subscribeToChats, fetchChatById } from '@/lib/firebase-storage'
+import { createChat, subscribeToChats, fetchChatById, fetchChatsByUserId } from '@/lib/firebase-storage'
 import { useSession } from 'next-auth/react'
 import { ApiResponse } from '@/types/api'
 import { Account, Merchant } from '@/types/frontend/entities'
@@ -38,21 +38,44 @@ export default function ChatPage() {
   const account = accountQuery.data?.data ? mapBackendToFrontend<Account>(accountQuery.data.data, 'account') : undefined
 
   useEffect(() => {
-    if (account?.id) {
-      setIsLoadingChats(true);
-      const unsubscribe = subscribeToChats(account.id, 'customer',(updatedChats) => {
-        console.log('Received updated chats:', updatedChats);
-        setChats(updatedChats)
-        if (updatedChats.length === 0) {
-          setShowMerchantSearch(true)
-        } else if (!selectedChat) {
-          setSelectedChat(updatedChats[0])
+    const loadChats = async () => {
+      if (account?.id) {
+        setIsLoadingChats(true);
+        try {
+          // Fetch all chats for the user
+          const userChats = await fetchChatsByUserId(account.id);
+          setChats(userChats);
+          
+          if (userChats.length === 0) {
+            setShowMerchantSearch(true);
+          } else if (!selectedChat) {
+            setSelectedChat(userChats[0]);
+          }
+        } catch (error) {
+          console.error('Error fetching chats:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load chats. Please try again.",
+            variant: "destructive"
+          });
+        } finally {
+          setIsLoadingChats(false);
         }
-        setIsLoadingChats(false);
-      })
-      return () => unsubscribe()
+      }
+    };
+
+    loadChats();
+
+    // Set up real-time updates
+    if (account?.id) {
+      const unsubscribe = subscribeToChats(account.id, 'customer', (updatedChats) => {
+        console.log('Received updated chats:', updatedChats);
+        setChats(updatedChats);
+      });
+
+      return () => unsubscribe();
     }
-  }, [account?.id])
+  }, [account?.id, toast]);
 
   const handleStartNewChat = async (merchant: Merchant) => {
     console.log('Starting new chat with merchant:', merchant);

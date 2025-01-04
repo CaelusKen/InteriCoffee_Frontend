@@ -146,8 +146,8 @@ export function MerchantChatMain({ chatId, currentUser, otherUser }: MerchantCha
         </div>
       </ScrollArea>
 
-      <div className="border-t p-4">
-        <div className="flex gap-2 mb-2">
+      <div className="border-t p-4 ">
+        <div className="flex flex-wrap gap-2 mb-2">
           {defaultMessages.map((message, index) => (
             <Button
               key={index}

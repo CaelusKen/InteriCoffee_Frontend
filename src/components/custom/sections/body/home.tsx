@@ -11,6 +11,12 @@ import EndingCard from '../../cards/ending-card'
 import RatingCard from '../../cards/rating-cards'
 import StyleSubHeader from '../sub-header/style-sub-header'
 import FurnitureProductCard from '../../cards/furniture-card-v2'
+import { ApiResponse, PaginatedResponse } from '@/types/api'
+import { Merchant, Product, Template } from '@/types/frontend/entities'
+import { api } from '@/service/api'
+import { useQuery } from '@tanstack/react-query'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 const styleData = [
   { imageSrc: "https://placehold.co/400", name: "Modern Minimalist", creator: "Jane Doe" },
@@ -65,14 +71,71 @@ const products = [
   },
 ]
 
+const fetchTemplates = async() : Promise<ApiResponse<PaginatedResponse<Template>>> => {
+  return api.getPaginated<Template>('templates')
+}
+
+const fetchMerchantById = async (
+  id: string
+): Promise<ApiResponse<Merchant>> => {
+  return api.getById("merchants", id);
+};
+
+const fetchProducts = async() : Promise<ApiResponse<PaginatedResponse<Product>>> => {
+  return api.getPaginated<Product>('products')
+}
+
 const Home = () => {
   const [currentDate, setCurrentDate] = useState('')
+  const [merchant, setMerchant] = useState<string | null>(null);
+
+  const router = useRouter()
 
   useEffect(() => {
-    const now = new Date()
-    const formattedDate = now.toISOString().split('T')[0]
-    setCurrentDate(formattedDate)
-  }, [])
+    setCurrentDate(new Date().toISOString().split('T')[0])
+  })
+
+  const { data: templates } = useQuery({
+    queryKey: ['templates'],
+    queryFn: fetchTemplates,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 3,
+    refetchOnWindowFocus: false,
+    refetchIntervalInBackground: true,
+  })
+
+  const { data: productsData } = useQuery({
+    queryKey: ['products'],
+    queryFn: fetchProducts,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 3,
+    refetchOnWindowFocus: false,
+    refetchIntervalInBackground: true,
+  })
+
+  const getMerchantById = (id: string) => {
+    fetchMerchantById(id).then((res) => {
+      if (res.status === 200) {
+        setMerchant(res.data.name);
+      } else throw new Error("Failed to fetch merchant");
+    });
+    return merchant || '';
+  };
+
+  // Get a random template for each day in a list of templates, using random index
+  const randomTemplate = templates?.data.items[Math.floor(Math.random() * templates.data.items.length)]
+
+  // Get the 3 most recent template
+  const recentTemplates = templates?.data.items
+    .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime())
+    .slice(0, 3);
+    
+  const highlightTemplates = templates?.data.items
+    .sort((a, b) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime())
+    .slice(0, 3);
+
+  // Get 4 random products
+  const randomProducts = productsData?.data.items.filter((_, index) => index < 4)
 
   return (
     <motion.section 
@@ -99,15 +162,16 @@ const Home = () => {
             style={{ WebkitTextFillColor: 'black', opacity: 1 }}
           />
         </div>
-        <h1 className='uppercase text-4xl sm:text-6xl md:text-8xl font-bold'>Modernication</h1>
+        <h1 className='uppercase text-4xl sm:text-6xl md:text-8xl font-bold'>{randomTemplate?.name}</h1>
         <div className='flex items-center justify-center gap-4'>
-          <h3 className='text-sm sm:text-base'>Created By:</h3>
-          <div className='flex items-center justify-center gap-4'>
-            <User />
-            <User />
-          </div>
+          <p className="text-lg text-muted-foreground">
+            Created by:{" "}
+            <Link href={`/merchants/${randomTemplate?.merchantId}`}>
+              {getMerchantById(randomTemplate?.merchantId || "")}
+            </Link>
+          </p>
         </div>
-        <img src='https://placehold.co/1600x400' className='w-full h-auto' alt='Style of the Day'/>
+        <img src={randomTemplate?.imageUrl} className='w-full h-auto' alt='Style of the Day'/>
       </motion.section>
       <motion.h3
         initial={{ opacity: 0, y: -50}}
@@ -138,13 +202,13 @@ const Home = () => {
         transition={{ duration: 0.75, delay: 0.75 }}
       >
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 w-full justify-items-center'>
-          {styleData.map((style, index) => (
+          {highlightTemplates?.map((hightlightTemplate, index) => (
             <StyleCard 
               key={index}
-              imageSrc={style.imageSrc}
-              name={style.name}
-              creator={style.creator}
-              onViewDetails={() => console.log(`View details clicked for ${style.name}`)}
+              imageSrc={hightlightTemplate.imageUrl}
+              name={hightlightTemplate.name}
+              creator={getMerchantById(hightlightTemplate.merchantId)}
+              onViewDetails={() => router.push(`/templates/${hightlightTemplate.id}`)}
             />
           ))}
         </div>
@@ -181,15 +245,15 @@ const Home = () => {
         Check out all of the latest furniture items here
       </motion.h3>
       <section className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 w-full justify-items-center'>
-          {products.map((product, index) => (
+          {randomProducts?.map((product, index) => (
             <FurnitureProductCard 
               key={index}
               id={product.id}
-              images={product.images}
-              merchant={product.merchant}
-              modelUrl={product.modelUrl}
+              images={product.images.normalImages}
+              merchant={product.merchantId}
+              modelUrl={product.modelTextureUrl}
               name={product.name}
-              price={product.price}
+              price={product.sellingPrice}
             />
           ))}
       </section>
@@ -223,13 +287,13 @@ const Home = () => {
         transition={{ duration: 0.75, delay: 0.75 }}
       >
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 w-full justify-items-center'>
-          {styleData.map((style, index) => (
+          {recentTemplates?.map((recentTemplate, index) => (
             <StyleCard 
               key={index}
-              imageSrc={style.imageSrc}
-              name={style.name}
-              creator={style.creator}
-              onViewDetails={() => console.log(`View details clicked for ${style.name}`)}
+              imageSrc={recentTemplate.imageUrl}
+              name={recentTemplate.name}
+              creator={getMerchantById(recentTemplate.merchantId)}
+              onViewDetails={() => router.push(`/templates/${recentTemplate.id}`)}
             />
           ))}
         </div>

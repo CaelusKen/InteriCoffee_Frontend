@@ -179,8 +179,8 @@ export default function CustomerProfilePage() {
           </Card>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-        <Card className="col-span-2">
+      <div className="gap-4 mt-4">
+        <Card>
           <CardHeader>
             <div className="flex justify-between">
               <p>Recent Designs</p>
@@ -200,20 +200,6 @@ export default function CustomerProfilePage() {
                 ))}
             </div>
           </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between">
-              <p>Recent Chat</p>
-              <div className="flex gap-4">
-                <Button>View all chats</Button>
-                <Button className="bg-success-700 dark:bg-success-600 hover:bg-success-600 dark:hover:bg-success-700">
-                  <MessageSquareText size={24}/>
-                  Start chatting
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
         </Card>
       </div>
     </div>
