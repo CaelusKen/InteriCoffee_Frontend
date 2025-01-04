@@ -61,6 +61,10 @@ export default function BrowseFurnitures() {
   const [priceRange, setPriceRange] = useState<[number, number]>([
     0, 1000000000,
   ]);
+  const [priceStep, setPriceStep] = useState<number>(0);
+  const [selectedRange, setSelectedRange] = useState<[number, number]>([
+    0, 1000000000,
+  ]);
 
   const productsQuery = useQuery({
     queryKey: ["products"],
@@ -71,6 +75,23 @@ export default function BrowseFurnitures() {
     queryKey: ["productCategories"],
     queryFn: () => fetchProductCategory(),
   });
+
+  // Set the price range based on the products's max price and min price
+  useEffect(() => {
+    if (productsQuery.data?.data.items) {
+      const maxPrice = productsQuery.data.data.items.reduce(
+        (max, product) => Math.max(max, product.truePrice),
+        0
+      );
+      const minPrice = productsQuery.data.data.items.reduce(
+        (min, product) => Math.min(min, product.truePrice),
+        Infinity
+      );
+      setPriceRange([minPrice, maxPrice]);
+      setSelectedRange([minPrice, maxPrice]); // Initialize selected range
+      setPriceStep(Math.ceil((maxPrice - minPrice) / 100)); // More granular steps
+    }
+  }, [productsQuery.data?.data.items]);
 
   //For searching and filtering products
   const filteredProducts = useMemo(() => {
@@ -111,8 +132,9 @@ export default function BrowseFurnitures() {
     page * pageSize
   );
 
-  const handlePriceRangeChange = (newValue: number[]) => {
-    setPriceRange([newValue[0], newValue[1]]);
+  const handlePriceRangeChange = (newValue: [number, number]) => {
+    setSelectedRange(newValue);
+    setPriceRange(newValue);
   };
 
   useEffect(() => {
@@ -121,8 +143,7 @@ export default function BrowseFurnitures() {
 
   return (
     <div className="flex flex-col space-y-6 p-8">
-      <div className="flex flex-col md:flex-row justify-between w-full mt-4 gap-4">
-        <div className="flex flex-col md:flex-row gap-4 w-full md:w-2/3">
+      <div className="flex flex-col md:flex-row justify-between w-full mt-4 gap-10">
           {/* Search Bar */}
           <div className="flex items-center space-x-2 w-full md:w-1/2">
             <Input
@@ -138,10 +159,8 @@ export default function BrowseFurnitures() {
           </div>
 
           {/* Sort Options */}
-          <div className="flex justify-start items-center space-x-2 w-full md:w-1/2">
-            <span className="w-full">
-              Sort by:
-            </span>
+          <div className="flex justify-end items-center gap-2 w-full md:w-1/4">
+            <span className="w-full">Sort by:</span>
             <Select
               onValueChange={(value) => setSortField(value as keyof Product)}
               value={sortField}
@@ -168,7 +187,6 @@ export default function BrowseFurnitures() {
               )}
             </Button>
           </div>
-        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-6">
@@ -203,22 +221,65 @@ export default function BrowseFurnitures() {
               <AccordionTrigger>Price Range</AccordionTrigger>
               <AccordionContent className="my-4">
                 <div className="space-y-4">
+                  <div className="flex justify-between text-sm text-muted-foreground mb-2">
+                    <span>Min</span>
+                    <span>Max</span>
+                  </div>
                   <Slider
                     min={priceRange[0]}
                     max={priceRange[1]}
-                    step={100000}
-                    value={priceRange}
-                    onValueChange={handlePriceRangeChange}
+                    step={priceStep}
+                    value={selectedRange}
+                    onValueChange={(newValue) =>
+                      setSelectedRange(newValue as [number, number])
+                    }
+                    onValueCommit={(newValue) =>
+                      handlePriceRangeChange(newValue as [number, number])
+                    }
+                    className="[&_[role=slider]]:bg-green-500 [&_[role=slider]]:border-green-500 [&_.relative]:bg-green-500"
                   />
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center gap-4">
+                    <div className="flex-1">
+                      <Input
+                        type="number"
+                        value={selectedRange[0]}
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
+                          setSelectedRange([
+                            Math.max(priceRange[0], value),
+                            selectedRange[1],
+                          ]);
+                        }}
+                        onBlur={() => handlePriceRangeChange(selectedRange)}
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="text-muted-foreground">to</div>
+                    <div className="flex-1">
+                      <Input
+                        type="number"
+                        value={selectedRange[1]}
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
+                          setSelectedRange([
+                            selectedRange[0],
+                            Math.min(priceRange[1], value),
+                          ]);
+                        }}
+                        onBlur={() => handlePriceRangeChange(selectedRange)}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-sm text-muted-foreground">
                     <span>
-                      {priceRange[0].toLocaleString("vi-VN", {
+                      {selectedRange[0].toLocaleString("vi-VN", {
                         style: "currency",
                         currency: "VND",
                       })}
                     </span>
                     <span>
-                      {priceRange[1].toLocaleString("vi-VN", {
+                      {selectedRange[1].toLocaleString("vi-VN", {
                         style: "currency",
                         currency: "VND",
                       })}
