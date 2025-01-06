@@ -1,6 +1,6 @@
 import React from 'react'
-import MerchantRegistration from '@/components/custom/sections/body/manager/merchant-registration/merchant-registration'
+import UnverifiedMerchantTable from '@/components/custom/sections/body/manager/merchant/merchant-table'
 
 export default function MerchantRegistrationHomePage() {
-    return <MerchantRegistration />
+    return <UnverifiedMerchantTable />
 }
