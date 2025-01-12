@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAccessToken } from "@/hooks/use-access-token";
 
 import {
   mapBackendToFrontend,
@@ -49,9 +50,10 @@ const fetchAccountByEmail = async (
 };
 
 const fetchMerchantOrders = async (
-  merchantId: string
+  merchantId: string,
+  accessToken: string
 ): Promise<ApiResponse<PaginatedResponse<any>>> => {
-  return api.get<any>(`orders/merchant/${merchantId}`);
+  return api.get<any>(`orders/merchant/${merchantId}`, undefined, accessToken);
 };
 
 const getColumns = (
@@ -132,6 +134,7 @@ const getColumns = (
 
 const MerchantsOrderTable = () => {
   const { data: session } = useSession();
+  const accessToken = useAccessToken();
   const router = useRouter();
 
   // Table state
@@ -175,7 +178,7 @@ const MerchantsOrderTable = () => {
   // Orders Query - depends on merchantId
   const ordersQuery = useQuery({
     queryKey: ["merchantOrders", merchantId],
-    queryFn: () => fetchMerchantOrders(merchantId!),
+    queryFn: () => fetchMerchantOrders(merchantId!, accessToken ?? ''),
     enabled: !!merchantId,
     staleTime: 1000 * 60 * 5,
     select: (data) =>

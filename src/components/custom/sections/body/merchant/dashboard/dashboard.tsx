@@ -23,8 +23,8 @@ const fetchTemplates = async() : Promise<ApiResponse<PaginatedResponse<Template>
   return api.getPaginated<Template>('templates')
 }
 
-const fetchMerchantOrders = async(merchantId: string) : Promise<ApiResponse<PaginatedResponse<any>>> => {
-  return api.get<any>(`orders/merchant/${merchantId}`)
+const fetchMerchantOrders = async(merchantId: string, accessToken: string) : Promise<ApiResponse<PaginatedResponse<any>>> => {
+  return api.get<any>(`orders/merchant/${merchantId}`, undefined, accessToken)
 }
 
 export default function Dashboard() {
@@ -59,7 +59,7 @@ export default function Dashboard() {
   // Orders Query - depends on merchantId
   const ordersQuery = useQuery({
     queryKey: ['merchantOrders', merchantId],
-    queryFn: () => fetchMerchantOrders(merchantId!),
+    queryFn: () => fetchMerchantOrders(merchantId!, accessToken ?? ''),
     enabled: !!merchantId,
     staleTime: 1000 * 60 * 5,
     select: (data) => mapBackendListToFrontend<Order>(data.data.items, 'order').items

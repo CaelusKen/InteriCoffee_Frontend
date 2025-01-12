@@ -135,11 +135,11 @@ export default function MerchantStylesTable() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
+              {/* <DropdownMenuItem
                 onClick={() => navigator.clipboard.writeText(style.id)}
               >
                 Copy style ID
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               <DropdownMenuItem onClick={() => router.push(`/merchant/styles/${style.id}/update`)}>Edit</DropdownMenuItem>
               <DropdownMenuItem onClick={() => {
                 setSelectedStyleId(style.id)
@@ -169,7 +169,7 @@ export default function MerchantStylesTable() {
   if (stylesQuery.isError) return <div>Error loading styles</div>
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Styles Management</h1>
@@ -253,7 +253,7 @@ export default function MerchantStylesTable() {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Are you sure you want to delete this product?</DialogTitle>
+            <DialogTitle>Are you sure you want to delete this style?</DialogTitle>
             <DialogDescription>
               This action cannot be undone. This will permanently delete the product from our servers.
             </DialogDescription>

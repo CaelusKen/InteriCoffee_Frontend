@@ -11,6 +11,8 @@ import {
   TrendingUp,
   ArrowLeftRight,
   Archive,
+  Receipt,
+  ReceiptText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -26,7 +28,8 @@ export default function MerchantSidebar() {
     { name: "Product Stocks", icon: Package, href: "/merchant/products" },
     { name: "Styles", icon: Palette, href: "/merchant/styles" },
     { name: "Messages", icon: MessageSquare, href: "/merchant/messages" },
-    { name: "Sales Campaigns", icon: TrendingUp, href: "/merchant/campaigns" },
+    { name: "Orders", icon: ReceiptText, href: "/merchant/orders" },
+    // { name: "Sales Campaigns", icon: TrendingUp, href: "/merchant/campaigns" },
     { name: "Switch To Customer", icon: ArrowLeftRight, href: "/furnitures"}
   ]
 
