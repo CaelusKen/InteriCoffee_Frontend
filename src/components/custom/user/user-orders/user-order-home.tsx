@@ -20,6 +20,7 @@ import { useAccessToken } from "@/hooks/use-access-token";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Package } from "lucide-react";
+import LoadingPage from "../../loading/loading";
 
 const fetchOrders = async (accessToken: string): Promise<
   ApiResponse<PaginatedResponse<Order>>
@@ -83,6 +84,9 @@ const OrderHome = () => {
         return "bg-gray-500";
     }
   };
+
+  if (ordersQuery.isLoading) return <LoadingPage />
+  if (ordersQuery.error) return <p>Error: {ordersQuery.error.message}</p>; 
 
   return (
     <section className="px-10 py-4">

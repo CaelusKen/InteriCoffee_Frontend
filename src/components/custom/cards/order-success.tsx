@@ -33,7 +33,7 @@ const SuccessOrderCard = ({ id }: OrderResultProps) => {
               <ArrowLeft className="mr-2" size={24} />
               Return to Homepage
             </Button>
-            <Button variant={'outline'} onClick={() => router.push(`/customers/orders/${id}`)}>
+            <Button variant={'outline'} onClick={() => router.push(`/customer/orders/${id}`)}>
               View Order Details
             </Button>
           </div>
