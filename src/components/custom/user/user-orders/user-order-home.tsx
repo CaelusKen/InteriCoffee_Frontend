@@ -22,10 +22,10 @@ import { Button } from "@/components/ui/button";
 import { Package } from "lucide-react";
 import LoadingPage from "../../loading/loading";
 
-const fetchOrders = async (customerId: string, accessToken: string): Promise<
+const fetchOrders = async (accessToken: string): Promise<
   ApiResponse<PaginatedResponse<Order>>
 > => {
-  return await api.getPaginated<Order>(`orders/customer/${customerId}`, undefined, accessToken);
+  return await api.getPaginated<Order>("orders", undefined, accessToken);
 };
 
 const OrderHome = () => {
@@ -45,18 +45,17 @@ const OrderHome = () => {
     },
   });
 
-  
-  const account = accountQuery.data;
-  
   const ordersQuery = useQuery({
     queryKey: ["orders"],
-    queryFn: () => fetchOrders(account?.id ?? '', accessToken ?? ''),
+    queryFn: () => fetchOrders(accessToken ?? ''),
   });
+
+  const account = accountQuery.data;
 
   const orders = ordersQuery.data?.data?.items ?? [];
 
   const accountOrders = orders
-    .filter((order) => order.accountId === account?.id)
+    .filter((order) => order.accountId === account?.id && order.status !== "CREATED")
     .sort((a, b) => b.updatedDate.getTime() - a.updatedDate.getTime());
 
   //Pagination
