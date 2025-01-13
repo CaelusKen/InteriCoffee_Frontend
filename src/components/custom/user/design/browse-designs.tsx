@@ -12,13 +12,16 @@ import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { useAccessToken } from '@/hooks/use-access-token'
 
-const fetchDesigns = async(): Promise<ApiResponse<PaginatedResponse<APIDesign>>> => {
-  return api.getPaginated<APIDesign>('designs')
+const fetchDesigns = async(accessToken: string): Promise<ApiResponse<PaginatedResponse<APIDesign>>> => {
+  return api.getPaginated<APIDesign>('designs', undefined, accessToken)
 }
 
 const CustomerBrowseDesigns = () => {
   const { data: session } = useSession()
+
+  const accessToken = useAccessToken();
 
   //For searching results
   const [searchTerm, setSearchTerm] = React.useState('')
@@ -37,7 +40,7 @@ const CustomerBrowseDesigns = () => {
 
   const designQuery = useQuery({
     queryKey: ['designs'],
-    queryFn: fetchDesigns,
+    queryFn: () => fetchDesigns(accessToken ?? ''),
     enabled:!!session?.user?.email,
   })
 
