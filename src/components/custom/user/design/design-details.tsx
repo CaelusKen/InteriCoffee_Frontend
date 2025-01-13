@@ -43,10 +43,10 @@ interface DesignDetailsProps {
   id: string;
 }
 
-const fetchDesignById = async (id: string): Promise<ApiResponse<APIDesign>> => {
+const fetchDesignById = async (id: string, accessToken: string): Promise<ApiResponse<APIDesign>> => {
   console.log("Fetching design with id:", id);
   try {
-    const response = await api.getById<APIDesign>("designs", id);
+    const response = await api.getById<APIDesign>("designs", id, accessToken);
     console.log("Fetched design:", response);
     return response;
   } catch (error) {
@@ -76,7 +76,7 @@ const CustomerDesignDetails = ({ id }: DesignDetailsProps) => {
 
   const designQuery = useQuery({
     queryKey: ["design", id],
-    queryFn: () => fetchDesignById(id),
+    queryFn: () => fetchDesignById(id, accessToken ?? ''),
     enabled: !!id,
   });
 
