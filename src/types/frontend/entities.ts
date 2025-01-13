@@ -109,7 +109,7 @@ export interface Merchant {
     merchantCode:      string;
     policyDocument?:   string;
     website:           string;
-    orderIncomes:      OrderIncome[];
+    orderIncomes?:      OrderIncome[];
 }
 
 export interface MerchantRegistration {

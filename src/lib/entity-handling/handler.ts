@@ -155,7 +155,7 @@ export function mapBackendMerchantToFrontend(backendMerchant: BackEndTypes.Backe
         merchantCode: backendMerchant["merchant-code"],
         policyDocument: backendMerchant["policy-document"],
         website: backendMerchant.website,
-        orderIncomes: backendMerchant["order-incomes"].map(mapBackendOrderIncomeToFrontend),
+        orderIncomes: backendMerchant["order-incomes"].map(mapBackendOrderIncomeToFrontend) ?? [],
     };
 }
 

@@ -124,7 +124,7 @@ const getColumns = (
             <DropdownMenuItem
               onClick={() => router.push(`/merchant/orders/${row.original.id}`)}
             >
-              View
+              View Details
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

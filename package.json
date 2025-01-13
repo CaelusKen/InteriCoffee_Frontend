@@ -62,6 +62,7 @@
     "react-resizable-panels": "^2.1.6",
     "react-router-dom": "^6.28.0",
     "react-slick": "^0.30.2",
+    "react-virtual": "^2.10.4",
     "recharts": "^2.13.0",
     "slick-carousel": "^1.8.1",
     "socket.io": "^4.8.1",

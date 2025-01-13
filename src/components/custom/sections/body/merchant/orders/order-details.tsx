@@ -12,9 +12,10 @@ import { ChevronLeft, Package, MapPin, CreditCard, ShoppingCart, Printer, Ship, 
 import { PackagingStatus } from "./merchant-order-status"
 import { useToast } from "@/hooks/use-toast"
 import { useSession } from "next-auth/react"
+import { useAccessToken } from "@/hooks/use-access-token"
 
-const fetchOrderById = async (id: string) => {
-  return api.getById<Order>(`orders`, id)
+const fetchOrderById = async (id: string, accessToken: string) => {
+  return api.getById<Order>(`orders`, id, accessToken)
 }
 
 const fetchProductById = async (id: string): Promise<Product> => {
@@ -37,9 +38,11 @@ export default function MerchantOrderDetails({ id }: PackagingDetailsProps) {
 
     const {data: session} = useSession()
 
+    const accessToken = useAccessToken()
+
   const { data: orderData, refetch } = useQuery({
     queryKey: ["packaging-order", id],
-    queryFn: () => fetchOrderById(id),
+    queryFn: () => fetchOrderById(id, accessToken ?? ''),
     enabled: !!id,
   })
 
