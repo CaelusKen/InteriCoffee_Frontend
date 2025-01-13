@@ -19,6 +19,7 @@ import { useQuery } from '@tanstack/react-query'
 import { ApiResponse } from '@/types/api'
 import { Account, Order, Product } from '@/types/frontend/entities'
 import { mapBackendToFrontend } from '@/lib/entity-handling/handler'
+import { useAccessToken } from '@/hooks/use-access-token'
 
 const fetchAccountByEmail = async(email: string) : Promise<ApiResponse<Account>> => {
   return api.get<Account>(`accounts/${email}/info`)
@@ -50,6 +51,8 @@ export default function CheckoutForm() {
   const [isProcessing, setIsProcessing] = useState(false)
   const { data: session } = useSession()
   const [account, setAccount] = useState<Account | null>(null)
+
+  const accessToken = useAccessToken()
 
   useEffect(() => {
     if (session?.user?.email) {
@@ -120,7 +123,7 @@ export default function CheckoutForm() {
       "voucher-id": ''
     }
 
-    const response = await api.post<{id: string}>('orders', orderData)
+    const response = await api.post<{id: string}>('orders', orderData, accessToken ?? '')
     console.log(response.data.id)
     return response.data
   }
