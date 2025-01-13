@@ -139,7 +139,7 @@ export default function CheckoutForm() {
       "currency": "VND"
     }
 
-    const response = await api.post<{ url: string }>('transactions/vnpay', transactionData)
+    const response = await api.post<{ url: string }>('transactions/vnpay', transactionData, accessToken ?? '')
     return response.data
   }
 
