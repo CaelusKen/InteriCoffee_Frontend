@@ -21,10 +21,10 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Package } from "lucide-react";
 
-const fetchOrders = async (accessToken: string): Promise<
+const fetchOrders = async (): Promise<
   ApiResponse<PaginatedResponse<Order>>
 > => {
-  return await api.getPaginated<Order>("orders", undefined, accessToken);
+  return await api.getPaginated<Order>("orders", undefined);
 };
 
 const OrderHome = () => {
@@ -46,7 +46,7 @@ const OrderHome = () => {
 
   const ordersQuery = useQuery({
     queryKey: ["orders"],
-    queryFn: () => fetchOrders(accessToken ?? ''),
+    queryFn: () => fetchOrders(),
   });
 
   const account = accountQuery.data;
