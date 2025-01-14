@@ -127,8 +127,8 @@ export default function MerchantOrderDetails({ id }: PackagingDetailsProps) {
                 <p className="text-sm text-muted-foreground dark:text-gray-400">
                   Packaging Status
                 </p>
-                <Badge className={getStatusColor(order.status)}>
-                  {order.status}
+                <Badge className={getStatusColor(order.status.toString().toUpperCase())}>
+                  {order.status.toUpperCase()}
                 </Badge>
               </div>
               <div>
