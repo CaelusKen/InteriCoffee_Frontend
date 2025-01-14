@@ -137,19 +137,6 @@ export default function LoginPage() {
               Log in
             </Button>
           </form>
-          <div className="mt-6">
-            <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">Or log in with</p>
-            <div className="flex flex-col sm:flex-row justify-between gap-4">
-              <Button onClick={() => handleSocialLogin('google')} variant="outline" className="flex items-center justify-center space-x-2 w-full hover:bg-secondary-700">
-                <Chrome size={20}/>
-                <span>Google</span>
-              </Button>
-              {/* <Button onClick={() => handleSocialLogin('facebook')} variant="outline" className="flex items-center justify-center space-x-2 w-full hover:bg-secondary-700">
-                <Facebook size={20}/>
-                <span>Facebook</span>
-              </Button> */}
-            </div>
-          </div>
         </div>
       </div>
     </div>

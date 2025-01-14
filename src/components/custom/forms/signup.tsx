@@ -159,15 +159,6 @@ export default function RegisterPage({ onSubmit, initialData }: RegisterPageProp
             </p>
             <Button type="submit" className="w-full bg-gray-900 dark:bg-gray-100 hover:bg-primary-800 dark:hover:bg-primary-500 dark:hover:text-white text-white dark:text-gray-900">Create Account</Button>
           </form>
-          <div className="mt-6">
-            <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">Or register with</p>
-            <div className="flex justify-center">
-              <Button onClick={() => signIn('google')} variant="outline" className="flex items-center justify-center w-full sm:w-auto hover:bg-secondary-700 space-x-2">
-                <Chrome size={20} />
-                <span>Google</span>
-              </Button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
