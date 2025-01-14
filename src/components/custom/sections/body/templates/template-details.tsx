@@ -348,16 +348,18 @@ export default function TemplateDetailsBody({ id }: TemplateDetailsProps) {
       >
         <h2 className="text-2xl font-bold mb-4">Style and Categories</h2>
         <div className="flex flex-wrap gap-2">
-          <Tooltip>
-            <TooltipTrigger>
-              <Badge variant="secondary" className="text-lg px-4 py-2">
-                {style?.name}
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{style?.description}</p>
-            </TooltipContent>
-          </Tooltip>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <Badge variant="secondary" className="text-lg px-4 py-2">
+                  {style?.name}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{style?.description}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           {template?.categories.map((category, index) => (
             <Badge key={index} variant="outline" className="text-lg px-4 py-2">
               {category}
