@@ -13,12 +13,13 @@ import * as FrontEndTypes from "@/types/frontend/entities";
 import * as BackendTypes from "@/types/backend/entities";
 import { Floor } from "@/types/room-editor";
 import { useUndoRedo } from "@/hooks/use-undo-redo";
-import Toolbar from "./toolbar";
-import Hierarchy from "./hierarchy";
-import SceneContent from "./scene-view";
-import Inspector from "./inspector";
-import RoomDialog from "./room-dialog";
-import FloorSelector from "./floor-selector";
+import dynamic from 'next/dynamic'
+const Toolbar = dynamic(() => import('./toolbar'))
+const Hierarchy = dynamic(() => import('./hierarchy'))
+const SceneContent = dynamic(() => import('./scene-view'))
+const Inspector = dynamic(() => import('./inspector'))
+const RoomDialog = dynamic(() => import('./room-dialog'))
+const FloorSelector = dynamic(() => import('./floor-selector'))
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -79,7 +80,7 @@ import { FileUpload } from "../sections/body/merchant/products/file-upload";
 import { SaveDialog } from "./save-dialog";
 import { useContentLoader } from "@/hooks/use-content-loader";
 import { SaveTemplateDialog } from "./save-template-dialog";
-import { AlertTriangle, Coffee, Trash2 } from "lucide-react";
+import { AlertTriangle, Coffee, Trash2 } from 'lucide-react';
 
 const ROOM_SCALE_FACTOR = 10;
 

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from "react"
+import React, { useState, useCallback, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Move, RotateCw, Maximize, Undo, Redo, Save, FolderOpen, Home, Trash2, Plus, Layers, ChevronRight, ArrowLeft } from 'lucide-react'
 import { ThemeToggler } from "../buttons/theme-toggler"
@@ -168,6 +168,17 @@ export default function Toolbar({
     }
   }, [selectedModel, selectedCategories, quantity, onAddFurniture]);
 
+  const categorizedProducts = useMemo(() => {
+    const categorized: Record<string, Record<string, Product[]>> = {};
+    categories.forEach(category => {
+      categorized[category.id] = {};
+      merchants.forEach(merchant => {
+        categorized[category.id][merchant.id] = products.filter(product => product.categoryIds.includes(category.id) && product.merchantId === merchant.id);
+      });
+    });
+    return categorized;
+  }, [products, categories, merchants]);
+
   const renderCategoryMenu = (categories: ProductCategory[]) => {
     return categories.map((category) => (
       <DropdownMenuSub key={category.id}>
@@ -175,11 +186,7 @@ export default function Toolbar({
         <DropdownMenuPortal>
           <DropdownMenuSubContent>
             {merchants.map((merchant) => {
-              const merchantProducts = products.filter(
-                (product) =>
-                  product.categoryIds.includes(category.id) &&
-                  product.merchantId === merchant.id
-              );
+              const merchantProducts = categorizedProducts[category.id]?.[merchant.id] || [];
 
               if (merchantProducts.length === 0) return null;
 

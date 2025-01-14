@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { Furniture, TransformUpdate } from '@/types/room-editor'
 import { Trash2, Edit2 } from 'lucide-react'
+import { debounce } from 'lodash-es'
 
 interface InspectorProps {
   selectedItem: string | null;
@@ -35,6 +36,13 @@ export default function Inspector({ selectedItem, furniture, onUpdateTransform, 
     }
   }, [item])
 
+  const debouncedUpdateTransform = useCallback(
+    debounce((update: TransformUpdate) => {
+      onUpdateTransform(update)
+    }, 100),
+    [onUpdateTransform]
+  )
+
   if (!item) return <div className="p-4">No item selected</div>
 
   const handleStartEdit = () => {
@@ -51,7 +59,7 @@ export default function Inspector({ selectedItem, furniture, onUpdateTransform, 
     const newTransform = { ...localTransform }
     newTransform[type][axis] = value
     setLocalTransform(newTransform)
-    onUpdateTransform({ id: item.id, type, value: newTransform[type] })
+    debouncedUpdateTransform({ id: item.id, type, value: newTransform[type] })
   }
 
   const renderTransformControl = (type: 'position' | 'rotation' | 'scale', axis: 0 | 1 | 2, label: string) => {

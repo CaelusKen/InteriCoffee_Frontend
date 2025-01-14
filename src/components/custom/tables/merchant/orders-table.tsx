@@ -41,7 +41,7 @@ import {
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, MoreHorizontal } from 'lucide-react';
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 
 const fetchAccountByEmail = async (
   email: string
@@ -56,81 +56,44 @@ const fetchMerchantOrders = async (
   return api.get<any>(`orders/merchant/${merchantId}`, undefined, accessToken);
 };
 
-const getColumns = (
-  getStatusColor: (status: Order["status"]) => string,
-  router: ReturnType<typeof useRouter>
-): ColumnDef<Order>[] => [
-    {
-      accessorKey: "id",
-      header: "ID",
-      cell: ({ row }) => row.original.id.replace(/\D/g, "").slice(0, 8),
-    },
-    {
-      accessorKey: "orderDate",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Order Date
-            {column.getIsSorted() === "asc" ? (
-              <ChevronUp className="ml-2 h-4 w-4" />
-            ) : (
-              <ChevronDown className="ml-2 h-4 w-4" />
-            )}
-          </Button>
-        );
-      },
-      cell: ({ row }) =>
-        new Date(row.original.orderDate).toLocaleString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }),
-    },
-    {
-      accessorKey: "totalAmount",
-      header: "Total Amount",
-      cell: ({ row }) =>
-        `${row.original.totalAmount.toLocaleString("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        })}`,
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => (
-        <Badge
-          className={`${getStatusColor(row.original.status)} text-white`}
+const MemoizedDropdownMenu = React.memo(
+  ({ row, onViewDetails }: { row: any; onViewDetails: (id: string) => void }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuItem
+          onClick={() => onViewDetails(row.original.id)}
         >
-          {row.original.status}
-        </Badge>
-      ),
-    },
-    {
-      accessorKey: "actions",
-      header: "Actions",
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => router.push(`/merchant/orders/${row.original.id}`)}
-            >
-              View Details
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
-    },
-  ];
+          View Details
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+);
+
+MemoizedDropdownMenu.displayName = 'MemoizedDropdownMenu';
+
+const getStatusColor = (status: Order["status"]) => {
+  switch (status.toLowerCase()) {
+    case "pending":
+      return "bg-secondary";
+    case "processing":
+      return "bg-warning";
+    case "shipped":
+      return "bg-blue-500";
+    case "completed":
+      return "bg-green-500";
+    case "cancelled":
+      return "bg-danger";
+    default:
+      return "bg-primary";
+  }
+};
 
 const MerchantsOrderTable = () => {
   const { data: session } = useSession();
@@ -144,51 +107,96 @@ const MerchantsOrderTable = () => {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState({});
 
-  const getStatusColor = (status: Order["status"]) => {
-    switch (status.toLowerCase()) {
-      case "pending":
-        return "bg-secondary";
-      case "processing":
-        return "bg-warning";
-      case "shipped":
-        return "bg-blue-500";
-      case "completed":
-        return "bg-green-500";
-      case "cancelled":
-        return "bg-danger";
-      default:
-        return "bg-primary";
-    }
-  };
+  const onViewDetails = useCallback((id: string) => {
+    router.push(`/merchant/orders/${id}`);
+  }, [router]);
+
+  const columns = useMemo<ColumnDef<Order>[]>(
+    () => [
+      {
+        accessorKey: "id",
+        header: "ID",
+        cell: ({ row }) => row.original.id.replace(/\D/g, "").slice(0, 8),
+      },
+      {
+        accessorKey: "orderDate",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            >
+              Order Date
+              {column.getIsSorted() === "asc" ? (
+                <ChevronUp className="ml-2 h-4 w-4" />
+              ) : (
+                <ChevronDown className="ml-2 h-4 w-4" />
+              )}
+            </Button>
+          );
+        },
+        cell: ({ row }) =>
+          new Date(row.original.orderDate).toLocaleString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }),
+      },
+      {
+        accessorKey: "totalAmount",
+        header: "Total Amount",
+        cell: ({ row }) =>
+          `${row.original.totalAmount.toLocaleString("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          })}`,
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => (
+          <Badge
+            className={`${getStatusColor(row.original.status)} text-white`}
+          >
+            {row.original.status}
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: "actions",
+        header: "Actions",
+        cell: ({ row }) => <MemoizedDropdownMenu row={row} onViewDetails={onViewDetails} />,
+      },
+    ],
+    [onViewDetails]
+  );
 
   // Account Query
   const accountQuery = useQuery({
-    queryKey: ["accountByEmail", session?.user.email],
-    queryFn: () => fetchAccountByEmail(session?.user.email ?? ""),
-    enabled: !!session?.user.email,
+    queryKey: ["accountByEmail", session?.user?.email],
+    queryFn: () => fetchAccountByEmail(session?.user?.email ?? ""),
+    enabled: !!session?.user?.email,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   // Get merchant ID from account data
-  const merchantId = accountQuery.data?.data
-    ? mapBackendToFrontend<Account>(accountQuery.data.data, "account")
-        .merchantId
-    : null;
+  const merchantId = useMemo(() => 
+    accountQuery.data?.data
+      ? mapBackendToFrontend<Account>(accountQuery.data.data, "account").merchantId
+      : null,
+    [accountQuery.data]
+  );
 
   // Orders Query - depends on merchantId
   const ordersQuery = useQuery({
-    queryKey: ["merchantOrders", merchantId],
-    queryFn: () => fetchMerchantOrders(merchantId!, accessToken ?? ''),
-    enabled: !!merchantId,
+    queryKey: ["merchantOrders", merchantId, accessToken],
+    queryFn: () => fetchMerchantOrders(merchantId!, accessToken!),
+    enabled: !!merchantId && !!accessToken,
     staleTime: 1000 * 60 * 5,
-    select: (data) =>
+    select: useCallback((data: ApiResponse<PaginatedResponse<any>>) =>
       mapBackendListToFrontend<Order>(data.data.items, "order").items,
+    []),
   });
-
-  const columns = React.useMemo(
-    () => getColumns(getStatusColor, router),
-    [router]
-  );
 
   const table = useReactTable({
     data: ordersQuery.data ?? [],
