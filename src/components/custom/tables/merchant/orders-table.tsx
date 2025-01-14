@@ -158,7 +158,7 @@ const MerchantsOrderTable = () => {
           <Badge
             className={`${getStatusColor(row.original.status)} text-white`}
           >
-            {row.original.status}
+            {row.original.status.toUpperCase()}
           </Badge>
         ),
       },
