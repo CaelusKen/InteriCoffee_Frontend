@@ -160,7 +160,7 @@ const CustomerDesignDetails = ({ id }: DesignDetailsProps) => {
             id: cartProduct.id,
             name: cartProduct.name,
             price: cartProduct.truePrice,
-            quantity: 1,
+            quantity: cartProduct.quantity,
           }
         )
       })

@@ -54,6 +54,7 @@ import {
 import SceneContent from "@/components/custom/room-editor/scene-view";
 import { Canvas } from "@react-three/fiber";
 
+
 const fetchTemplateById = async (
   id: string
 ): Promise<ApiResponse<Template>> => {
@@ -174,7 +175,7 @@ export default function TemplateDetailsBody({ id }: TemplateDetailsProps) {
     enabled: !!template?.styleId,
   });
 
-  const style = styleQuery.data?.data.name;
+  const style = styleQuery.data?.data;
 
   const formatDate = (date: Date | null | undefined) => {
     if (!date) return "N/A";
@@ -347,9 +348,16 @@ export default function TemplateDetailsBody({ id }: TemplateDetailsProps) {
       >
         <h2 className="text-2xl font-bold mb-4">Style and Categories</h2>
         <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary" className="text-lg px-4 py-2">
-            {style}
-          </Badge>
+          <Tooltip>
+            <TooltipTrigger>
+              <Badge variant="secondary" className="text-lg px-4 py-2">
+                {style?.name}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{style?.description}</p>
+            </TooltipContent>
+          </Tooltip>
           {template?.categories.map((category, index) => (
             <Badge key={index} variant="outline" className="text-lg px-4 py-2">
               {category}
