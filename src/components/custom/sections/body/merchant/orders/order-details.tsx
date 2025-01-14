@@ -1,74 +1,89 @@
-"use client"
+"use client";
 
-import { useQuery, useMutation } from "@tanstack/react-query"
-import { api } from "@/service/api"
-import { Order, Product } from "@/types/frontend/entities"
-import { mapBackendToFrontend } from "@/lib/entity-handling/handler"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChevronLeft, Package, MapPin, CreditCard, ShoppingCart, Printer, Ship, Truck } from 'lucide-react'
-import { PackagingStatus } from "./merchant-order-status"
-import { useToast } from "@/hooks/use-toast"
-import { useSession } from "next-auth/react"
-import { useAccessToken } from "@/hooks/use-access-token"
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { api } from "@/service/api";
+import { Order, Product } from "@/types/frontend/entities";
+import { mapBackendToFrontend } from "@/lib/entity-handling/handler";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChevronLeft,
+  Package,
+  MapPin,
+  CreditCard,
+  ShoppingCart,
+  Printer,
+  Ship,
+  Truck,
+} from "lucide-react";
+import { PackagingStatus } from "./merchant-order-status";
+import { useToast } from "@/hooks/use-toast";
+import { useSession } from "next-auth/react";
+import { useAccessToken } from "@/hooks/use-access-token";
 
 const fetchOrderById = async (id: string, accessToken: string) => {
-  return api.getById<Order>(`orders`, id, accessToken)
-}
+  return api.getById<Order>(`orders`, id, accessToken);
+};
 
 const fetchProductById = async (id: string): Promise<Product> => {
   const product = await api
     .get<Product>(`products/${id}`)
-    .then((res) => mapBackendToFrontend<Product>(res.data, "product"))
-  return product
-}
+    .then((res) => mapBackendToFrontend<Product>(res.data, "product"));
+  return product;
+};
 
-const updatePackagingStatus = async (id: string, status: string) => {
-  return api.patch<Order>(`orders/${id}`, { status: status })
-}
+const updatePackagingStatus = async (id: string, status: string, accessToken: string) => {
+  return api.patch<Order>(`orders/${id}`, { status: status }, undefined, accessToken);
+};
 
 interface PackagingDetailsProps {
-  id: string
+  id: string;
 }
 
 export default function MerchantOrderDetails({ id }: PackagingDetailsProps) {
-    const { toast } = useToast()
+  const { toast } = useToast();
 
-    const {data: session} = useSession()
+  const { data: session } = useSession();
 
-    const accessToken = useAccessToken()
+  const accessToken = useAccessToken();
 
   const { data: orderData, refetch } = useQuery({
     queryKey: ["packaging-order", id],
-    queryFn: () => fetchOrderById(id, accessToken ?? ''),
+    queryFn: () => fetchOrderById(id, accessToken ?? ""),
     enabled: !!id,
-  })
+  });
 
   const updateStatusMutation = useMutation({
-    mutationFn: (newStatus: string) => updatePackagingStatus(id, newStatus),
+    mutationFn: (newStatus: string) => updatePackagingStatus(id, newStatus, accessToken ?? ''),
     onSuccess: () => {
-        toast({
-            description: `Packaging status updated`,
-            variant: "default",
-            duration: 3000,
-        })
-        refetch()
+      toast({
+        description: `Packaging status updated`,
+        variant: "default",
+        duration: 3000,
+      });
+      refetch();
     },
     onError: (error) => {
-        toast({
-            description: `Failed to update packaging status: ${error.message}`,
-            variant: "destructive",
-            duration: 3000,
-        })
-        refetch()
-    }
-  })
+      toast({
+        description: `Failed to update packaging status: ${error.message}`,
+        variant: "destructive",
+        duration: 3000,
+      });
+      refetch();
+    },
+  });
 
-  const order = orderData?.data
+  const order = orderData?.data;
 
-  if (!order) return null
+  if (!order) return null;
 
   const getStatusColor = (status: Order["status"]) => {
     const colors: Record<Order["status"], string> = {
@@ -76,13 +91,13 @@ export default function MerchantOrderDetails({ id }: PackagingDetailsProps) {
       SHIPPED: "bg-blue-500",
       COMPLETED: "bg-green-500",
       CANCELLED: "bg-red-500",
-    }
-    return colors[status] || "bg-gray-500"
-  }
+    };
+    return colors[status] || "bg-gray-500";
+  };
 
   const handleStatusUpdate = () => {
-    updateStatusMutation.mutate("SHIPPED")
-  }
+    updateStatusMutation.mutate("SHIPPED");
+  };
 
   return (
     <Card className="max-w-4xl mx-auto my-8">
@@ -93,8 +108,8 @@ export default function MerchantOrderDetails({ id }: PackagingDetailsProps) {
             <Badge variant="secondary" className="text-lg">
               #{order.id?.replace(/\D/g, "").slice(0, 8)}
             </Badge>
-            <Button 
-              variant="secondary" 
+            <Button
+              variant="secondary"
               size="sm"
               onClick={() => window.print()}
             >
@@ -122,7 +137,10 @@ export default function MerchantOrderDetails({ id }: PackagingDetailsProps) {
                 </p>
                 <p className="text-2xl font-bold dark:text-white flex items-center">
                   <Package className="mr-2 h-5 w-5" />
-                  {order.orderProducts.reduce((acc, item) => acc + item.quantity, 0)}
+                  {order.orderProducts.reduce(
+                    (acc, item) => acc + item.quantity,
+                    0
+                  )}
                 </p>
               </div>
             </div>
@@ -132,13 +150,15 @@ export default function MerchantOrderDetails({ id }: PackagingDetailsProps) {
                 <MapPin className="mr-2 h-4 w-4" />
                 Shipping Address
               </p>
-              <p className="font-medium dark:text-white">{order.shippingAddress}</p>
+              <p className="font-medium dark:text-white">
+                {order.shippingAddress}
+              </p>
             </div>
           </div>
           <PackagingStatus
             status={order.status}
             onUpdateStatus={handleStatusUpdate}
-            role={session?.user.role ?? ''}
+            role={session?.user.role ?? ""}
           />
         </div>
         <Separator className="border-dashed dark:border-gray-600" />
@@ -166,36 +186,35 @@ export default function MerchantOrderDetails({ id }: PackagingDetailsProps) {
           <ChevronLeft className="mr-2 h-4 w-4" /> Back
         </Button>
         <div className="flex items-center gap-4">
-            {
-                order.status === "PENDING" && (
-                <Button onClick={handleStatusUpdate}>
-                    <Truck />
-                    Mark as packaged and shipped
-                </Button>
-                )
-            }
-            <p className="text-sm text-muted-foreground dark:text-gray-300">
-              Order placed on {new Date(order.orderDate).toLocaleDateString('vi-VN')}
-            </p>
+          {order.status === "PENDING" && (
+            <Button onClick={handleStatusUpdate}>
+              <Truck />
+              Mark as packaged and shipped
+            </Button>
+          )}
+          <p className="text-sm text-muted-foreground dark:text-gray-300">
+            Order placed on{" "}
+            {new Date(order.orderDate).toLocaleDateString("vi-VN")}
+          </p>
         </div>
       </CardFooter>
     </Card>
-  )
+  );
 }
 
 function PackagingProductItem({
   orderProduct,
 }: {
-  orderProduct: Order["orderProducts"][0]
+  orderProduct: Order["orderProducts"][0];
 }) {
   const { data: productData } = useQuery({
     queryKey: ["packaging-product", orderProduct.id],
     queryFn: () => fetchProductById(orderProduct.id),
-  })
+  });
 
-  const product = productData
+  const product = productData;
 
-  if (!product) return null
+  if (!product) return null;
 
   return (
     <Card>
@@ -213,11 +232,12 @@ function PackagingProductItem({
           </div>
           <div className="text-right">
             <Badge variant="outline">
-                Quantity: {orderProduct.quantity} {orderProduct.quantity === 1? 'unit' : 'units'}
+              Quantity: {orderProduct.quantity}{" "}
+              {orderProduct.quantity === 1 ? "unit" : "units"}
             </Badge>
           </div>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
