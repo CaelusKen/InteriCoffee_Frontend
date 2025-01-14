@@ -1,26 +1,35 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import Link from 'next/link'
-import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { motion } from 'framer-motion'
-import { toast } from '@/hooks/use-toast'
+import React, { useState } from "react";
+import Link from "next/link";
+import {
+  Facebook,
+  Twitter,
+  Instagram,
+  Mail,
+  Phone,
+  MapPin,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { motion } from "framer-motion";
+import { toast } from "@/hooks/use-toast";
+import { useSession } from "next-auth/react";
 
 const Footer = () => {
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState("");
+  const { data: session } = useSession();
 
   const handleSubmit = (e) => {
-    e.preventDefault()
+    e.preventDefault();
     // Here you would typically send the email to your API
-    console.log('Subscribing email:', email)
+    console.log("Subscribing email:", email);
     toast({
       title: "Subscribed!",
       description: "You've successfully subscribed to our newsletter.",
-    })
-    setEmail('')
-  }
+    });
+    setEmail("");
+  };
 
   return (
     <motion.footer
@@ -33,16 +42,18 @@ const Footer = () => {
         {/* Logo and Company Info */}
         <div className="flex flex-col items-start">
           <h2 className="text-2xl font-bold mb-4">Logo</h2>
-          <p className="text-sm mb-4">Your trusted partner in innovation and excellence.</p>
+          <p className="text-sm mb-4">
+            Your trusted partner in innovation and excellence.
+          </p>
           <div className="flex space-x-4">
             {[
-              { icon: Facebook, label: 'Facebook' },
-              { icon: Twitter, label: 'Twitter' },
-              { icon: Instagram, label: 'Instagram' },
+              { icon: Facebook, label: "Facebook" },
+              { icon: Twitter, label: "Twitter" },
+              { icon: Instagram, label: "Instagram" },
             ].map(({ icon: Icon, label }) => (
-              <Link 
+              <Link
                 key={label}
-                href="#" 
+                href="#"
                 className="hover:text-neutral-700 dark:hover:text-secondary-400 transition-colors duration-300"
                 aria-label={label}
               >
@@ -56,10 +67,14 @@ const Footer = () => {
         <div>
           <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
           <ul className="space-y-2">
-            {['Home', 'About', 'Styles', 'Products'].map((item) => (
+            {["Templates", "Products", "About", "Contact"].map((item) => (
               <li key={item}>
-                <Link 
-                  href="#" 
+                <Link
+                  href={
+                    item === "Products"
+                      ? "/furnitures"
+                      : `/${item.toLowerCase()}`
+                  }
                   className="hover:text-neutral-700 dark:hover:text-secondary-400 transition-colors duration-300"
                 >
                   {item}
@@ -69,20 +84,48 @@ const Footer = () => {
           </ul>
         </div>
 
+        {session && (
+          <div>
+            <h3 className="text-lg font-semibold mb-4">My Account</h3>
+            <ul className="space-y-2">
+              {["Home", "Designs", "Orders", "Simulate", "Chat"].map((item) => (
+                <li key={item}>
+                  <Link
+                    href={`/customer${
+                      item === "Home" ? "" : `/${item.toLowerCase()}`
+                    }`}
+                    className="hover:text-neutral-700 dark:hover:text-secondary-400 transition-colors duration-300"
+                  >
+                    {item}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* Contact Info */}
         <div>
           <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
           <ul className="space-y-2">
             {[
-              { icon: Mail, content: 'info@example.com', href: 'mailto:info@example.com' },
-              { icon: Phone, content: '(123) 456-7890', href: 'tel:+1234567890' },
-              { icon: MapPin, content: '123 Main St, City, Country' },
+              {
+                icon: Mail,
+                content: "khangthuan@gmail.com",
+                href: "mailto:khangthuan@gmail.com",
+              },
+              {
+                icon: Phone,
+                content: "0892313322",
+                href: "tel:+892313322",
+              },
+              { icon: MapPin, content: "FPT University, HCM City" },
             ].map(({ icon: Icon, content, href }, index) => (
               <li key={index} className="flex items-center">
                 <Icon size={16} className="mr-2 flex-shrink-0" />
                 {href ? (
-                  <a 
-                    href={href} 
+                  <a
+                    href={href}
                     className="hover:text-neutral-700 dark:hover:text-secondary-400 transition-colors duration-300"
                   >
                     {content}
@@ -98,7 +141,9 @@ const Footer = () => {
         {/* Newsletter Signup */}
         <div>
           <h3 className="text-lg font-semibold mb-4">Stay Updated</h3>
-          <p className="text-sm mb-4">Subscribe to our newsletter for the latest updates.</p>
+          <p className="text-sm mb-4">
+            Subscribe to our newsletter for the latest updates.
+          </p>
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row">
             <Input
               type="email"
@@ -121,12 +166,14 @@ const Footer = () => {
       {/* Bottom Bar */}
       <div className="mt-8 pt-8 border-t border-gray-200">
         <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center">
-          <p className="text-sm">&copy; {new Date().getFullYear()} Your Company. All rights reserved.</p>
+          <p className="text-sm">
+            &copy; {new Date().getFullYear()} Your Company. All rights reserved.
+          </p>
           <div className="flex space-x-4 mt-4 sm:mt-0">
-            {['Terms of Service', 'Privacy Policy'].map((item) => (
-              <Link 
+            {["Terms of Service", "Privacy Policy"].map((item) => (
+              <Link
                 key={item}
-                href={`/${item.toLowerCase().replace(/\s+/g, '-')}`} 
+                href={`/${item.toLowerCase().replace(/\s+/g, "-")}`}
                 className="text-sm hover:text-gray-900 transition-colors duration-300"
               >
                 {item}
@@ -136,7 +183,7 @@ const Footer = () => {
         </div>
       </div>
     </motion.footer>
-  )
-}
+  );
+};
 
-export default Footer
+export default Footer;
