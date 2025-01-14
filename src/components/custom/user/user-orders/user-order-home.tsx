@@ -130,15 +130,6 @@ const OrderHome = () => {
                     <Package className="mr-2" />
                     Details
                   </Button>
-                  {order.status === "COMPLETED" && (
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => router.push(`/customer/orders/${order.id}/cancel`)}
-                    >
-                      Cancel
-                    </Button>
-                  )}
                 </TableCell>
               </TableRow>
             ))}
