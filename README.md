@@ -20,7 +20,7 @@ An application in which supports the clients to create their own unique Interior
 
 ## 🚀 Demo
 
-**Try it live**: [Live Demo](https://interior-coffee.vercel.app)
+**Try it live**: [Live Demo](https://interi-coffee.vercel.app)
 
 ---
 
@@ -50,24 +50,10 @@ Copy code
 ```bash
 npm start
 ```
+
 🧩 Usage
+
 Coming soon, just play around with whatever you can see
-
-javascript
-Copy code
-```javascript
-import { YourComponent } from 'project-name';
-
-<YourComponent prop1="value" prop2="value" />;
-```
-📖 Documentation
-
-Refer to the documentation for detailed information on how each component or module works.
-Topics include:
-
-Basic setup
-Advanced configurations
-API integration
 
 🛠️ Technologies
 
@@ -108,4 +94,4 @@ Email: caelus.khangthuan1209@gmail.com
 📝 Acknowledgements
 Special thanks to my team for their amazing contribution to this project. And to all the contributors who have helped make this project better!
 
-Created by Caelus Ken with ❤️
+Created by Caelus Ken and the homies with ❤️
